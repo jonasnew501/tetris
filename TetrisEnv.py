@@ -7,6 +7,7 @@ import random
 import os
 import sys
 from collections import deque
+from enum import Enum
 
 plt.ion()
 
@@ -32,6 +33,14 @@ class TetrisEnv():
                       "T": np.array([[0, 1, 0], [1, 1, 1]])
                       }
         
+        #TODO: Das Enum noch (richtig) verwenden
+        class Possible_Actions(Enum):
+            move_left = 1
+            move_right = 2
+            move_up = 3
+        
+        self.current_action = None
+        
         #holding the tile(s), that are about to come next
         #for every tile, holds a list of "[Name of the tile, the tiles´ array]"
         self.tiles_queue = deque()
@@ -51,6 +60,8 @@ class TetrisEnv():
                                                      #NOTE: zipping the two lists (i.e. pairing them element-wise)
                                                      #      gives the exact coordinates of the cells in the field,
                                                      #      where the tile is currently.
+    
+    
         
     
     def populate_tiles_queue(self):
@@ -99,8 +110,6 @@ class TetrisEnv():
         #      in all columns of the tile there is space in the field (i.e. there are only zeros)
         #      Easily said: This is the row, where the tile will drop to/in, and this has to be
         #                   empty in order for a drop to be possible.
-        #TODO: Das Droppen funktioniert bisher nur beim allerersten tile, das nächste wird dann nicht mehr (korrekt) gedroppt.
-
         if max(current_tile_positionInField_old[0]) + 1 == self.field_height: #the drop isn´t possible anymore because the tile currently is already at the lowest existing row in the field
             return False
         else:
@@ -170,7 +179,73 @@ class TetrisEnv():
         return len(indices_full_rows)
 
 
+    def handle_action(self, action:int):
+        if action == 1:
+            self.move(direction=1)
+        elif action == 2:
+            self.move(direction=2)
+        elif action == 3:
+            self.rotate()
 
+
+
+    def move(self, direction:int[1, 2]) -> bool:
+        '''
+        Moves the current tile in the field one column
+        either to the left or to the right.
+
+        Params:
+            - 'direction': 1=left, 2=right
+        
+        Returns:
+            -A boolean indicating if the desired movement was possible
+             and thus conducted or not.
+        '''
+        #retaining the old 'current_tile_positionInField'-variable before it is updated below
+        current_tile_positionInField_old = self.current_tile_positionInField.copy()
+
+        #Checking if a move into the desired direction is possible
+        if direction == 1:
+            if min(current_tile_positionInField_old[1]) == 0: #the movement to the left isn´t possible anymore because the tile currently is already at the leftmost column in the field
+                return False
+            else:
+                move_possible = all(self.field[row, min(current_tile_positionInField_old[1])-1] == 0 for row in range(min(current_tile_positionInField_old[0]), max(current_tile_positionInField_old[0])+1, 1))
+
+        if direction == 2:
+            if max(current_tile_positionInField_old[1])+1 == self.field_width: #the movement to the right isn´t possible anymore because the tile currently is already at the right column in the field
+                return False
+            else:
+                move_possible = all(self.field[row, max(current_tile_positionInField_old[1])+1] == 0 for row in range(min(current_tile_positionInField_old[0]), max(current_tile_positionInField_old[0])+1, 1))
+
+        if not move_possible:
+            return False
+        
+
+        #First updating the variable "current_tile_positionInField" by decreasing/increasing
+        #all column-numbers by one (i.e. the tiles moves leftward or rightward by one column)
+        if direction == 1:
+            self.current_tile_positionInField[1] = [column-1 for column in self.current_tile_positionInField[1]]
+        elif direction == 2:
+            self.current_tile_positionInField[1] = [column+1 for column in self.current_tile_positionInField[1]]
+        
+
+        #TODO: Hier weiter! 
+        # #Updating the tile in the field (i.e. doing the actual movement)
+        # for n_row_new in range(max(self.current_tile_positionInField[0]), min(self.current_tile_positionInField[0])-1, -1): #iterating backwards over all the (new) rows where the dropped tile will be positioned
+        #     for n_column in range(min(self.current_tile_positionInField[1]), max(self.current_tile_positionInField[1])+1, 1): #iterating over the columns in the field
+        #         #assigning the correct number of the tile (0 or 1) to the respective cell,
+        #         #depending on which number the tile has at that position of it´s grid
+        #         #(i.e. in the field now still at one row up)
+        #         self.field[n_row_new, n_column] = np.int8(0) if self.field[n_row_new-1, n_column] == 0 else np.int8(1)
+        
+        # for n_column_new in range(min())
+    
+
+    def rotate(self):
+        '''
+        Rotates the current tile by 90 degrees to the right.
+        '''
+        pass
 
 
     def visualize_field(self):
@@ -182,5 +257,4 @@ class TetrisEnv():
         plt.show(block=True)
     
 
-    def rotate(self):
-        pass
+    
