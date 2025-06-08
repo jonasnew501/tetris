@@ -1,0 +1,34 @@
+import time
+
+from TetrisEnv import TetrisEnv
+
+
+
+def main():
+    env = TetrisEnv(field_height=18, field_width=10, len_tiles_queue=1)
+
+    #---
+    drop_conducted = False
+
+    #---
+    while True:
+        print("------------------------------")
+        # print(f"env.current_tile: \n{env.current_tile}")
+        if not drop_conducted:
+            env.launch_tile()
+
+        print(env.current_tile_positionInField)
+        print(env.field)
+        print()
+
+        drop_conducted = env.drop()        
+
+        print(env.field)
+
+        time.sleep(0.8)
+
+        # env.visualize_field()
+
+
+if __name__ == '__main__':
+    main()
