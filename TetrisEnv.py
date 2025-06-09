@@ -180,11 +180,13 @@ class TetrisEnv():
 
 
     def handle_action(self, action:int):
-        if action == 1:
+        if action == 0: #i.e. do nothing
+            pass
+        if action == 1: #i.e. move tile to the left
             self.move(direction=1)
-        elif action == 2:
+        elif action == 2: #i.e. move tile to the right
             self.move(direction=2)
-        elif action == 3:
+        elif action == 3: #i.e. rotate tile
             self.rotate()
 
 
@@ -264,7 +266,47 @@ class TetrisEnv():
         '''
         Rotates the current tile by 90 degrees to the right.
         '''
-        pass
+        #first updating the rotation of the current tile in 'self.current_tile'
+        current_rotation = self.current_tile[3]
+        new_rotation = (current_rotation + 1) if (current_rotation + 1) < 4 else 0 # because a rotation of "4" would just mean it is at rotation 0 (i.e. initial position) again
+        self.current_tile[new_rotation]
+
+        #checking if a rotation is possible in the field
+        #(depends on how the rotated tile will be positioned afterwards
+        #and if there is enough space to the right of the tile for the flip).
+
+        #Getting the current-shape
+        current_shape = np.array(self.current_tile_positionInField.copy()).shape
+        #First getting/computing the shape after a rotation would have been done
+        #(i.e. just flipping rows and columns)
+        shape_after_rotation = tuple(reversed(np.array(self.current_tile_positionInField.copy()).shape))
+
+        #if with a rotation the number of columns of the then rotated tile increases,
+        #then it has to be checked, whether in the field to the right of the current
+        #tile there are enough empty cells, so a rotation is possible
+        if shape_after_rotation[1] > current_shape[1]: #i.e. the number of columns would increase with a rotation
+            for column in range(max(self.current_tile_positionInField[1])+1, max(self.current_tile_positionInField[1])+(shape_after_rotation[1]-current_shape[1]+1), 1):
+                for row in range(min(self.current_tile_positionInField[0]), max(self.current_tile_positionInField[0])-(current_shape[0]-shape_after_rotation[0])+1, 1):
+                    if not self.field[row, column] == 0:
+                        return False
+        
+        #if with a rotation the number of columns of the then rotated tile decreases,
+        #then it has to be checked, whether in the field below of the current
+        #tile there are enough empty cells, so a rotation is possible
+        elif shape_after_rotation[1] < current_shape[1]: #i.e. the number of columns would decrease with a rotation (automatically meaning that the number of rows will increase)
+            for row in range(max(self.current_tile_positionInField[0])+1, max(self.current_tile_positionInField[0])+(shape_after_rotation[0]-current_shape[0])+1, 1):
+                for column in range(min(self.current_tile_positionInField[1]), max(self.current_tile_positionInField[0])-(current_shape[1]-shape_after_rotation[1])+1, 1):
+                    if not self.field[row, column] == 0:
+                        return False
+            
+        elif self.current_tile[0] == 'O': #this code is redundant, however still included for reasons of completeness:
+                                          #Rotating the 'O' tetromino is always possible but also completely without effect
+                                          #since it is quadratic.
+            return False #in this case, False is returned, indicating that a rotation wasn't done (since it wouldn't have an effect anyway for the 'O' tetromino)
+        
+
+        #at this point it is known that a rotation of the current tile is possible
+
 
 
     def visualize_field(self):
