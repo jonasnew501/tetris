@@ -1,4 +1,5 @@
 import time
+import sys
 import pygame
 
 from TetrisEnv import TetrisEnv
@@ -6,35 +7,59 @@ from TetrisEnv import TetrisEnv
 
 
 def main():
+    # Initialize pygame and its display
+    pygame.init()
+    pygame.display.set_mode((1, 1), pygame.NOFRAME)  # Tiny invisible window
+    pygame.display.iconify()  # Minimize immediately
+
+    # Optional: Disable audio init warnings if not needed
+    pygame.mixer.quit() 
+
     env = TetrisEnv(field_height=18, field_width=10, len_tiles_queue=1)
 
     #---
     drop_conducted = False
-    action = None
 
     #---
-    while True:
-        print("------------------------------")
-        if not drop_conducted:
-            env.launch_tile()
+    try:
+        while True:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+                
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_LEFT:
+                        env.current_action = 1
+                        env.handle_action(action=1)
+                        print("Moved left")
+                    elif event.key == pygame.K_RIGHT:
+                        env.current_action = 2
+                        env.handle_action(action=2)
+                        print("Moved right")
+                    elif event.key == pygame.K_ESCAPE:
+                        pygame.quit()
+                        sys.exit()
 
-        print(env.field)
-        print()
+            print("------------------------------")
+            if not drop_conducted:
+                env.launch_tile()
 
-        drop_conducted = env.drop()
+            print(env.field)
+            print()
 
-        keys_pressed = pygame.key.get_pressed()
-        if pygame.K_LEFT and len(keys_pressed) == 1:
-            env.current_action = 1
-        elif pygame.K_RIGHT and len(keys_pressed) == 1:
-            env.current_action = 2
-        elif pygame.K_UP and len(keys_pressed) == 1:
-            env.current_action = 3
-        
+            drop_conducted = env.drop()
+            
+            print(f"current_action: {env.current_action}")
+            
 
 
 
-        time.sleep(0.8)
+            time.sleep(0.2)
+    
+    except KeyboardInterrupt:
+        pygame.quit()
+        print("Exited gracefully.")
 
 
 

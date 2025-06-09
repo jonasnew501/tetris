@@ -139,7 +139,7 @@ class TetrisEnv():
                 #(i.e. in the field now still at one row up)
                 self.field[n_row_new, n_column] = np.int8(0) if self.field[n_row_new-1, n_column] == 0 else np.int8(1)
         
-        #emptying (i.e. assigning 0s) the topmost row of the old tile-position in the field,
+        #emptying (i.e. assigning 0s) to the topmost row of the old tile-position in the field,
         #because those cells now got empty because the tile dropped down by one row now
         for n_column in range(min(self.current_tile_positionInField[1]), max(self.current_tile_positionInField[1])+1, 1):
             self.field[min(current_tile_positionInField_old[0]), n_column] = np.int8(0)
@@ -189,7 +189,7 @@ class TetrisEnv():
 
 
 
-    def move(self, direction:int[1, 2]) -> bool:
+    def move(self, direction:int) -> bool:
         '''
         Moves the current tile in the field one column
         either to the left or to the right.
@@ -229,16 +229,35 @@ class TetrisEnv():
             self.current_tile_positionInField[1] = [column+1 for column in self.current_tile_positionInField[1]]
         
 
-        #TODO: Hier weiter! 
-        # #Updating the tile in the field (i.e. doing the actual movement)
-        # for n_row_new in range(max(self.current_tile_positionInField[0]), min(self.current_tile_positionInField[0])-1, -1): #iterating backwards over all the (new) rows where the dropped tile will be positioned
-        #     for n_column in range(min(self.current_tile_positionInField[1]), max(self.current_tile_positionInField[1])+1, 1): #iterating over the columns in the field
-        #         #assigning the correct number of the tile (0 or 1) to the respective cell,
-        #         #depending on which number the tile has at that position of it´s grid
-        #         #(i.e. in the field now still at one row up)
-        #         self.field[n_row_new, n_column] = np.int8(0) if self.field[n_row_new-1, n_column] == 0 else np.int8(1)
+        #Updating the tile in the field (i.e. doing the actual movement)
+        if direction == 1: #i.e. moving to the left
+            for n_column_new in range(min(self.current_tile_positionInField[1]), max(self.current_tile_positionInField[1])+1, 1): #iterating forward over all columns where the left-moved tile will be positioned
+                for n_row in range(min(self.current_tile_positionInField[0]), max(self.current_tile_positionInField[0])+1, 1): #iterating forward over the rows in the field
+                    #assigning the correct number of the tile (0 or 1) to the respective cell,
+                    #depending on which number the tile has at that position of it´s grid
+                    #(i.e. in the field now still at one column to the right)
+                    self.field[n_row, n_column_new] = np.int8(0) if self.field[n_row, n_column_new+1] == 0 else np.int8(1)
+            
+            #emptying (i.e. assigning 0s) to the rightmost column of the old tile-position in the field,
+            #because those cells now got empty because the tile moved to the left by one column now
+            for n_row in range(min(self.current_tile_positionInField[0]), max(self.current_tile_positionInField[0])+1, 1):
+                self.field[n_row, max(current_tile_positionInField_old[1])] = np.int8(0)
+
+        elif direction == 2: #i.e. moving to the right
+            for n_column_new in range(max(self.current_tile_positionInField[1]), min(self.current_tile_positionInField[1])-1, -1): #iterating backwards over all columns where the right-moved tile will be positioned
+                for n_row in range(min(self.current_tile_positionInField[0]), max(self.current_tile_positionInField[0])+1, 1): #iterating forward over the rows in the field
+                    #assigning the correct number of the tile (0 or 1) to the respective cell,
+                    #depending on which number the tile has at that position of it´s grid
+                    #(i.e. in the field now still at one column to the left)
+                    self.field[n_row, n_column_new] = np.int8(0) if self.field[n_row, n_column_new-1] == 0 else np.int8(1)
+            
+            #emptying (i.e. assigning 0s) to the leftmost column of the old tile-position in the field,
+            #because those cells now got empty because the tile moved to the right by one column now
+            for n_row in range(min(self.current_tile_positionInField[0]), max(self.current_tile_positionInField[0])+1, 1):
+                self.field[n_row, min(current_tile_positionInField_old[1])] = np.int8(0)
         
-        # for n_column_new in range(min())
+        return True
+
     
 
     def rotate(self):
