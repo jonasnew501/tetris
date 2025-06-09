@@ -7,6 +7,7 @@ import random
 import os
 import sys
 from collections import deque
+from itertools import product
 from enum import Enum
 
 plt.ion()
@@ -262,15 +263,14 @@ class TetrisEnv():
 
     
 
-    def rotate(self):
+    def rotate(self) -> bool:
         '''
         Rotates the current tile by 90 degrees to the right.
-        '''
-        #first updating the rotation of the current tile in 'self.current_tile'
-        current_rotation = self.current_tile[3]
-        new_rotation = (current_rotation + 1) if (current_rotation + 1) < 4 else 0 # because a rotation of "4" would just mean it is at rotation 0 (i.e. initial position) again
-        self.current_tile[new_rotation]
 
+        Returns:
+            -A boolean indicating if the desired rotation was possible
+             and thus conducted or not.
+        '''
         #checking if a rotation is possible in the field
         #(depends on how the rotated tile will be positioned afterwards
         #and if there is enough space to the right of the tile for the flip).
@@ -280,6 +280,8 @@ class TetrisEnv():
         #First getting/computing the shape after a rotation would have been done
         #(i.e. just flipping rows and columns)
         shape_after_rotation = tuple(reversed(np.array(self.current_tile_positionInField.copy()).shape))
+        diff_in_rows = shape_after_rotation[0] - current_shape[0]
+        diff_in_columns = shape_after_rotation[1] - current_shape[1]
 
         #if with a rotation the number of columns of the then rotated tile increases,
         #then it has to be checked, whether in the field to the right of the current
@@ -307,6 +309,71 @@ class TetrisEnv():
 
         #at this point it is known that a rotation of the current tile is possible
 
+        #first updating the rotation of the current tile in 'self.current_tile'
+        current_rotation = self.current_tile[2]
+        new_rotation = (current_rotation + 1) if (current_rotation + 1) < 4 else 0 # because a rotation of "4" would just mean it is at rotation 0 (i.e. initial position) again
+        self.current_tile[2] = new_rotation
+
+        #changing the rows and columns in 'current_tile_positionInField' to sets and then to lists again, to make the following rotation-operation possible
+        #also saving the sets for later use
+        current_tile_positionInField_rows_set_old = list(set(self.current_tile_positionInField[0]))
+        current_tile_positionInField_columns_set_old = list(set(self.current_tile_positionInField[1]))
+        
+        self.current_tile_positionInField[0] = current_tile_positionInField_rows_set_old
+        self.current_tile_positionInField[1] = current_tile_positionInField_columns_set_old
+
+        #saving the sets for later use
+        current_tile_positionInField_rows_set_old = list(set(self.current_tile_positionInField[0]))
+        current_tile_positionInField_columns_set_old = list(set(self.current_tile_positionInField[1]))
+
+        #rotating resp. modifying the data held in 'self.current_tile_positionInField'
+        if shape_after_rotation[1] > current_shape[1]: #i.e. the number of columns would increase with a rotation
+            self.current_tile_positionInField[0] = self.current_tile_positionInField[0][:-abs(diff_in_rows)]
+            self.current_tile_positionInField[1] = self.current_tile_positionInField[1].append(list(range(max(self.current_tile_positionInField[1]), max(self.current_tile_positionInField[1])+abs(diff_in_columns)+1, 1)))
+        
+        elif shape_after_rotation[1] < current_shape[1]: #i.e. the number of columns would decrease with a rotation (automatically meaning that the number of rows will increase)
+            self.current_tile_positionInField[0] = self.current_tile_positionInField[0].append(list(range(max(self.current_tile_positionInField[0]), max(self.current_tile_positionInField[0])+abs(diff_in_rows)+1, 1)))
+            self.current_tile_positionInField[1] = self.current_tile_positionInField[1][:-abs(diff_in_columns)]
+        
+        #multiplying-out the set-like rows and columns in 'current_tile_positionInField' again,
+        #so that the actual initial structure of this attribute is obtained again.
+        #the "Multiplying-out" is actually called the "Cartesian product", which can be
+        #obtained by using "product" from "itertools"
+        # Cartesian product
+        coords = list(product(self.current_tile_positionInField[0], self.current_tile_positionInField[1]))
+        # Transpose to get two lists: rows and columns
+        rows_full, cols_full = zip(*coords)
+        # Assembling the result back together
+        self.current_tile_positionInField = [rows_full, cols_full]
+
+
+
+
+        #conducting the actual 90 degree rotation to the right
+        #1.: Swapping the rows of the current tile in the field
+        tile_swapped = np.flip(self.field.copy()[min(current_tile_positionInField_rows_set_old):max(current_tile_positionInField_rows_set_old)+1, \
+                                                min(current_tile_positionInField_columns_set_old):max(current_tile_positionInField_columns_set_old)+1], axis=0)
+        
+        #2.: Transposing that swapped tile (now the tile (still not in the field yet) is actually rotated by 90 degrees to the right)
+        tile_t = tile_swapped.T
+
+        #3.: Deleting the current (non-rotated) tile from the field
+        self.field[min(current_tile_positionInField_rows_set_old):max(current_tile_positionInField_rows_set_old)+1, \
+                   min(current_tile_positionInField_columns_set_old):max(current_tile_positionInField_columns_set_old)+1] = 0
+        
+        
+        #4.: From the already updated data in 'self.current_tile_positionInField', again getting the sets
+        current_tile_positionInField_rows_set_new = list(set(self.current_tile_positionInField[0]))
+        current_tile_positionInField_columns_set_new = list(set(self.current_tile_positionInField[1]))
+
+        #5.: Putting the swapped tile into the correct position in the field
+        self.field[min(current_tile_positionInField_rows_set_new):max(current_tile_positionInField_rows_set_new)+1, \
+                   min(current_tile_positionInField_columns_set_new):max(current_tile_positionInField_columns_set_new)+1] = tile_t
+        
+        #TODO:
+        #asserting that the current tile in the field now actually has the correct shape
+
+        return True
 
 
     def visualize_field(self):
