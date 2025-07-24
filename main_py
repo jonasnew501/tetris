@@ -15,7 +15,7 @@ def main():
     # Optional: Disable audio init warnings if not needed
     pygame.mixer.quit() 
 
-    env = TetrisEnv(field_height=18, field_width=10, len_tiles_queue=1)
+    env = TetrisEnv(field_height=18, field_width=10, len_tiles_queue=3)
 
     #---
     drop_conducted = False

@@ -53,7 +53,7 @@ class TetrisEnv():
                                  #The roation can be four values:
                                  #* "0" = not rotated (i.e. in the initial launch position)
                                  #* "1" = rotated by 90 degrees to the right
-                                 #* "2" = rotated by 180 degrees (to the right)
+                                 #* "2" = rotated by 180 degrees
                                  #* "3" = rotated by 270 degrees (to the right)
 
         self.current_tile_positionInField = [[], []] #a list of two elements: A list holding the row-indices
@@ -67,7 +67,11 @@ class TetrisEnv():
     
     def populate_tiles_queue(self):
         while len(self.tiles_queue) < self.len_tiles_queue:
-            self.tiles_queue.append([*random.choice(list(self.tiles.items())), 0])
+            self.tiles_queue.append([*random.choice(list(self.tiles.items()))])
+
+            print(f"self.tiles_queue: \n{self.tiles_queue}")
+        
+        raise Exception
     
     def launch_tile(self):
         #popping the first tile from the tiles_queue and assigning it as/to the current_tile
@@ -101,7 +105,7 @@ class TetrisEnv():
         Drops the current tile in the field by one row.
 
         Returns:
-            -A boolean indicating if a drop was possible and thus conducted or not.
+        A boolean indicating if a drop was possible and thus conducted or not.
         '''
         #retaining the old 'current_tile_positionInField'-variable before it is updated below
         current_tile_positionInField_old = self.current_tile_positionInField.copy()
@@ -262,7 +266,7 @@ class TetrisEnv():
         return True
 
     
-
+    #TODO: Debug!
     def rotate(self) -> bool:
         '''
         Rotates the current tile by 90 degrees to the right.
@@ -318,7 +322,7 @@ class TetrisEnv():
         #also saving the sets for later use
         current_tile_positionInField_rows_set_old = list(set(self.current_tile_positionInField[0]))
         current_tile_positionInField_columns_set_old = list(set(self.current_tile_positionInField[1]))
-        
+
         self.current_tile_positionInField[0] = current_tile_positionInField_rows_set_old
         self.current_tile_positionInField[1] = current_tile_positionInField_columns_set_old
 
