@@ -25,13 +25,16 @@ class TetrisEnv():
 
         self.field = np.zeros(shape=(field_height, field_width), dtype=np.int8)
 
-        self.tiles = {"I": np.ones((4, 1)),
-                      "O": np.ones((2, 2)),
-                      "S": np.array([[0, 1], [1, 1], [1, 0]]),
+        # self.tiles = {"I": np.ones((4, 1)),
+        #               "O": np.ones((2, 2)),
+        #               "S": np.array([[0, 1], [1, 1], [1, 0]]),
+        #               "S_inv": np.array([[1, 0], [1, 1], [0, 1]]),
+        #               "L": np.array([[1, 0], [1, 0], [1, 1]]),
+        #               "L_inv": np.array([[0, 1], [0, 1], [1, 1]]),
+        #               "T": np.array([[0, 1, 0], [1, 1, 1]])
+        #               }
+        self.tiles = {"O": np.ones((2, 2)),
                       "S_inv": np.array([[1, 0], [1, 1], [0, 1]]),
-                      "L": np.array([[1, 0], [1, 0], [1, 1]]),
-                      "L_inv": np.array([[0, 1], [0, 1], [1, 1]]),
-                      "T": np.array([[0, 1, 0], [1, 1, 1]])
                       }
         
         #TODO: Das Enum noch (richtig) verwenden
@@ -124,14 +127,20 @@ class TetrisEnv():
         current_tile_positionInField_old = self.current_tile_positionInField.copy()
 
         #Checking if a drop is possible
-        #NOTE: A drop is only possible if in the row below the current lowest row of the tile
-        #      in all columns of the tile there is space in the field (i.e. there are only zeros)
-        #      Easily said: This is the row, where the tile will drop to/in, and this has to be
-        #                   empty in order for a drop to be possible.
+        #NOTE: A drop is only possible if the sum of the individual cells in the current lowest
+        #      row of the tile in all columns and the respective cells in the field one row
+        #      below that row is at most 1.
+        #      Explanation: If the sum was 2, that would mean that both in a cell of the current
+        #                   lowest row and the cell below that (i.e. the cell in the field) are
+        #                   both 1s, i.e. both those cells are occupied already. Thus a drop
+        #                   is not possible. However, if the sum of both cells is 0 or 1,
+        #                   that means that either none of the cells is occupied, or only one
+        #                   of them, which means that a drop is possible.
         if max(current_tile_positionInField_old[0]) + 1 == self.field_height: #the drop isn´t possible anymore because the tile currently is already at the lowest existing row in the field
             return False
         else:
-            drop_possible = all(self.field[max(current_tile_positionInField_old[0])+1, column] == 0 for column in range(min(current_tile_positionInField_old[1]), max(current_tile_positionInField_old[1])+1, 1))
+            drop_possible = all(self.field[max(current_tile_positionInField_old[0]), column] + self.field[max(current_tile_positionInField_old[0])+1, column] in [0, 1]
+                                for column in range(min(current_tile_positionInField_old[1]), max(current_tile_positionInField_old[1])+1, 1))
 
         if not drop_possible:
             return False
@@ -142,20 +151,15 @@ class TetrisEnv():
         self.current_tile_positionInField[0] = [row+1 for row in self.current_tile_positionInField[0]]
 
         
-
-
         #Updating the tile in the field (i.e. doing the actual dropping)
-        # #creating coordinates of the old tile-position by zipping the rows and columns
-        # tile_coordinates_old = list(zip(current_tile_positionInField_old[0], current_tile_positionInField_old[1]))
-        # #creating coordinates of the new tile-position by zipping the rows and columns
-        # tile_coordinates_new = list(zip(self.current_tile_positionInField[0], self.current_tile_positionInField[1]))
-
         for n_row_new in range(max(self.current_tile_positionInField[0]), min(self.current_tile_positionInField[0])-1, -1): #iterating backwards over all the (new) rows where the dropped tile will be positioned
             for n_column in range(min(self.current_tile_positionInField[1]), max(self.current_tile_positionInField[1])+1, 1): #iterating over the columns in the field
                 #assigning the correct number of the tile (0 or 1) to the respective cell,
                 #depending on which number the tile has at that position of it´s grid
                 #(i.e. in the field now still at one row up)
-                self.field[n_row_new, n_column] = np.int8(0) if self.field[n_row_new-1, n_column] == 0 else np.int8(1)
+                #NOTE: If a cell in n_row_new already contains a 1, it logically cannot become a zero again
+                #      solely by the drop. Thus, this is checked for too.
+                self.field[n_row_new, n_column] = np.int8(0) if (self.field[n_row_new-1, n_column] == 0 and self.field[n_row_new, n_column] != 1) else np.int8(1)
         
         #emptying (i.e. assigning 0s) to the topmost row of the old tile-position in the field,
         #because those cells now got empty because the tile dropped down by one row now
@@ -173,13 +177,14 @@ class TetrisEnv():
         
         Both the check whether one or multiple rows are full as well as
         the dropping of the other 1s in the field (except for the current tile)
-        is handles by this function.
+        is handled by this function.
 
         Returns:
             An int, indicating how many rows were full and were thus removed.
         '''
         #a list holding the indices of full rows
         indices_full_rows = []
+
         #Iterating through all the rows and saving the indices of full rows
         for i, row in enumerate(self.field):
             if all(row == 1):
@@ -207,19 +212,17 @@ class TetrisEnv():
         elif action == 3: #i.e. rotate tile
             self.rotate()
 
-
-
     def move(self, direction:int) -> bool:
         '''
         Moves the current tile in the field one column
         either to the left or to the right.
 
         Params:
-            - 'direction': 1=left, 2=right
+        -'direction': 1=left, 2=right
         
         Returns:
-            -A boolean indicating if the desired movement was possible
-             and thus conducted or not.
+        A boolean indicating if the desired movement was possible
+        and thus conducted or not.
         '''
         #retaining the old 'current_tile_positionInField'-variable before it is updated below
         current_tile_positionInField_old = self.current_tile_positionInField.copy()
