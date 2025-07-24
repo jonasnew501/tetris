@@ -33,7 +33,7 @@ class TetrisEnv():
         #               "L_inv": np.array([[0, 1], [0, 1], [1, 1]]),
         #               "T": np.array([[0, 1, 0], [1, 1, 1]])
         #               }
-        self.tiles = {"O": np.ones((2, 2)),
+        self.tiles = {#"O": np.ones((2, 2)),
                       "S_inv": np.array([[1, 0], [1, 1], [0, 1]]),
                       }
         
@@ -76,7 +76,7 @@ class TetrisEnv():
         the desired length (=self.len_tiles_queue).
         '''
         while len(self.tiles_queue) < self.len_tiles_queue:
-            self.tiles_queue.append([*random.choice(list(self.tiles.items()))])
+            self.tiles_queue.append([*random.choice(list(self.tiles.items())), 0])
     
     def launch_tile(self):
         '''
@@ -123,6 +123,7 @@ class TetrisEnv():
         Returns:
         A boolean indicating if a drop was possible and thus conducted or not.
         '''
+
         #retaining the old 'current_tile_positionInField'-variable before it is updated below
         current_tile_positionInField_old = self.current_tile_positionInField.copy()
 
@@ -150,21 +151,30 @@ class TetrisEnv():
         #all row-numbers by one (i.e. the tiles moves downward by one row)
         self.current_tile_positionInField[0] = [row+1 for row in self.current_tile_positionInField[0]]
 
-        
+        print(f"field_before:\n{self.field}")
         #Updating the tile in the field (i.e. doing the actual dropping)
         for n_row_new in range(max(self.current_tile_positionInField[0]), min(self.current_tile_positionInField[0])-1, -1): #iterating backwards over all the (new) rows where the dropped tile will be positioned
             for n_column in range(min(self.current_tile_positionInField[1]), max(self.current_tile_positionInField[1])+1, 1): #iterating over the columns in the field
                 #assigning the correct number of the tile (0 or 1) to the respective cell,
                 #depending on which number the tile has at that position of it´s grid
                 #(i.e. in the field now still at one row up)
-                #NOTE: If a cell in n_row_new already contains a 1, it logically cannot become a zero again
-                #      solely by the drop. Thus, this is checked for too.
-                self.field[n_row_new, n_column] = np.int8(0) if (self.field[n_row_new-1, n_column] == 0 and self.field[n_row_new, n_column] != 1) else np.int8(1)
+                #Rules for the result of a drop:
+                # 1.: If a 1 drops into a 0, the 1 stays
+                # 2.1: If a 0 drops into a 1, and both are part of the current tile, then the 0 stays.
+                # 2.2: If a 0 drops into a 1, but the 1 belongs to the field already and not to the current tile, then the 1 stays.
+                if (self.field[n_row_new-1, n_column] == 1) and (self.field[n_row_new, n_column] == 0):
+                    self.field[n_row_new, n_column] = np.int8(1)
+                elif (self.field[n_row_new-1, n_column] == 0) and (self.field[n_row_new, n_column] == 1):
+                    pass # TODO: Continue here
         
         #emptying (i.e. assigning 0s) to the topmost row of the old tile-position in the field,
         #because those cells now got empty because the tile dropped down by one row now
         for n_column in range(min(self.current_tile_positionInField[1]), max(self.current_tile_positionInField[1])+1, 1):
             self.field[min(current_tile_positionInField_old[0]), n_column] = np.int8(0)
+        
+        print()
+        print(f"field_after:\n{self.field}")
+        print("------------------------------")
         
         return True
  
