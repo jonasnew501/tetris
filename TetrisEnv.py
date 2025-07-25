@@ -214,10 +214,10 @@ class TetrisEnv():
             return 0
 
         #removing the full rows from the field
-        self.field = np.delete(arr=self.field, obj=indices_full_rows, axis=0)
+        field_rows_deleted = np.delete(arr=self.field, obj=indices_full_rows, axis=0)
 
         #adding as many new (i.e. empty) rows to the top of the field as were just deleted
-        self.field = np.vstack((np.zeros(shape=(len(indices_full_rows), self.field_width), dtype=np.int8), self.field))
+        self.field = np.vstack((np.zeros(shape=(len(indices_full_rows), self.field_width), dtype=np.int8), field_rows_deleted))
 
         return len(indices_full_rows)
 
@@ -308,8 +308,8 @@ class TetrisEnv():
         Rotates the current tile by 90 degrees to the right.
 
         Returns:
-            -A boolean indicating if the desired rotation was possible
-             and thus conducted or not.
+        A boolean indicating if the desired rotation was possible
+        and thus conducted or not.
         '''
         #checking if a rotation is possible in the field
         #(depends on how the rotated tile will be positioned afterwards
@@ -414,6 +414,20 @@ class TetrisEnv():
         #asserting that the current tile in the field now actually has the correct shape
 
         return True
+    
+    def _get_shape_of_current_tile(self)->tuple:
+        '''
+        From 'self.current_tile_positionInField', computes and returns
+        the shape of the current tile (incorporating resp. considering
+        it's current degree of rotation).
+
+        Returns:
+        Shape of the current tile (as a tuple)
+        '''
+        n_rows = len(set(self.current_tile_positionInField[0]))
+        n_columns = len(set(self.current_tile_positionInField[1]))
+
+        return (n_rows, n_columns)
 
 
     def visualize_field(self):
