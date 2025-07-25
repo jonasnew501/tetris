@@ -49,10 +49,15 @@ def main():
             if not drop_conducted:
                 env.launch_tile()
 
-            # print(env.field)
-            # print()
+            print(env.field)
+            print()
 
+            #dropping the current tile by one row
             drop_conducted = env.drop()
+
+            
+
+
             # print(f"current_tile_positionInField: {env.current_tile_positionInField}")
             
             # print(f"current_tile: {env.current_tile}")
@@ -62,7 +67,7 @@ def main():
 
 
 
-            time.sleep(0.7)
+            time.sleep(0.5)
     
     except KeyboardInterrupt:
         pygame.quit()

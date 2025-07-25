@@ -25,19 +25,20 @@ class TetrisEnv():
 
         self.field = np.zeros(shape=(field_height, field_width), dtype=np.int8)
 
-        self.tiles = {"I": np.ones((4, 1)),
-                      "O": np.ones((2, 2)),
-                      "S": np.array([[0, 1], [1, 1], [1, 0]]),
-                      "S_inv": np.array([[1, 0], [1, 1], [0, 1]]),
-                      "L": np.array([[1, 0], [1, 0], [1, 1]]),
-                      "L_inv": np.array([[0, 1], [0, 1], [1, 1]]),
-                      "T": np.array([[0, 1, 0], [1, 1, 1]])
-                      }
+        # self.tiles = {"I": np.ones((4, 1)),
+        #               "O": np.ones((2, 2)),
+        #               "S": np.array([[0, 1], [1, 1], [1, 0]]),
+        #               "S_inv": np.array([[1, 0], [1, 1], [0, 1]]),
+        #               "L": np.array([[1, 0], [1, 0], [1, 1]]),
+        #               "L_inv": np.array([[0, 1], [0, 1], [1, 1]]),
+        #               "T": np.array([[0, 1, 0], [1, 1, 1]])
+        #               }
         
         #TODO: Remove again
-        # self.tiles = {#"O": np.ones((2, 2)),
-        #               "S_inv": np.array([[1, 0], [1, 1], [0, 1]]),
-        #               }
+        self.tiles = {"O": np.ones((2, 2)),
+                      #"S_inv": np.array([[1, 0], [1, 1], [0, 1]]),
+                      "I": np.ones((4, 1)),
+                      }
         
         #TODO: Das Enum noch (richtig) verwenden
         class Possible_Actions(Enum):
@@ -140,12 +141,16 @@ class TetrisEnv():
         #                   that means that either none of the cells is occupied, or only one
         #                   of them, which means that a drop is possible.
         if max(current_tile_positionInField_old[0]) + 1 == self.field_height: #the drop isn´t possible anymore because the tile currently is already at the lowest existing row in the field
-            return False
+            drop_possible = False
         else:
             drop_possible = all(self.field[max(current_tile_positionInField_old[0]), column] + self.field[max(current_tile_positionInField_old[0])+1, column] in [0, 1]
                                 for column in range(min(current_tile_positionInField_old[1]), max(current_tile_positionInField_old[1])+1, 1))
 
         if not drop_possible:
+            #checking if there are full rows and if so, removing those
+            #and updating the field accordingly
+            rows_dropped = self.check_for_and_handle_full_row()
+            # print(f"***** {rows_dropped} rows dropped!*****")
             return False
 
 
@@ -195,7 +200,7 @@ class TetrisEnv():
         is handled by this function.
 
         Returns:
-            An int, indicating how many rows were full and were thus removed.
+        An int, indicating how many rows were full and were thus removed.
         '''
         #a list holding the indices of full rows
         indices_full_rows = []
