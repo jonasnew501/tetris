@@ -35,7 +35,7 @@ class TetrisEnv():
         #               }
         
         #TODO: Remove again
-        self.tiles = {"O": np.ones((2, 2)),
+        self.tiles = {#"O": np.ones((2, 2)),
                       #"S_inv": np.array([[1, 0], [1, 1], [0, 1]]),
                       "I": np.ones((4, 1)),
                       }
@@ -315,29 +315,33 @@ class TetrisEnv():
         #(depends on how the rotated tile will be positioned afterwards
         #and if there is enough space to the right of the tile for the flip).
 
-        #Getting the current-shape
-        current_shape = np.array(self.current_tile_positionInField.copy()).shape
+        #Getting the shape of the current tile
+        current_shape = self._get_shape_of_current_tile()
+
         #First getting/computing the shape after a rotation would have been done
         #(i.e. just flipping rows and columns)
-        shape_after_rotation = tuple(reversed(np.array(self.current_tile_positionInField.copy()).shape))
+        shape_after_rotation = tuple(reversed(current_shape))
         diff_in_rows = shape_after_rotation[0] - current_shape[0]
         diff_in_columns = shape_after_rotation[1] - current_shape[1]
 
-        #if with a rotation the number of columns of the then rotated tile increases,
+        #TODO: Add a test, whether the current tile is too close to the right-hand border of the field
+        #      in order to conduct a rotation.
+
+        #If with a rotation the number of columns of the then rotated tile increases,
         #then it has to be checked, whether in the field to the right of the current
         #tile there are enough empty cells, so a rotation is possible
-        if shape_after_rotation[1] > current_shape[1]: #i.e. the number of columns would increase with a rotation
-            for column in range(max(self.current_tile_positionInField[1])+1, max(self.current_tile_positionInField[1])+(shape_after_rotation[1]-current_shape[1]+1), 1):
-                for row in range(min(self.current_tile_positionInField[0]), max(self.current_tile_positionInField[0])-(current_shape[0]-shape_after_rotation[0])+1, 1):
+        if diff_in_columns > 0: #i.e. the number of columns would increase with a rotation
+            for column in range(max(self.current_tile_positionInField[1])+1, max(self.current_tile_positionInField[1])+1+(diff_in_columns), 1):
+                for row in range(min(self.current_tile_positionInField[0]), max(self.current_tile_positionInField[0])+1+(diff_in_rows), 1):
                     if not self.field[row, column] == 0:
                         return False
         
-        #if with a rotation the number of columns of the then rotated tile decreases,
+        #If with a rotation the number of columns of the then rotated tile decreases,
         #then it has to be checked, whether in the field below of the current
         #tile there are enough empty cells, so a rotation is possible
-        elif shape_after_rotation[1] < current_shape[1]: #i.e. the number of columns would decrease with a rotation (automatically meaning that the number of rows will increase)
-            for row in range(max(self.current_tile_positionInField[0])+1, max(self.current_tile_positionInField[0])+(shape_after_rotation[0]-current_shape[0])+1, 1):
-                for column in range(min(self.current_tile_positionInField[1]), max(self.current_tile_positionInField[0])-(current_shape[1]-shape_after_rotation[1])+1, 1):
+        elif diff_in_columns < 0: #i.e. the number of columns would decrease with a rotation (automatically meaning that the number of rows will increase)
+            for row in range(max(self.current_tile_positionInField[0])+1, max(self.current_tile_positionInField[0])+1+(diff_in_rows), 1):
+                for column in range(min(self.current_tile_positionInField[1]), max(self.current_tile_positionInField[1])+1+(diff_in_columns), 1):
                     if not self.field[row, column] == 0:
                         return False
             
@@ -363,15 +367,17 @@ class TetrisEnv():
         self.current_tile_positionInField[1] = current_tile_positionInField_columns_set_old
 
         #saving the sets for later use
-        current_tile_positionInField_rows_set_old = list(set(self.current_tile_positionInField[0]))
-        current_tile_positionInField_columns_set_old = list(set(self.current_tile_positionInField[1]))
+        # current_tile_positionInField_rows_set_old = list(set(self.current_tile_positionInField[0]))
+        # current_tile_positionInField_columns_set_old = list(set(self.current_tile_positionInField[1]))
 
+        #TODO: Problems arise in this if-elif-block below.
+        #      Continue here.
         #rotating resp. modifying the data held in 'self.current_tile_positionInField'
-        if shape_after_rotation[1] > current_shape[1]: #i.e. the number of columns would increase with a rotation
+        if diff_in_columns > 0: #i.e. the number of columns would increase with a rotation
             self.current_tile_positionInField[0] = self.current_tile_positionInField[0][:-abs(diff_in_rows)]
             self.current_tile_positionInField[1] = self.current_tile_positionInField[1].append(list(range(max(self.current_tile_positionInField[1]), max(self.current_tile_positionInField[1])+abs(diff_in_columns)+1, 1)))
         
-        elif shape_after_rotation[1] < current_shape[1]: #i.e. the number of columns would decrease with a rotation (automatically meaning that the number of rows will increase)
+        elif diff_in_columns < 0: #i.e. the number of columns would decrease with a rotation (automatically meaning that the number of rows will increase)
             self.current_tile_positionInField[0] = self.current_tile_positionInField[0].append(list(range(max(self.current_tile_positionInField[0]), max(self.current_tile_positionInField[0])+abs(diff_in_rows)+1, 1)))
             self.current_tile_positionInField[1] = self.current_tile_positionInField[1][:-abs(diff_in_columns)]
         
