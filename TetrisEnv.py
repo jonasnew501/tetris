@@ -25,17 +25,19 @@ class TetrisEnv():
 
         self.field = np.zeros(shape=(field_height, field_width), dtype=np.int8)
 
-        # self.tiles = {"I": np.ones((4, 1)),
-        #               "O": np.ones((2, 2)),
-        #               "S": np.array([[0, 1], [1, 1], [1, 0]]),
-        #               "S_inv": np.array([[1, 0], [1, 1], [0, 1]]),
-        #               "L": np.array([[1, 0], [1, 0], [1, 1]]),
-        #               "L_inv": np.array([[0, 1], [0, 1], [1, 1]]),
-        #               "T": np.array([[0, 1, 0], [1, 1, 1]])
-        #               }
-        self.tiles = {#"O": np.ones((2, 2)),
+        self.tiles = {"I": np.ones((4, 1)),
+                      "O": np.ones((2, 2)),
+                      "S": np.array([[0, 1], [1, 1], [1, 0]]),
                       "S_inv": np.array([[1, 0], [1, 1], [0, 1]]),
+                      "L": np.array([[1, 0], [1, 0], [1, 1]]),
+                      "L_inv": np.array([[0, 1], [0, 1], [1, 1]]),
+                      "T": np.array([[0, 1, 0], [1, 1, 1]])
                       }
+        
+        #TODO: Remove again
+        # self.tiles = {#"O": np.ones((2, 2)),
+        #               "S_inv": np.array([[1, 0], [1, 1], [0, 1]]),
+        #               }
         
         #TODO: Das Enum noch (richtig) verwenden
         class Possible_Actions(Enum):
@@ -151,7 +153,6 @@ class TetrisEnv():
         #all row-numbers by one (i.e. the tiles moves downward by one row)
         self.current_tile_positionInField[0] = [row+1 for row in self.current_tile_positionInField[0]]
 
-        print(f"field_before:\n{self.field}")
         #Updating the tile in the field (i.e. doing the actual dropping)
         for n_row_new in range(max(self.current_tile_positionInField[0]), min(self.current_tile_positionInField[0])-1, -1): #iterating backwards over all the (new) rows where the dropped tile will be positioned
             for n_column in range(min(self.current_tile_positionInField[1]), max(self.current_tile_positionInField[1])+1, 1): #iterating over the columns in the field
@@ -162,19 +163,23 @@ class TetrisEnv():
                 # 1.: If a 1 drops into a 0, the 1 stays
                 # 2.1: If a 0 drops into a 1, and both are part of the current tile, then the 0 stays.
                 # 2.2: If a 0 drops into a 1, but the 1 belongs to the field already and not to the current tile, then the 1 stays.
+                
+                #getting the coordinates of the cells of the current tile in the field
+                coord_current_tile = list(zip(*current_tile_positionInField_old))
                 if (self.field[n_row_new-1, n_column] == 1) and (self.field[n_row_new, n_column] == 0):
                     self.field[n_row_new, n_column] = np.int8(1)
-                elif (self.field[n_row_new-1, n_column] == 0) and (self.field[n_row_new, n_column] == 1):
-                    pass # TODO: Continue here
+                elif (self.field[n_row_new-1, n_column] == 0) and (self.field[n_row_new, n_column] == 1) and \
+                    ((n_row_new-1, n_column) in coord_current_tile) and ((n_row_new, n_column) in coord_current_tile):
+                    self.field[n_row_new, n_column] = np.int8(0)
+                elif (self.field[n_row_new-1, n_column] == 0) and (self.field[n_row_new, n_column] == 1) and \
+                    ((n_row_new-1, n_column) in coord_current_tile) and ((n_row_new, n_column) not in coord_current_tile):
+                    self.field[n_row_new, n_column] = np.int8(1)
+                
         
         #emptying (i.e. assigning 0s) to the topmost row of the old tile-position in the field,
         #because those cells now got empty because the tile dropped down by one row now
         for n_column in range(min(self.current_tile_positionInField[1]), max(self.current_tile_positionInField[1])+1, 1):
             self.field[min(current_tile_positionInField_old[0]), n_column] = np.int8(0)
-        
-        print()
-        print(f"field_after:\n{self.field}")
-        print("------------------------------")
         
         return True
  

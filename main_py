@@ -62,7 +62,7 @@ def main():
 
 
 
-            time.sleep(2.5)
+            time.sleep(0.7)
     
     except KeyboardInterrupt:
         pygame.quit()
