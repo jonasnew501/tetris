@@ -337,7 +337,8 @@ class TetrisEnv():
         elif diff_in_columns > 0: #i.e. the number of columns would increase with a rotation
             #checking whether the current tile is too close to the right-hand border of the field
             #in order to conduct a rotation.
-            if max(self.current_tile_positionInField[1])+diff_in_columns > self.field_width: #a rotation is not possible, an out-of-bounds-error would occur
+            #TODO: Das scheint noch nicht zu funktionieren
+            if (max(self.current_tile_positionInField[1])+diff_in_columns) > self.field_width: #a rotation is not possible, an out-of-bounds-error would occur
                 return False
             
             #checking whether in the field to the right of the current
@@ -352,7 +353,8 @@ class TetrisEnv():
         elif diff_in_columns < 0: #i.e. the number of columns would decrease with a rotation (automatically meaning that the number of rows will increase)
             #checking whether the current tile is too close to the bottommost border of the field
             #in order to conduct a rotation.
-            if max(self.current_tile_positionInField[0])+diff_in_rows > self.field_height: #a rotation is not possible, an out-of-bounds-error would occur
+            #TODO: Das scheint noch nicht zu funktionieren
+            if (max(self.current_tile_positionInField[0])+diff_in_rows) > self.field_height: #a rotation is not possible, an out-of-bounds-error would occur
                 return False
             
             #checking whether in the field below the current tile there are
