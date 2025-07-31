@@ -25,20 +25,21 @@ class TetrisEnv():
 
         self.field = np.zeros(shape=(field_height, field_width), dtype=np.int8)
 
-        # self.tiles = {"I": np.ones((4, 1)),
-        #               "O": np.ones((2, 2)),
-        #               "S": np.array([[0, 1], [1, 1], [1, 0]]),
-        #               "S_inv": np.array([[1, 0], [1, 1], [0, 1]]),
-        #               "L": np.array([[1, 0], [1, 0], [1, 1]]),
-        #               "L_inv": np.array([[0, 1], [0, 1], [1, 1]]),
-        #               "T": np.array([[0, 1, 0], [1, 1, 1]])
-        #               }
+        self.tiles = {"I": np.ones((4, 1)),
+                      "O": np.ones((2, 2)),
+                      "S": np.array([[0, 1], [1, 1], [1, 0]]),
+                      "S_inv": np.array([[1, 0], [1, 1], [0, 1]]),
+                      "L": np.array([[1, 0], [1, 0], [1, 1]]),
+                      "L_inv": np.array([[0, 1], [0, 1], [1, 1]]),
+                      "T": np.array([[0, 1, 0], [1, 1, 1]])
+                      }
         
         #TODO: Remove again
-        self.tiles = {#"O": np.ones((2, 2)),
-                      #"S_inv": np.array([[1, 0], [1, 1], [0, 1]]),
-                      "I": np.ones((4, 1)),
-                      }
+        # self.tiles = {#"O": np.ones((2, 2)),
+        #               "S_inv": np.array([[1, 0], [1, 1], [0, 1]]),
+        #               "T": np.array([[0, 1, 0], [1, 1, 1]]),
+        #               # "I": np.ones((4, 1)),
+        #               }
         
         #TODO: Das Enum noch (richtig) verwenden
         class Possible_Actions(Enum):
@@ -66,8 +67,7 @@ class TetrisEnv():
                                                      #                        and a list holding the column indices
                                                      #NOTE: zipping the two lists (i.e. pairing them element-wise)
                                                      #      gives the exact coordinates of the cells in the field,
-                                                     #      where the tile is currently.
-    
+                                                     #      where the tile is currently.    
     
         
     
@@ -332,20 +332,31 @@ class TetrisEnv():
                                           #since it is quadratic.
             return False #in this case, False is returned, indicating that a rotation wasn't done (since it wouldn't have an effect anyway for the 'O' tetromino)
 
-        #If with a rotation the number of columns of the then rotated tile increases,
-        #then it has to be checked, whether in the field to the right of the current
-        #tile there are enough empty cells, so a rotation is possible
+        #Checks for the case, that with a rotation the number of columns of the then rotated tile increases,
+        #and thus the number of rows decreases.
         elif diff_in_columns > 0: #i.e. the number of columns would increase with a rotation
+            #checking whether the current tile is too close to the right-hand border of the field
+            #in order to conduct a rotation.
+            if max(self.current_tile_positionInField[1])+diff_in_columns > self.field_width: #a rotation is not possible, an out-of-bounds-error would occur
+                return False
+            
+            #checking whether in the field to the right of the current
+            #tile there are enough empty cells, so a rotation is possible
             for column in range(max(self.current_tile_positionInField[1])+1, max(self.current_tile_positionInField[1])+1+(diff_in_columns), 1):
                 for row in range(min(self.current_tile_positionInField[0]), max(self.current_tile_positionInField[0])+1+(diff_in_rows), 1):
                     if not self.field[row, column] == 0:
                         return False
         
-        #If with a rotation the number of columns of the then rotated tile decreases,
-        #then it has to be checked, whether in the field below of the current
-        #tile there are enough empty cells, so a rotation is possible
-        #(since the number of rows increases)
+        #Checks for the case, that with a rotation the number of columns of the then rotated tile decreases,
+        #and thus the number of rows increases.
         elif diff_in_columns < 0: #i.e. the number of columns would decrease with a rotation (automatically meaning that the number of rows will increase)
+            #checking whether the current tile is too close to the bottommost border of the field
+            #in order to conduct a rotation.
+            if max(self.current_tile_positionInField[0])+diff_in_rows > self.field_height: #a rotation is not possible, an out-of-bounds-error would occur
+                return False
+            
+            #checking whether in the field below the current tile there are
+            #enough empty cells, so a rotation is possible.
             for row in range(max(self.current_tile_positionInField[0])+1, max(self.current_tile_positionInField[0])+1+(diff_in_rows), 1):
                 for column in range(min(self.current_tile_positionInField[1]), max(self.current_tile_positionInField[1])+1+(diff_in_columns), 1):
                     if not self.field[row, column] == 0:
@@ -369,8 +380,6 @@ class TetrisEnv():
         self.current_tile_positionInField[1] = current_tile_positionInField_columns_set_old.copy()
 
 
-        #TODO: Problems arise in this if-elif-block below.
-        #      Continue here.
         #rotating resp. modifying the data held in 'self.current_tile_positionInField'
         if diff_in_columns > 0: #i.e. the number of columns would increase with a rotation
             self.current_tile_positionInField[0] = self.current_tile_positionInField[0][:-abs(diff_in_rows)]
@@ -396,28 +405,29 @@ class TetrisEnv():
 
         #conducting the actual 90 degree rotation to the right
         #1.: Swapping the rows of the current tile in the field
-        tile_swapped = np.flip(self.field.copy()[min(current_tile_positionInField_rows_set_old):max(current_tile_positionInField_rows_set_old)+1, \
-                                                min(current_tile_positionInField_columns_set_old):max(current_tile_positionInField_columns_set_old)+1], axis=0)
+        tile_swapped = np.flip(self.field.copy()[min(current_tile_positionInField_rows_set_old):max(current_tile_positionInField_rows_set_old)+1,
+                                                 min(current_tile_positionInField_columns_set_old):max(current_tile_positionInField_columns_set_old)+1], axis=0)
         
         #2.: Transposing that swapped tile (now the tile (still not in the field yet) is actually rotated by 90 degrees to the right)
         tile_t = tile_swapped.T
 
         #3.: Deleting the current (non-rotated) tile from the field
-        self.field[min(current_tile_positionInField_rows_set_old):max(current_tile_positionInField_rows_set_old)+1, \
+        self.field[min(current_tile_positionInField_rows_set_old):max(current_tile_positionInField_rows_set_old)+1,
                    min(current_tile_positionInField_columns_set_old):max(current_tile_positionInField_columns_set_old)+1] = 0
-        
-        
+
         #4.: From the already updated data in 'self.current_tile_positionInField', again getting the sets
-        current_tile_positionInField_rows_set_new = list(set(self.current_tile_positionInField[0]))
-        current_tile_positionInField_columns_set_new = list(set(self.current_tile_positionInField[1]))
+        current_tile_positionInField_rows_set_new = list(set(self.current_tile_positionInField[0].copy()))
+        current_tile_positionInField_columns_set_new = list(set(self.current_tile_positionInField[1].copy()))
 
         #5.: Putting the swapped tile into the correct position in the field
-        self.field[min(current_tile_positionInField_rows_set_new):max(current_tile_positionInField_rows_set_new)+1, \
+        self.field[min(current_tile_positionInField_rows_set_new):max(current_tile_positionInField_rows_set_new)+1,
                    min(current_tile_positionInField_columns_set_new):max(current_tile_positionInField_columns_set_new)+1] = tile_t
         
         #TODO:
         #asserting that the current tile in the field now actually has the correct shape
 
+
+        print("-----Rotate fully executed-----")
         return True
     
     def _get_shape_of_current_tile(self)->tuple:
@@ -429,8 +439,8 @@ class TetrisEnv():
         Returns:
         Shape of the current tile (as a tuple)
         '''
-        n_rows = len(set(self.current_tile_positionInField[0]))
-        n_columns = len(set(self.current_tile_positionInField[1]))
+        n_rows = len(set(self.current_tile_positionInField[0].copy()))
+        n_columns = len(set(self.current_tile_positionInField[1].copy()))
 
         return (n_rows, n_columns)
 
