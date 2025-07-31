@@ -327,10 +327,15 @@ class TetrisEnv():
         #TODO: Add a test, whether the current tile is too close to the right-hand border of the field
         #      in order to conduct a rotation.
 
+        if self.current_tile[0] == 'O': #this code is redundant, however still included for reasons of completeness:
+                                          #Rotating the 'O' tetromino is always possible but also completely without effect
+                                          #since it is quadratic.
+            return False #in this case, False is returned, indicating that a rotation wasn't done (since it wouldn't have an effect anyway for the 'O' tetromino)
+
         #If with a rotation the number of columns of the then rotated tile increases,
         #then it has to be checked, whether in the field to the right of the current
         #tile there are enough empty cells, so a rotation is possible
-        if diff_in_columns > 0: #i.e. the number of columns would increase with a rotation
+        elif diff_in_columns > 0: #i.e. the number of columns would increase with a rotation
             for column in range(max(self.current_tile_positionInField[1])+1, max(self.current_tile_positionInField[1])+1+(diff_in_columns), 1):
                 for row in range(min(self.current_tile_positionInField[0]), max(self.current_tile_positionInField[0])+1+(diff_in_rows), 1):
                     if not self.field[row, column] == 0:
@@ -339,17 +344,14 @@ class TetrisEnv():
         #If with a rotation the number of columns of the then rotated tile decreases,
         #then it has to be checked, whether in the field below of the current
         #tile there are enough empty cells, so a rotation is possible
+        #(since the number of rows increases)
         elif diff_in_columns < 0: #i.e. the number of columns would decrease with a rotation (automatically meaning that the number of rows will increase)
             for row in range(max(self.current_tile_positionInField[0])+1, max(self.current_tile_positionInField[0])+1+(diff_in_rows), 1):
                 for column in range(min(self.current_tile_positionInField[1]), max(self.current_tile_positionInField[1])+1+(diff_in_columns), 1):
                     if not self.field[row, column] == 0:
                         return False
-            
-        elif self.current_tile[0] == 'O': #this code is redundant, however still included for reasons of completeness:
-                                          #Rotating the 'O' tetromino is always possible but also completely without effect
-                                          #since it is quadratic.
-            return False #in this case, False is returned, indicating that a rotation wasn't done (since it wouldn't have an effect anyway for the 'O' tetromino)
         
+
 
         #at this point it is known that a rotation of the current tile is possible
 
@@ -360,25 +362,22 @@ class TetrisEnv():
 
         #changing the rows and columns in 'current_tile_positionInField' to sets and then to lists again, to make the following rotation-operation possible
         #also saving the sets for later use
-        current_tile_positionInField_rows_set_old = list(set(self.current_tile_positionInField[0]))
-        current_tile_positionInField_columns_set_old = list(set(self.current_tile_positionInField[1]))
+        current_tile_positionInField_rows_set_old = list(set(self.current_tile_positionInField[0].copy()))
+        current_tile_positionInField_columns_set_old = list(set(self.current_tile_positionInField[1].copy()))
 
-        self.current_tile_positionInField[0] = current_tile_positionInField_rows_set_old
-        self.current_tile_positionInField[1] = current_tile_positionInField_columns_set_old
+        self.current_tile_positionInField[0] = current_tile_positionInField_rows_set_old.copy()
+        self.current_tile_positionInField[1] = current_tile_positionInField_columns_set_old.copy()
 
-        #saving the sets for later use
-        # current_tile_positionInField_rows_set_old = list(set(self.current_tile_positionInField[0]))
-        # current_tile_positionInField_columns_set_old = list(set(self.current_tile_positionInField[1]))
 
         #TODO: Problems arise in this if-elif-block below.
         #      Continue here.
         #rotating resp. modifying the data held in 'self.current_tile_positionInField'
         if diff_in_columns > 0: #i.e. the number of columns would increase with a rotation
             self.current_tile_positionInField[0] = self.current_tile_positionInField[0][:-abs(diff_in_rows)]
-            self.current_tile_positionInField[1] = self.current_tile_positionInField[1].append(list(range(max(self.current_tile_positionInField[1]), max(self.current_tile_positionInField[1])+abs(diff_in_columns)+1, 1)))
+            self.current_tile_positionInField[1].extend(list(range(max(self.current_tile_positionInField[1])+1, max(self.current_tile_positionInField[1])+abs(diff_in_columns)+1, 1)))
         
         elif diff_in_columns < 0: #i.e. the number of columns would decrease with a rotation (automatically meaning that the number of rows will increase)
-            self.current_tile_positionInField[0] = self.current_tile_positionInField[0].append(list(range(max(self.current_tile_positionInField[0]), max(self.current_tile_positionInField[0])+abs(diff_in_rows)+1, 1)))
+            self.current_tile_positionInField[0].extend(list(range(max(self.current_tile_positionInField[0])+1, max(self.current_tile_positionInField[0])+abs(diff_in_rows)+1, 1)))
             self.current_tile_positionInField[1] = self.current_tile_positionInField[1][:-abs(diff_in_columns)]
         
         #multiplying-out the set-like rows and columns in 'current_tile_positionInField' again,
@@ -390,7 +389,7 @@ class TetrisEnv():
         # Transpose to get two lists: rows and columns
         rows_full, cols_full = zip(*coords)
         # Assembling the result back together
-        self.current_tile_positionInField = [rows_full, cols_full]
+        self.current_tile_positionInField = [list(rows_full), list(cols_full)]
 
 
 
