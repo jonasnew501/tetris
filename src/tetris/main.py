@@ -5,7 +5,6 @@ import pygame
 from TetrisEnv import TetrisEnv
 
 
-
 def main():
     # Initialize pygame and its display
     pygame.init()
@@ -13,21 +12,21 @@ def main():
     pygame.display.iconify()  # Minimize immediately
 
     # Optional: Disable audio init warnings if not needed
-    pygame.mixer.quit() 
+    pygame.mixer.quit()
 
     env = TetrisEnv(field_height=18, field_width=10, len_tiles_queue=3)
 
-    #---
+    # ---
     drop_conducted = False
 
-    #---
+    # ---
     try:
         while True:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit()
-                
+
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_LEFT:
                         env.current_action = 1
@@ -51,8 +50,8 @@ def main():
             # print("------------------------------")
             if not drop_conducted:
                 env.launch_tile()
-            
-            #TODO: Remove again
+
+            # TODO: Remove again
             # if not launched:
             #     env.launch_tile()
             #     for _ in range (3):
@@ -62,26 +61,18 @@ def main():
             # dropping the current tile by one row
             drop_conducted = env.drop()
 
-            
             print(env.field)
             # print(f"current_tile: {env.current_tile}")
             # print(f"current_tile_positionInField: {env.current_tile_positionInField}")
             # print(f"current_action: {env.current_action}")
             print()
-            
-
-
 
             time.sleep(0.5)
-    
+
     except KeyboardInterrupt:
         pygame.quit()
         print("Exited gracefully.")
 
 
-
-
-
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
