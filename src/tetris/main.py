@@ -2,7 +2,7 @@ import time
 import sys
 import pygame
 
-from TetrisEnv import TetrisEnv
+from tetris.tetris_env import TetrisEnv
 
 
 def main():
