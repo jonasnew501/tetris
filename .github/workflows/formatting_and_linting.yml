@@ -1,0 +1,29 @@
+name: Formatting_and_linting
+
+on:
+  push:
+    branches: [main, Env, Refactor]
+  pull_request:
+    branches: [main, Env, Refactor]
+
+jobs:
+  format_code:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+
+      - name: Setup environment
+        uses: ./.github/actions/env_setup
+        with:
+          python-version: "3.13.7"
+      
+      - name: Clean workspace
+        run: |
+          rm -rf src/unittest-training
+          find . -type d -name "__pycache__" -exec rm -rf {} +
+        shell: bash
+
+      - name: Run black (check only)
+        run: black --check .
+        shell: bash

@@ -1,0 +1,29 @@
+name: Unittests
+
+on:
+  push:
+    branches: [main, Env, Refactor]
+  pull_request:
+    branches: [main, Env, Refactor]
+
+jobs:
+  run_unittests:
+    runs-on: ubuntu-latest
+    steps:
+      # This step checks out a copy of the repository.
+      - name: Check out repository
+        uses: actions/checkout@v5
+
+      - name: Setup environment
+        uses: ./.github/actions/env_setup
+        with:
+          python-version: "3.13.7"
+          
+      - name: Clean pycache
+        run: |
+          find . -type d -name "__pycache__" -exec rm -r {} +
+        shell: bash
+      
+      - name: Run unittests
+        run: pytest
+        shell: bash

@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tetris"
+version = "0.1.0"
+description = "A Tetris environment + machine-learning techniques to try to master the game."
+authors = [{ name = "Jonas Neumayer" }]
+dependencies = []
+requires-python = ">=3.13"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"] 
+python_files = ["test_*.py"]
+# pythonpath = ["unittest_training"]
