@@ -102,15 +102,6 @@ class TetrisEnv:
             [],
         ]
 
-    def populate_tiles_queue(self):
-        """
-        Populates 'self.tiles_queue' with tiles randomly selected
-        from all tiles available.
-        'self.tiles_queue' is filled up until it's length matches
-        the desired length (='self.len_tiles_queue').
-        """
-        while len(self.tiles_queue) < self.len_tiles_queue:
-            self.tiles_queue.append([*random.choice(list(self.tiles.items())), 0])
 
     def launch_tile(self):
         """
@@ -124,8 +115,7 @@ class TetrisEnv:
             - Assigning the position of the new tile in the field to
               'self.current_tile_positionInField'.
         """
-        # popping the first tile from the tiles_queue and assigning it as/to the current_tile
-        self.current_tile = self.tiles_queue.popleft()
+        self.current_tile = self._tiles_queue_pop_left()
 
         # since now one tile was removed from the tiles_queue,
         # the tiles queue is populated again
@@ -694,3 +684,14 @@ class TetrisEnv:
             raise EmptyContainerError
 
         return self.tiles_queue.popleft()
+    
+    def _populate_tiles_queue(self):
+        """
+        Populates 'self.tiles_queue' with tiles randomly selected
+        from all tiles available defined in 'self.tiles'.
+        
+        'self.tiles_queue' is filled up until it's length matches
+        the desired length (='self.len_tiles_queue').
+        """
+        while len(self.tiles_queue) < self.len_tiles_queue:
+            self.tiles_queue.append([*random.choice(list(self.tiles.items())), 0])
