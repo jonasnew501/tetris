@@ -6,7 +6,7 @@ from collections import deque
 from itertools import product
 from enum import Enum
 
-from tetris.tetris_env_domain_specific_exceptions import(
+from tetris.tetris_env_domain_specific_exceptions import (
     EmptyContainerError,
 )
 
@@ -676,9 +676,6 @@ class TetrisEnv:
 
         plt.show(block=True)
 
-
-
-
     def _tiles_queue_pop_left(self) -> list[str, np.ndarray]:
         """
         Pops the first resp. leftmost element of 'self.tiles_queue'
@@ -687,7 +684,7 @@ class TetrisEnv:
         Returns:
             (list): The leftmost element of 'self.tiles_queue'
                     holding "[Name of the tile, the tiles' array]"
-        
+
         Raises:
             EmptyContainerError: If 'self.tiles_queue' is empty
                                  before attempting to retrieve
