@@ -9,6 +9,7 @@ from enum import Enum
 from tetris.tetris_env_domain_specific_exceptions import (
     EmptyContainerError,
     WrongDatatypeError,
+    OutOfBoundsError,
 )
 
 plt.ion()
@@ -34,19 +35,21 @@ class TetrisEnv:
         field (np.ndarray): 2D array representing the current state of the Tetris grid.
         tiles (dict[str, np.ndarray]): Dictionary mapping tile names to their shapes.
         current_action (int): The current or most recently executed action.
-        tiles_queue (deque[list[str, np.ndarray]]): The tiles that are about to be launched next.
-                                                    The first tile in the deque is the very next one
-                                                    to be launched.
-                                                    For every tile, holds a list of
-                                                    "[Name of the tile, the tiles' array]"
+        tiles_queue (deque[list[str, np.ndarray, int]]): The tiles that are about to be launched next.
+                                                         The first tile in the deque is the very next one
+                                                         to be launched.
+                                                         For every tile, holds a list of
+                                                         "[Name of the tile, the tiles' array, the tiles' rotation]"
+
+                                                         Explanation regarding the rotation of the tile:
+                                                         The roation can take four values:
+                                                           * "0" = not rotated (i.e. in the initial launch position)
+                                                           * "1" = rotated by 90 degrees to the right
+                                                           * "2" = rotated by 180 degrees
+                                                           * "3" = rotated by 270 degrees (to the right)
         current_tile (list[str, np.ndarray, int]): The currently active tile in the field.
                                                    Holds a list of "[Name of the tile, the tiles' array, the tiles' rotation]"
-                                                   Explanation regarding the rotation of the tile:
-                                                   The roation can take four values:
-                                                      * "0" = not rotated (i.e. in the initial launch position)
-                                                      * "1" = rotated by 90 degrees to the right
-                                                      * "2" = rotated by 180 degrees
-                                                      * "3" = rotated by 270 degrees (to the right)
+                                                   
         current_tile_positionInField (list[list[int], list[int]]): Holds the coordinates of the position of the current tile in the field.
                                                                    Every part/cell of the tile is represented.
                                                                    The list at index 0 holds the row-indices
@@ -124,8 +127,8 @@ class TetrisEnv:
 
         # cleaning the data (rows and columns) in 'current_tile_positionInField' at this point,
         # so it can be freshly assigned for the now launched tile in the loop below
-        self.current_tile_positionInField[0].clear()
-        self.current_tile_positionInField[1].clear()
+        self.current_tile_positionInField[0] = self._empty_list(self.current_tile_positionInField[0])
+        self.current_tile_positionInField[1] = self._empty_list(self.current_tile_positionInField[1])
 
         # putting the current_tile into the field
         for n_row in range(
@@ -663,7 +666,7 @@ class TetrisEnv:
 
         plt.show(block=True)
 
-    def _tiles_queue_pop_left(self) -> list[str, np.ndarray]:
+    def _tiles_queue_pop_left(self) -> list[str, np.ndarray, int]:
         """
         Pops the first resp. leftmost element of 'self.tiles_queue'
         and returns it.
@@ -710,3 +713,38 @@ class TetrisEnv:
             raise WrongDatatypeError
         
         return list_to_empty.clear()
+    
+    def _put_tile_into_field(self, tile_to_put_into_field: np.ndarray) -> bool:
+        """
+        Puts 'tile_to_put_into_field' into the field at 'self.launch_position'.
+
+        Returns:
+            (bool): True, if 'tile_to_put_into_field' could successfully be put
+                    into the field,
+                    False, if the 'tile_to_put_into_field' collides with other
+                    tiles in the field at 'self.launch_position'.
+        
+        Raises:
+            OutOfBoundsError: When 'tile_to_put_into_field' would reach out of
+                              one or more borders of the field.
+                              This problem is caused by the tiles' composition
+                              in combination with 'self.launch_position'.
+        """
+
+        for n_row in range(
+            len(self.current_tile[1])
+        ):  # iterating over the number of rows of the tile
+            for n_column in range(
+                len(self.current_tile[1][0])
+            ):  # iterating over the number of columns of the tile
+                self.field[
+                    self.lauch_position[0] + n_row, self.lauch_position[1] + n_column
+                ] = self.current_tile[1][n_row, n_column]
+
+                # assigning the position of the current_tile in the field to 'current_tile_positionInField'
+                self.current_tile_positionInField[0].append(
+                    self.lauch_position[0] + n_row
+                )  # adding the row
+                self.current_tile_positionInField[1].append(
+                    self.lauch_position[1] + n_column
+                )  # adding the column
