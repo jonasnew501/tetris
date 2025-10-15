@@ -15,3 +15,11 @@ class WrongDatatypeError(Exception):
     """
     
     pass
+
+class OutOfBoundsError(Exception):
+    """
+    A custom, domain-specific exception for when a tile reaches
+    out of one or more borders of the field.
+    """
+    
+    pass
