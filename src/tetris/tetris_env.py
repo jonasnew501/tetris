@@ -14,10 +14,60 @@ plt.ion()
 
 
 class TetrisEnv:
+    """
+    This class implements the whole Tetris environment.
+
+    This class implements the whole Tetris environment.
+    It's purpose is to implement the Tetris field/-grid, and all related functionalities.
+    Amongst those are the launching of new Tetrominos, the drop of Tetrominos, clearing
+    full rows, rotation of tetrominos etc.
+    This class is meant to be instanciated in a 'main'-/entry-point-script, where
+    either a human user or a Reinforcement Learning-Agent has access to specific
+    functions of this class, such as moving or rotating Tetrominos.
+
+    Attributes:
+        field_height (int): Height of the Tetris playing field (number of rows).
+        field_width (int): Width of the Tetris playing field (number of columns).
+        len_tiles_queue (int): Number of upcoming tiles that are pre-selected and visible.
+        launch_position (list[int]): Starting position [row, column] where new tiles appear.
+        field (np.ndarray): 2D array representing the current state of the Tetris grid.
+        tiles (dict[str, np.ndarray]): Dictionary mapping tile names to their shapes.
+        current_action (int): The current or most recently executed action.
+        tiles_queue (deque[str, np.ndarray]): The tiles that are about to be launched next.
+                                              The first tile in the deque is the very next one
+                                              to be launched.
+                                              For every tile, holds a list of
+                                              "[Name of the tile, the tiles' array]"
+        current_tile (list[str, np.ndarray, int]): The currently active tile in the field.
+                                                   Holds a list of "[Name of the tile, the tiles' array, the tiles' rotation]"
+                                                   Explanation regarding the rotation of the tile:
+                                                   The roation can take four values:
+                                                      * "0" = not rotated (i.e. in the initial launch position)
+                                                      * "1" = rotated by 90 degrees to the right
+                                                      * "2" = rotated by 180 degrees
+                                                      * "3" = rotated by 270 degrees (to the right)
+        current_tile_positionInField (list[list[int], list[int]]): Holds the coordinates of the position of the current tile in the field.
+                                                                   Every part/cell of the tile is represented.
+                                                                   The list at index 0 holds the row-indices
+                                                                   and the list at index 1 holds the column-indices.
+                                                                   By zipping both lists element-wise the excact locations of every
+                                                                   part/cell of the current tile are obtained.
+
+
+
+    Methods:
+        populate_tiles_queue():
+            Populates 'self.tiles_queue' with tiles randomly selected
+            from all tiles available.
+            'self.tiles_queue' is filled up until it's length matches
+            the desired length (='self.len_tiles_queue').
+
+        #TODO: Complete the list of function here.
+    """
     def __init__(self, field_height, field_width, len_tiles_queue):
         self.field_height = field_height
         self.field_width = field_width
-        self.len_tiles_queue = len_tiles_queue  # the number of tiles, which will come next and which are already known/selected
+        self.len_tiles_queue = len_tiles_queue
 
         self.lauch_position = [0, math.floor(field_width / 2)]
 
@@ -33,13 +83,6 @@ class TetrisEnv:
             "T": np.array([[0, 1, 0], [1, 1, 1]]),
         }
 
-        # TODO: Remove again
-        # self.tiles = {#"O": np.ones((2, 2)),
-        #               "S_inv": np.array([[1, 0], [1, 1], [0, 1]]),
-        #               "T": np.array([[0, 1, 0], [1, 1, 1]]),
-        #               # "I": np.ones((4, 1)),
-        #               }
-
         # TODO: Das Enum noch (richtig) verwenden
         class Possible_Actions(Enum):
             move_left = 1
@@ -48,42 +91,29 @@ class TetrisEnv:
 
         self.current_action = None
 
-        # holding the tile(s), that are about to come next
-        # for every tile, holds a list of "[Name of the tile, the tiles´ array]"
         self.tiles_queue = deque()
-        # initially populating the tiles_queue
         self.populate_tiles_queue()
 
-        self.current_tile = None  # hold the currently launched tile (holds a list of "[Name of the tile, the tiles´ array, the tiles´ rotation]")
-        # Explanation regarding the rotation of the tile:
-        # The roation can be four values:
-        # * "0" = not rotated (i.e. in the initial launch position)
-        # * "1" = rotated by 90 degrees to the right
-        # * "2" = rotated by 180 degrees
-        # * "3" = rotated by 270 degrees (to the right)
+        self.current_tile = None
 
         self.current_tile_positionInField = [
             [],
             [],
-        ]  # a list of two elements: A list holding the row-indices
-        #                        and a list holding the column indices
-        # NOTE: zipping the two lists (i.e. pairing them element-wise)
-        #      gives the exact coordinates of the cells in the field,
-        #      where the tile is currently.
+        ]
 
     def populate_tiles_queue(self):
         """
-        Populates self.tiles_queue with tiles randomly selected
+        Populates 'self.tiles_queue' with tiles randomly selected
         from all tiles available.
-        self.tiles_queue is filled up until it's length matches
-        the desired length (=self.len_tiles_queue).
+        'self.tiles_queue' is filled up until it's length matches
+        the desired length (='self.len_tiles_queue').
         """
         while len(self.tiles_queue) < self.len_tiles_queue:
             self.tiles_queue.append([*random.choice(list(self.tiles.items())), 0])
 
     def launch_tile(self):
         """
-        Launches the next tile to come from self.tiles_queue into the field.
+        Launches the next tile to come from 'self.tiles_queue' into the field.
 
         Does various other things too, which are necessary resp. a consequence
         when launching a new tile into the field.
