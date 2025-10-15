@@ -1,14 +1,14 @@
 import numpy as np
 import math
-import pandas as pd
 import matplotlib.pyplot as plt
-import time
 import random
-import os
-import sys
 from collections import deque
 from itertools import product
 from enum import Enum
+
+from tetris.tetris_env_domain_specific_exceptions import(
+    EmptyContainerError,
+)
 
 plt.ion()
 
@@ -33,11 +33,11 @@ class TetrisEnv:
         field (np.ndarray): 2D array representing the current state of the Tetris grid.
         tiles (dict[str, np.ndarray]): Dictionary mapping tile names to their shapes.
         current_action (int): The current or most recently executed action.
-        tiles_queue (deque[str, np.ndarray]): The tiles that are about to be launched next.
-                                              The first tile in the deque is the very next one
-                                              to be launched.
-                                              For every tile, holds a list of
-                                              "[Name of the tile, the tiles' array]"
+        tiles_queue (deque[list[str, np.ndarray]]): The tiles that are about to be launched next.
+                                                    The first tile in the deque is the very next one
+                                                    to be launched.
+                                                    For every tile, holds a list of
+                                                    "[Name of the tile, the tiles' array]"
         current_tile (list[str, np.ndarray, int]): The currently active tile in the field.
                                                    Holds a list of "[Name of the tile, the tiles' array, the tiles' rotation]"
                                                    Explanation regarding the rotation of the tile:
@@ -64,6 +64,7 @@ class TetrisEnv:
 
         #TODO: Complete the list of function here.
     """
+
     def __init__(self, field_height, field_width, len_tiles_queue):
         self.field_height = field_height
         self.field_width = field_width
@@ -674,3 +675,25 @@ class TetrisEnv:
         plt.scatter(x=self.field, color="red")
 
         plt.show(block=True)
+
+
+
+
+    def _tiles_queue_pop_left(self) -> list[str, np.ndarray]:
+        """
+        Pops the first resp. leftmost element of 'self.tiles_queue'
+        and returns it.
+
+        Returns:
+            (list): The leftmost element of 'self.tiles_queue'
+                    holding "[Name of the tile, the tiles' array]"
+        
+        Raises:
+            EmptyContainerError: If 'self.tiles_queue' is empty
+                                 before attempting to retrieve
+                                 the leftmost element.
+        """
+        if not self.tiles_queue:
+            raise EmptyContainerError
+
+        return self.tiles_queue.popleft()
