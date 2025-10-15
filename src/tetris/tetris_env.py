@@ -49,7 +49,7 @@ class TetrisEnv:
                                                            * "3" = rotated by 270 degrees (to the right)
         current_tile (list[str, np.ndarray, int]): The currently active tile in the field.
                                                    Holds a list of "[Name of the tile, the tiles' array, the tiles' rotation]"
-                                                   
+
         current_tile_positionInField (list[list[int], list[int]]): Holds the coordinates of the position of the current tile in the field.
                                                                    Every part/cell of the tile is represented.
                                                                    The list at index 0 holds the row-indices
@@ -106,7 +106,6 @@ class TetrisEnv:
             [],
         ]
 
-
     def launch_tile(self):
         """
         Launches the next tile to come from 'self.tiles_queue' into the field.
@@ -127,8 +126,12 @@ class TetrisEnv:
 
         # cleaning the data (rows and columns) in 'current_tile_positionInField' at this point,
         # so it can be freshly assigned for the now launched tile in the loop below
-        self.current_tile_positionInField[0] = self._empty_list(self.current_tile_positionInField[0])
-        self.current_tile_positionInField[1] = self._empty_list(self.current_tile_positionInField[1])
+        self.current_tile_positionInField[0] = self._empty_list(
+            self.current_tile_positionInField[0]
+        )
+        self.current_tile_positionInField[1] = self._empty_list(
+            self.current_tile_positionInField[1]
+        )
 
         # putting the current_tile into the field
         for n_row in range(
@@ -684,7 +687,7 @@ class TetrisEnv:
             raise EmptyContainerError
 
         return self.tiles_queue.popleft()
-    
+
     def _populate_tiles_queue(self):
         """
         Populates 'self.tiles_queue' with tiles randomly selected
@@ -695,7 +698,7 @@ class TetrisEnv:
         """
         while len(self.tiles_queue) < self.len_tiles_queue:
             self.tiles_queue.append([*random.choice(list(self.tiles.items())), 0])
-    
+
     def _empty_list(self, list_to_empty: list) -> list:
         """
         Empties 'list_to_empty' and returns the emptied list.
@@ -705,15 +708,15 @@ class TetrisEnv:
 
         Returns:
             (list): The emptied 'list_to_empty'.
-        
+
         Raises:
             WrongDatatypeError: When 'list_to_empty' is not of type 'list'.
         """
         if not isinstance(list_to_empty, list):
             raise WrongDatatypeError
-        
+
         return list_to_empty.clear()
-    
+
     def _put_tile_into_field(self, tile_to_put_into_field: np.ndarray) -> bool:
         """
         Puts 'tile_to_put_into_field' into the field at 'self.launch_position'.
@@ -723,7 +726,7 @@ class TetrisEnv:
                     into the field,
                     False, if the 'tile_to_put_into_field' collides with other
                     tiles in the field at 'self.launch_position'.
-        
+
         Raises:
             OutOfBoundsError: When 'tile_to_put_into_field' would reach out of
                               one or more borders of the field.
