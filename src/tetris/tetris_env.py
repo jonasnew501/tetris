@@ -8,6 +8,7 @@ from enum import Enum
 
 from tetris.tetris_env_domain_specific_exceptions import (
     EmptyContainerError,
+    WrongDatatypeError,
 )
 
 plt.ion()
@@ -93,7 +94,7 @@ class TetrisEnv:
         self.current_action = None
 
         self.tiles_queue = deque()
-        self.populate_tiles_queue()
+        self._populate_tiles_queue()
 
         self.current_tile = None
 
@@ -119,11 +120,7 @@ class TetrisEnv:
 
         # since now one tile was removed from the tiles_queue,
         # the tiles queue is populated again
-        self.populate_tiles_queue()
-
-        # defining the shape of the array 'current_tile_positionInField'
-        # based on the current_tile
-        # self.current_tile_positionInField = np.zeros(shape=(len(self.current_tile[1]), len(self.current_tile[1][0])))
+        self._populate_tiles_queue()
 
         # cleaning the data (rows and columns) in 'current_tile_positionInField' at this point,
         # so it can be freshly assigned for the now launched tile in the loop below
@@ -689,9 +686,27 @@ class TetrisEnv:
         """
         Populates 'self.tiles_queue' with tiles randomly selected
         from all tiles available defined in 'self.tiles'.
-        
+
         'self.tiles_queue' is filled up until it's length matches
         the desired length (='self.len_tiles_queue').
         """
         while len(self.tiles_queue) < self.len_tiles_queue:
             self.tiles_queue.append([*random.choice(list(self.tiles.items())), 0])
+    
+    def _empty_list(self, list_to_empty: list) -> list:
+        """
+        Empties 'list_to_empty' and returns the emptied list.
+
+        If 'list_to_empty' was already empty at time of this
+        method-call, the unchanged 'list_to_empty' is returned.
+
+        Returns:
+            (list): The emptied 'list_to_empty'.
+        
+        Raises:
+            WrongDatatypeError: When 'list_to_empty' is not of type 'list'.
+        """
+        if not isinstance(list_to_empty, list):
+            raise WrongDatatypeError
+        
+        return list_to_empty.clear()
