@@ -6,3 +6,12 @@ class EmptyContainerError(Exception):
     """
 
     pass
+
+class WrongDatatypeError(Exception):
+    """
+    A custom, domain-specific exception for when the datatype
+    of an object passed to an argument of a function doesn't fit the
+    expected datatype of this argument.
+    """
+    
+    pass
