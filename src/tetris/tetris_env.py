@@ -753,7 +753,7 @@ class TetrisEnv:
                 self.current_tile_positionInField[1].append(
                     self.launch_position[1] + n_column
                 )  # adding the column
-    
+
     def _check_for_out_of_bounds_at_launch(self, tile_to_check) -> bool:
         """
         Checks whether 'tile_to_check' would be out of bounds
@@ -771,22 +771,26 @@ class TetrisEnv:
         current_tile_number_of_rows = len(tile_to_check[1])
         current_tile_number_of_columns = len(tile_to_check[1][0])
 
-        #Check for condition 1: Is any of the indices of the launch_position negative?
-        negative_launch_pos_indices = self.launch_position[0] < 0 or self.launch_position[1] < 0
+        # Check for condition 1: Is any of the indices of the launch_position negative?
+        negative_launch_pos_indices = (
+            self.launch_position[0] < 0 or self.launch_position[1] < 0
+        )
 
-        #Check for condition 2: Does the tile reach out of the right hand side border of the field?
-        field_rightmost_column_idx = self.field_width-1
-        out_of_bounds_right = self.launch_position[1] + (current_tile_number_of_columns-1) > \
-                                field_rightmost_column_idx
-    
-        #Check for condition 2: Does the tile reach out of the bottom border of the field?
-        field_bottommost_row_idx = self.field_height-1
-        out_of_bounds_bottom = self.launch_position[0] + (current_tile_number_of_rows-1) > \
-                                field_bottommost_row_idx
-        
+        # Check for condition 2: Does the tile reach out of the right hand side border of the field?
+        field_rightmost_column_idx = self.field_width - 1
+        out_of_bounds_right = (
+            self.launch_position[1] + (current_tile_number_of_columns - 1)
+            > field_rightmost_column_idx
+        )
+
+        # Check for condition 2: Does the tile reach out of the bottom border of the field?
+        field_bottommost_row_idx = self.field_height - 1
+        out_of_bounds_bottom = (
+            self.launch_position[0] + (current_tile_number_of_rows - 1)
+            > field_bottommost_row_idx
+        )
+
         if negative_launch_pos_indices or out_of_bounds_right or out_of_bounds_bottom:
             return True
         else:
             return False
-        
-
