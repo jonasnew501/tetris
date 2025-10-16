@@ -74,7 +74,7 @@ class TetrisEnv:
         self.field_width = field_width
         self.len_tiles_queue = len_tiles_queue
 
-        self.lauch_position = [0, math.floor(field_width / 2)]
+        self.launch_position = [0, math.floor(field_width / 2)]
 
         self.field = np.zeros(shape=(field_height, field_width), dtype=np.int8)
 
@@ -141,15 +141,15 @@ class TetrisEnv:
                 len(self.current_tile[1][0])
             ):  # iterating over the number of columns of the tile
                 self.field[
-                    self.lauch_position[0] + n_row, self.lauch_position[1] + n_column
+                    self.launch_position[0] + n_row, self.launch_position[1] + n_column
                 ] = self.current_tile[1][n_row, n_column]
 
                 # assigning the position of the current_tile in the field to 'current_tile_positionInField'
                 self.current_tile_positionInField[0].append(
-                    self.lauch_position[0] + n_row
+                    self.launch_position[0] + n_row
                 )  # adding the row
                 self.current_tile_positionInField[1].append(
-                    self.lauch_position[1] + n_column
+                    self.launch_position[1] + n_column
                 )  # adding the column
 
     def drop(self) -> bool:
@@ -733,6 +733,8 @@ class TetrisEnv:
                               This problem is caused by the tiles' composition
                               in combination with 'self.launch_position'.
         """
+        current_tile_number_of_rows = len(self.current_tile[1])
+        current_tile_number_of_columns = len(self.current_tile[1][0])
 
         for n_row in range(
             len(self.current_tile[1])
@@ -741,13 +743,50 @@ class TetrisEnv:
                 len(self.current_tile[1][0])
             ):  # iterating over the number of columns of the tile
                 self.field[
-                    self.lauch_position[0] + n_row, self.lauch_position[1] + n_column
+                    self.launch_position[0] + n_row, self.launch_position[1] + n_column
                 ] = self.current_tile[1][n_row, n_column]
 
                 # assigning the position of the current_tile in the field to 'current_tile_positionInField'
                 self.current_tile_positionInField[0].append(
-                    self.lauch_position[0] + n_row
+                    self.launch_position[0] + n_row
                 )  # adding the row
                 self.current_tile_positionInField[1].append(
-                    self.lauch_position[1] + n_column
+                    self.launch_position[1] + n_column
                 )  # adding the column
+    
+    def _check_for_out_of_bounds_at_launch(self, tile_to_check) -> bool:
+        """
+        Checks whether 'tile_to_check' would be out of bounds
+        of the field when being put into the field.
+
+        The core assumption is that the tile is always put into
+        the field with its top-left corner being on the
+        'self.launch_position'.
+
+        Returns:
+            (bool): True, if 'tile_to_check' would be out-of-bounds when launched
+                    at 'self.launch_position' into the field;
+                    False otherwise.
+        """
+        current_tile_number_of_rows = len(tile_to_check[1])
+        current_tile_number_of_columns = len(tile_to_check[1][0])
+
+        #Check for condition 1: Is any of the indices of the launch_position negative?
+        negative_launch_pos_indices = self.launch_position[0] < 0 or self.launch_position[1] < 0
+
+        #Check for condition 2: Does the tile reach out of the right hand side border of the field?
+        field_rightmost_column_idx = self.field_width-1
+        out_of_bounds_right = self.launch_position[1] + (current_tile_number_of_columns-1) > \
+                                field_rightmost_column_idx
+    
+        #Check for condition 2: Does the tile reach out of the bottom border of the field?
+        field_bottommost_row_idx = self.field_height-1
+        out_of_bounds_bottom = self.launch_position[0] + (current_tile_number_of_rows-1) > \
+                                field_bottommost_row_idx
+        
+        if negative_launch_pos_indices or out_of_bounds_right or out_of_bounds_bottom:
+            return True
+        else:
+            return False
+        
+
