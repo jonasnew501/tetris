@@ -133,24 +133,8 @@ class TetrisEnv:
             self.current_tile_positionInField[1]
         )
 
-        # putting the current_tile into the field
-        for n_row in range(
-            len(self.current_tile[1])
-        ):  # iterating over the number of rows of the tile
-            for n_column in range(
-                len(self.current_tile[1][0])
-            ):  # iterating over the number of columns of the tile
-                self.field[
-                    self.launch_position[0] + n_row, self.launch_position[1] + n_column
-                ] = self.current_tile[1][n_row, n_column]
+        self._put_tile_into_field(self.current_tile)
 
-                # assigning the position of the current_tile in the field to 'current_tile_positionInField'
-                self.current_tile_positionInField[0].append(
-                    self.launch_position[0] + n_row
-                )  # adding the row
-                self.current_tile_positionInField[1].append(
-                    self.launch_position[1] + n_column
-                )  # adding the column
 
     def drop(self) -> bool:
         """
@@ -737,37 +721,7 @@ class TetrisEnv:
         if self._out_of_bounds_at_launch(tile_to_check=tile_to_put_into_field):
             raise OutOfBoundsError
 
-        current_tile_number_of_rows = len(self.current_tile[1])
-        current_tile_number_of_columns = len(self.current_tile[1][0])
-
-        for n_row in range(
-            len(self.current_tile[1])
-        ):  # iterating over the number of rows of the tile
-            for n_column in range(
-                len(self.current_tile[1][0])
-            ):  # iterating over the number of columns of the tile
-                self.field[
-                    self.launch_position[0] + n_row, self.launch_position[1] + n_column
-                ] = self.current_tile[1][n_row, n_column]
-
-                # assigning the position of the current_tile in the field to 'current_tile_positionInField'
-                self.current_tile_positionInField[0].append(
-                    self.launch_position[0] + n_row
-                )  # adding the row
-                self.current_tile_positionInField[1].append(
-                    self.launch_position[1] + n_column
-                )  # adding the column
-
-
-        #Getting the section of the field where the tile would go
-        current_tile_number_of_rows = len(self.current_tile[1])
-        current_tile_number_of_columns = len(self.current_tile[1][0])
-
-        field_section = self.field[self.launch_position[0]+self.launch_position[0]:current_tile_number_of_rows,
-                                   self.launch_position[1]+self.launch_position[1]:current_tile_number_of_columns]
         
-        #Checking if there would be an overlap with the field in any cell
-        overlap = np.any(field_section & tile_to_put_into_field)
 
         if overlap:
             return False
@@ -824,3 +778,28 @@ class TetrisEnv:
             return True
         else:
             return False
+
+    def _overlap_at_launch(self, tile_to_put_into_field) -> bool:
+        """
+        Checks whether 'tile_to_put_into_field' does not overlap/collide with
+        the field when put into the field at self.launch_position.
+        An overlap happens if at a specific coordinate, both the field
+        and the tile (when put into the field) hold a "1".
+
+        Returns:
+            (bool): True, if 'tile_to_put_into_field' could successfully be put
+                    into the field,
+                    False, if the 'tile_to_put_into_field' collides with other
+                    tiles in the field at 'self.launch_position'.
+        """
+        #Getting the section of the field where the tile would go
+        current_tile_number_of_rows = len(tile_to_put_into_field[0])
+        current_tile_number_of_columns = len(tile_to_put_into_field[1][0])
+
+        field_section = self.field[self.launch_position[0]+self.launch_position[0]:current_tile_number_of_rows,
+                                   self.launch_position[1]+self.launch_position[1]:current_tile_number_of_columns]
+        
+        #Checking if there would be an overlap with the field in any cell
+        overlap = np.any(field_section & tile_to_put_into_field)
+
+        return overlap
