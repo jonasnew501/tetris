@@ -733,6 +733,10 @@ class TetrisEnv:
                               This problem is caused by the tiles' composition
                               in combination with 'self.launch_position'.
         """
+
+        if self._out_of_bounds_at_launch(tile_to_check=tile_to_put_into_field):
+            raise OutOfBoundsError
+
         current_tile_number_of_rows = len(self.current_tile[1])
         current_tile_number_of_columns = len(self.current_tile[1][0])
 
@@ -753,6 +757,32 @@ class TetrisEnv:
                 self.current_tile_positionInField[1].append(
                     self.launch_position[1] + n_column
                 )  # adding the column
+
+
+        #Getting the section of the field where the tile would go
+        current_tile_number_of_rows = len(self.current_tile[1])
+        current_tile_number_of_columns = len(self.current_tile[1][0])
+
+        field_section = self.field[self.launch_position[0]+self.launch_position[0]:current_tile_number_of_rows,
+                                   self.launch_position[1]+self.launch_position[1]:current_tile_number_of_columns]
+        
+        #Checking if there would be an overlap with the field in any cell
+        overlap = np.any(field_section & tile_to_put_into_field)
+
+        if overlap:
+            return False
+        else:
+            #putting the tile into the field using a bitwise OR
+            self.field[self.launch_position[0]+self.launch_position[0]:current_tile_number_of_rows,
+                        self.launch_position[1]+self.launch_position[1]:current_tile_number_of_columns] |= tile_to_put_into_field
+            
+            current_tile_position = np.argwhere(tile_to_put_into_field)
+            self.current_tile_positionInField = self.launch_position + current_tile_position
+            return True
+
+
+
+
 
     def _out_of_bounds_at_launch(self, tile_to_check) -> bool:
         """
