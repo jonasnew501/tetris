@@ -754,7 +754,7 @@ class TetrisEnv:
                     self.launch_position[1] + n_column
                 )  # adding the column
 
-    def _check_for_out_of_bounds_at_launch(self, tile_to_check) -> bool:
+    def _out_of_bounds_at_launch(self, tile_to_check) -> bool:
         """
         Checks whether 'tile_to_check' would be out of bounds
         of the field when being put into the field.
