@@ -110,13 +110,10 @@ class TetrisEnv:
         """
         Launches the next tile to come from 'self.tiles_queue' into the field.
 
-        Does various other things too, which are necessary resp. a consequence
-        when launching a new tile into the field.
-        Those other things are:
-            - Populating the tiles queue after the next tile to come was popped
-              to fill it up again to the desired length.
-            - Assigning the position of the new tile in the field to
-              'self.current_tile_positionInField'.
+        Side-effects are:
+            - re-populate 'self.tiles_queue' after the pop of the leftmost tile was done.
+            - puts 'self.current_tile' into the field at 'self.launch_position'.
+            - updates 'self.current_tile_positionInField'
         """
         self.current_tile = self._tiles_queue_pop_left()
 
@@ -124,22 +121,13 @@ class TetrisEnv:
         # the tiles queue is populated again
         self._populate_tiles_queue()
 
-        # cleaning the data (rows and columns) in 'current_tile_positionInField' at this point,
-        # so it can be freshly assigned for the now launched tile in the loop below
-        self.current_tile_positionInField[0] = self._empty_list(
-            self.current_tile_positionInField[0]
-        )
-        self.current_tile_positionInField[1] = self._empty_list(
-            self.current_tile_positionInField[1]
-        )
-
         put_successful = self._put_tile_into_field(self.current_tile)
 
         if not put_successful:
-            #TODO: Game Over
+            # TODO: Game Over
+            pass
 
-        self._update_current_tile_position_in_field(self.current_tile)
-
+        self._set_current_tile_position_in_field_at_launch(self.current_tile)
 
     def drop(self) -> bool:
         """
@@ -732,15 +720,15 @@ class TetrisEnv:
             current_tile_number_of_rows = len(tile_to_put_into_field[0])
             current_tile_number_of_columns = len(tile_to_put_into_field[1][0])
 
-            #putting the tile into the field using a bitwise OR
-            self.field[self.launch_position[0]+self.launch_position[0]:current_tile_number_of_rows,
-                        self.launch_position[1]+self.launch_position[1]:current_tile_number_of_columns] |= tile_to_put_into_field
-            
+            # putting the tile into the field using a bitwise OR
+            self.field[
+                self.launch_position[0]
+                + self.launch_position[0] : current_tile_number_of_rows,
+                self.launch_position[1]
+                + self.launch_position[1] : current_tile_number_of_columns,
+            ] |= tile_to_put_into_field
+
             return True
-
-
-
-
 
     def _out_of_bounds_at_launch(self, tile_to_check: np.ndarray) -> bool:
         """
@@ -796,36 +784,42 @@ class TetrisEnv:
                     False, if the 'tile_to_put_into_field' collides with other
                     tiles in the field at 'self.launch_position'.
         """
-        #Getting the section of the field where the tile would go
+        # Getting the section of the field where the tile would go
         current_tile_number_of_rows = len(tile_to_put_into_field[0])
         current_tile_number_of_columns = len(tile_to_put_into_field[1][0])
 
-        field_section = self.field[self.launch_position[0]+self.launch_position[0]:current_tile_number_of_rows,
-                                   self.launch_position[1]+self.launch_position[1]:current_tile_number_of_columns]
-        
-        #Checking if there would be an overlap with the field in any cell
+        field_section = self.field[
+            self.launch_position[0]
+            + self.launch_position[0] : current_tile_number_of_rows,
+            self.launch_position[1]
+            + self.launch_position[1] : current_tile_number_of_columns,
+        ]
+
+        # Checking if there would be an overlap with the field in any cell
         overlap = np.any(field_section & tile_to_put_into_field)
 
         return overlap
-    
-    def _set_current_tile_position_in_field_at_launch(self, tile_to_put_into_field: np.ndarray):
+
+    def _set_current_tile_position_in_field_at_launch(
+        self, tile_to_put_into_field: np.ndarray
+    ):
         """
         Updates 'self.current_tile_positionInField'.
         """
-        #creating the row-indices
+        # creating the row-indices
         tile_n_rows, tile_n_columns = tile_to_put_into_field.shape
 
-        #For every row, there are as many row-indices as there are columns:
-        #E.g. for a 3*2-array/-tile it would be "[0, 0, 1, 1, 2, 2]"
+        # For every row, there are as many row-indices as there are columns:
+        # E.g. for a 3*2-array/-tile it would be "[0, 0, 1, 1, 2, 2]"
         row_indices = np.repeat(np.arange(tile_n_rows), repeats=tile_n_columns)
 
-        #For every row, all column indices are listed, i.e. the column-indices
-        #repeat n_row-times.
-        #E.g. for a 3*2-array/-tile, it would be "[0, 1, 0, 1, 0, 1]"
+        # For every row, all column indices are listed, i.e. the column-indices
+        # repeat n_row-times.
+        # E.g. for a 3*2-array/-tile, it would be "[0, 1, 0, 1, 0, 1]"
         column_indices = np.tile(np.arange(tile_n_columns), reps=tile_n_rows)
 
-        #Adding the launch-position offsets to get the actual positions of
-        #the row- and column-indices in the field
+        # Adding the launch-position offsets to get the actual positions of
+        # the row- and column-indices in the field
         row_indices += self.launch_position[0]
         column_indices += self.launch_position[1]
 
