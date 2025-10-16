@@ -133,7 +133,12 @@ class TetrisEnv:
             self.current_tile_positionInField[1]
         )
 
-        self._put_tile_into_field(self.current_tile)
+        put_successful = self._put_tile_into_field(self.current_tile)
+
+        if not put_successful:
+            #TODO: Game Over
+
+        self._update_current_tile_position_in_field(self.current_tile)
 
 
     def drop(self) -> bool:
@@ -721,24 +726,23 @@ class TetrisEnv:
         if self._out_of_bounds_at_launch(tile_to_check=tile_to_put_into_field):
             raise OutOfBoundsError
 
-        
-
-        if overlap:
+        if self._overlap_at_launch(tile_to_put_into_field=tile_to_put_into_field):
             return False
         else:
+            current_tile_number_of_rows = len(tile_to_put_into_field[0])
+            current_tile_number_of_columns = len(tile_to_put_into_field[1][0])
+
             #putting the tile into the field using a bitwise OR
             self.field[self.launch_position[0]+self.launch_position[0]:current_tile_number_of_rows,
                         self.launch_position[1]+self.launch_position[1]:current_tile_number_of_columns] |= tile_to_put_into_field
             
-            current_tile_position = np.argwhere(tile_to_put_into_field)
-            self.current_tile_positionInField = self.launch_position + current_tile_position
             return True
 
 
 
 
 
-    def _out_of_bounds_at_launch(self, tile_to_check) -> bool:
+    def _out_of_bounds_at_launch(self, tile_to_check: np.ndarray) -> bool:
         """
         Checks whether 'tile_to_check' would be out of bounds
         of the field when being put into the field.
@@ -779,7 +783,7 @@ class TetrisEnv:
         else:
             return False
 
-    def _overlap_at_launch(self, tile_to_put_into_field) -> bool:
+    def _overlap_at_launch(self, tile_to_put_into_field: np.ndarray) -> bool:
         """
         Checks whether 'tile_to_put_into_field' does not overlap/collide with
         the field when put into the field at self.launch_position.
@@ -803,3 +807,26 @@ class TetrisEnv:
         overlap = np.any(field_section & tile_to_put_into_field)
 
         return overlap
+    
+    def _set_current_tile_position_in_field_at_launch(self, tile_to_put_into_field: np.ndarray):
+        """
+        Updates 'self.current_tile_positionInField'.
+        """
+        #creating the row-indices
+        tile_n_rows, tile_n_columns = tile_to_put_into_field.shape
+
+        #For every row, there are as many row-indices as there are columns:
+        #E.g. for a 3*2-array/-tile it would be "[0, 0, 1, 1, 2, 2]"
+        row_indices = np.repeat(np.arange(tile_n_rows), repeats=tile_n_columns)
+
+        #For every row, all column indices are listed, i.e. the column-indices
+        #repeat n_row-times.
+        #E.g. for a 3*2-array/-tile, it would be "[0, 1, 0, 1, 0, 1]"
+        column_indices = np.tile(np.arange(tile_n_columns), reps=tile_n_rows)
+
+        #Adding the launch-position offsets to get the actual positions of
+        #the row- and column-indices in the field
+        row_indices += self.launch_position[0]
+        column_indices += self.launch_position[1]
+
+        self.current_tile_positionInField = [list(row_indices), list(column_indices)]
