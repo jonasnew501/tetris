@@ -154,10 +154,12 @@ class TetrisEnv:
         current_tile_positionInField_old = self.current_tile_positionInField.copy()
 
         # First updating the variable "current_tile_positionInField" by increasing
-        # all row-numbers by one (i.e. the tiles moves downward by one row)
-        self.current_tile_positionInField[0] = [
-            row + 1 for row in self.current_tile_positionInField[0]
-        ]
+        # all row-numbers by one (i.e. the tile moves downward by one row)
+        # self.current_tile_positionInField[0] = [
+        #     row + 1 for row in self.current_tile_positionInField[0]
+        # ]
+
+        self.current_tile_positionInField[0] += np.ones(shape=(len(self.current_tile_positionInField[0]),), dtype=np.int8)
 
         # Updating the tile in the field (i.e. doing the actual dropping)
         for n_row_new in range(
@@ -927,3 +929,30 @@ class TetrisEnv:
         column_indices += self.launch_position[1]
 
         self.current_tile_positionInField = [list(row_indices), list(column_indices)]
+    
+    def _current_tile_number_of_rows(self) -> int:
+        """
+        Returns:
+            int: the number of rows of 'self.current_tile'.
+
+        Raises:
+            NoneTypeError: If 'self.current_tile' is None.
+        """
+        if self.current_tile is None:
+            raise NoneTypeError
+        
+        return self.current_tile[1].shape[0]
+    
+    def _current_tile_number_of_columns(self) -> int:
+        """
+        Returns:
+            int: the number of columns of 'self.current_tile'.
+
+        Raises:
+            NoneTypeError: If 'self.current_tile' is None.
+        """
+        if self.current_tile is None:
+            raise NoneTypeError
+        
+        return self.current_tile[1].shape[1]
+
