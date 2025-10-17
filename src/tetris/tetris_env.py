@@ -76,7 +76,7 @@ class TetrisEnv:
 
         self.launch_position = [0, math.floor(field_width / 2)]
 
-        self.field = np.zeros(shape=(field_height, field_width), dtype=np.int8)
+        self.field = self._create_empty_field(field_height=field_height, field_width=field_width)
 
         self.tiles = {
             "I": np.ones((4, 1)),
@@ -106,14 +106,21 @@ class TetrisEnv:
             [],
         ]
 
-    def launch_tile(self):
+    def launch_tile(self) -> bool:
         """
         Launches the next tile to come from 'self.tiles_queue' into the field.
 
         Side-effects are:
-            - re-populate 'self.tiles_queue' after the pop of the leftmost tile was done.
-            - puts 'self.current_tile' into the field at 'self.launch_position'.
+            - re-populate 'self.tiles_queue' after the pop of the leftmost tile
+              from that queue was done.
+            - tries to put 'self.current_tile' into the field at 'self.launch_position'.
             - updates 'self.current_tile_positionInField'
+        
+        Returns:
+            (bool): True, if the tile could successfully be launched into the field,
+                    False, if the tile could not be launched into the field, because
+                    there was an overlap with the field at the cells where the tile
+                    was tried to be launched.
         """
         self.current_tile = self._tiles_queue_pop_left()
 
@@ -123,11 +130,11 @@ class TetrisEnv:
 
         put_successful = self._put_tile_into_field(self.current_tile)
 
-        if not put_successful:
-            # TODO: Game Over
-            pass
-
-        self._set_current_tile_position_in_field_at_launch(self.current_tile)
+        if not put_successful: #i.e. game over
+           return False
+        else: 
+            self._set_current_tile_position_in_field_at_launch(self.current_tile)
+            return True
 
     def drop(self) -> bool:
         """
@@ -645,6 +652,53 @@ class TetrisEnv:
         plt.scatter(x=self.field, color="red")
 
         plt.show(block=True)
+    
+
+    def reset(self):
+        """
+        Resets the environment to an initial state.
+        
+        The initial state means the start of a new game.
+        That means:
+            - The field is emptied.
+            - 'self.current_tile' is set to None
+            - 'self.current_tile_positionInField' is emptied
+            - 'self.current_action' is set to None
+            - 'self.tiles_queue' is emptied and freshly populated
+            - Points achieved are set to zero.
+            
+        """
+        self.field = self._create_empty_field(field_height=self.field_height, field_width=self.field_width)
+
+        self.current_tile = None
+
+        self.current_tile_positionInField[0] = self._empty_list(list_to_empty=self.current_tile_positionInField[0])
+        self.current_tile_positionInField[1] = self._empty_list(list_to_empty=self.current_tile_positionInField[1])
+
+        self.current_action = None
+
+        self.tiles_queue = deque()
+        self.tiles_queue = self._populate_tiles_queue()
+
+        #TODO:
+        #Set game-points achieved to zero.
+    
+    def _create_empty_field(self, field_height: int, field_width: int) -> np.ndarray:
+        """
+        Creates an empty field with the shape (field_height, field_width).
+
+        Returns:
+            (np.ndarray): The empty field.
+        
+        Raises:
+            WrongDatatypeError: When at least one of the values given
+                                to the parameters doesn't match the
+                                expected datatype of the parameter.
+        """
+        if not isinstance(field_height, int) or not isinstance(field_width, int):
+            raise WrongDatatypeError
+
+        return np.zeros(shape=(field_height, field_width), dtype=np.int8)
 
     def _tiles_queue_pop_left(self) -> list[str, np.ndarray, int]:
         """
@@ -653,7 +707,7 @@ class TetrisEnv:
 
         Returns:
             (list): The leftmost element of 'self.tiles_queue'
-                    holding "[Name of the tile, the tiles' array]"
+                    holding "[Name of the tile, the tiles' array, the tiles' rotation]"
 
         Raises:
             EmptyContainerError: If 'self.tiles_queue' is empty
