@@ -8,6 +8,7 @@ from enum import Enum
 
 from tetris.tetris_env_domain_specific_exceptions import (
     EmptyContainerError,
+    NoneTypeError,
     WrongDatatypeError,
     OutOfBoundsError,
 )
@@ -142,45 +143,15 @@ class TetrisEnv:
         """
         Drops the current tile in the field by one row.
 
+        Expects a drop of the current tile to be possible in the current
+        state of the field.
+
         Returns:
         A boolean indicating if a drop was possible and thus conducted or not.
         """
 
         # retaining the old 'current_tile_positionInField'-variable before it is updated below
         current_tile_positionInField_old = self.current_tile_positionInField.copy()
-
-        # Checking if a drop is possible
-        # NOTE: A drop is only possible if the sum of the individual cells in the current lowest
-        #      row of the tile in all columns and the respective cells in the field one row
-        #      below that row is at most 1.
-        #      Explanation: If the sum was 2, that would mean that both in a cell of the current
-        #                   lowest row and the cell below that (i.e. the cell in the field) are
-        #                   both 1s, i.e. both those cells are occupied already. Thus a drop
-        #                   is not possible. However, if the sum of both cells is 0 or 1,
-        #                   that means that either none of the cells is occupied, or only one
-        #                   of them, which means that a drop is possible.
-        if (
-            max(current_tile_positionInField_old[0]) + 1 == self.field_height
-        ):  # the drop isn´t possible anymore because the tile currently is already at the lowest existing row in the field
-            drop_possible = False
-        else:
-            drop_possible = all(
-                self.field[max(current_tile_positionInField_old[0]), column]
-                + self.field[max(current_tile_positionInField_old[0]) + 1, column]
-                in [0, 1]
-                for column in range(
-                    min(current_tile_positionInField_old[1]),
-                    max(current_tile_positionInField_old[1]) + 1,
-                    1,
-                )
-            )
-
-        if not drop_possible:
-            # checking if there are full rows and if so, removing those
-            # and updating the field accordingly
-            rows_dropped = self.check_for_and_handle_full_row()
-            # print(f"***** {rows_dropped} rows dropped!*****")
-            return False
 
         # First updating the variable "current_tile_positionInField" by increasing
         # all row-numbers by one (i.e. the tiles moves downward by one row)
@@ -238,6 +209,74 @@ class TetrisEnv:
             self.field[min(current_tile_positionInField_old[0]), n_column] = np.int8(0)
 
         return True
+
+    def _drop_possible(self) -> bool:
+        """
+        Checks whether a drop of the current tile is possible.
+
+        Information about the function logic/implementation:
+        A drop is only possible if the sum of the individual cells in the current lowest
+        row of the tile in all columns and the respective cells in the field one row
+        below that row is at most 1.
+        Explanation: If the sum was 2, that would mean that both in a cell of the current
+                     lowest row and the cell below that (i.e. the cell in the field) are
+                     both 1s, i.e. both those cells are occupied already. Thus a drop
+                     is not possible. However, if the sum of both cells is 0 or 1,
+                     that means that either none of the cells is occupied, or only one
+                     of them, which means that a drop is possible.
+
+        Returns:
+            (bool): True, if a drop is possible;
+                    False otherwise.
+        """
+        if self._current_tile_at_lowest_row_in_field():
+            return False
+        else:
+            #loop-based approach
+            # return all(self.field[max(self.current_tile_positionInField_old[0]), column]
+            #     + self.field[max(self.current_tile_positionInField_old[0]) + 1, column]
+            #     in [0, 1]
+            #     for column in range(
+            #         min(self.current_tile_positionInField_old[1]),
+            #         max(self.current_tile_positionInField_old[1]) + 1,
+            #         1,
+            #     )
+            # )
+
+            #vectorized approach
+            columns_of_current_tile = list(set(self.current_tile_positionInField[1]))
+
+            lowest_row_current_tile = self.field[max(self.current_tile_positionInField[0]), columns_of_current_tile]
+            row_below_lowest_row_current_tile = self.field[max(self.current_tile_positionInField[0])+1, columns_of_current_tile]
+
+            sum_of_both_rows = lowest_row_current_tile + row_below_lowest_row_current_tile
+
+            return all(sum_of_both_rows in [0, 1])
+
+    
+    def _current_tile_at_lowest_row_in_field(self) -> bool:
+        """
+        Checks whether the lowest row of 'self.current_tile'
+        is currently located at the lowest row in the field.
+
+        Returns:
+            (bool): True, if the lowest row of 'self.current_tile
+                    is currently located at the lowest row in the
+                    field;
+                    False otherwise.
+        
+        Raises:
+            NoneTypeError: If 'self.current_tile' is None.
+        """
+        if self.current_tile is None:
+            raise NoneTypeError
+        
+        if (
+            max(self.current_tile_positionInField[0]) + 1 == self.field_height
+        ): return True
+        else:
+            return False
+
 
     def check_for_and_handle_full_row(self) -> int:
         """
