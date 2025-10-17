@@ -11,6 +11,7 @@ from tetris.tetris_env_domain_specific_exceptions import (
     NoneTypeError,
     WrongDatatypeError,
     OutOfBoundsError,
+    GamewiseLogicalError
 )
 
 plt.ion()
@@ -242,31 +243,16 @@ class TetrisEnv:
         else:
             return False
 
-    def check_for_and_handle_full_row(self) -> int:
+    def remove_full_rows(self) -> int:
         """
         Checks whether one row or multiple rows is/are full,
         i.e. contain(s) only 1s.
         If so, this row/those rows is/are removed, and all tiles above move
         down by the number of full rows (one or more).
 
-        Both the check whether one or multiple rows are full as well as
-        the dropping of the other 1s in the field (except for the current tile)
-        is handled by this function.
-
         Returns:
-        An int, indicating how many rows were full and were thus removed.
+            Rows removed (int): The number of rows which were full and were thus removed.
         """
-        # a list holding the indices of full rows
-        indices_full_rows = []
-
-        # Iterating through all the rows and saving the indices of full rows
-        for i, row in enumerate(self.field):
-            if all(row == 1):
-                indices_full_rows.append(i)
-
-        if len(indices_full_rows) == 0:
-            return 0
-
         # removing the full rows from the field
         field_rows_deleted = np.delete(arr=self.field, obj=indices_full_rows, axis=0)
 
@@ -281,6 +267,43 @@ class TetrisEnv:
         )
 
         return len(indices_full_rows)
+    
+    def _check_for_full_rows(self, drop_possible: bool) -> np.ndarray:
+        """
+        Returns a np.ndarray containing the indices of rows
+        in the field, that contain full rows.
+
+        A full row is a row which only contains occupied cells.
+
+        It is required that the check for full rows can only be
+        conducted after a drop of the current tile is not
+        possible anymore. However a new tile must also not
+        already be launched yet.
+
+        Args:
+            drop_possible (bool): Indicating whether a drop of the current_tile
+                                  is currently possible or not.
+
+        Returns:
+            Indices of full rows (np.ndarray): The indices of the rows
+                                               that contain full rows.
+                                               An empty array means that
+                                               there are no full rows.
+
+        Raises:
+            GamewiseLogicalError: When 'drop_possible' is True.
+                                  Reason: See description above.
+        """
+        if drop_possible:
+            raise GamewiseLogicalError
+        
+        full_rows_bool = np.all(self.field == 1, axis=1)
+        full_rows_indices = np.where(full_rows_bool)[0]
+
+        return full_rows_indices
+        
+
+
 
     def handle_action(self, action: int):
         if action == 0:  # i.e. do nothing
