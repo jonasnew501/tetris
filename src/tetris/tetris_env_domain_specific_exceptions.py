@@ -7,6 +7,15 @@ class EmptyContainerError(Exception):
 
     pass
 
+class NoneTypeError(Exception):
+    """
+    A custom, domain-specific exception for when an object
+    is of type "None", although it was expected not to be
+    of type "None".
+    """
+
+    pass
+
 
 class WrongDatatypeError(Exception):
     """
