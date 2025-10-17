@@ -149,68 +149,27 @@ class TetrisEnv:
         Returns:
         A boolean indicating if a drop was possible and thus conducted or not.
         """
+        current_tile_number_of_rows = self._current_tile_number_of_rows()
+        current_tile_number_of_columns = self._current_tile_number_of_columns()
 
         # retaining the old 'current_tile_positionInField'-variable before it is updated below
         current_tile_positionInField_old = self.current_tile_positionInField.copy()
 
-        # First updating the variable "current_tile_positionInField" by increasing
-        # all row-numbers by one (i.e. the tile moves downward by one row)
-        # self.current_tile_positionInField[0] = [
-        #     row + 1 for row in self.current_tile_positionInField[0]
-        # ]
-
-        self.current_tile_positionInField[0] += np.ones(shape=(len(self.current_tile_positionInField[0]),), dtype=np.int8)
+        #Increasing all row-numbers by one (i.e. the tile moves downward by one row)
+        self.current_tile_positionInField[0] += np.ones(shape=(current_tile_number_of_columns,), dtype=np.int8)
 
         # Updating the tile in the field (i.e. doing the actual dropping)
-        for n_row_new in range(
-            max(self.current_tile_positionInField[0]),
-            min(self.current_tile_positionInField[0]) - 1,
-            -1,
-        ):  # iterating backwards over all the (new) rows where the dropped tile will be positioned
-            for n_column in range(
-                min(self.current_tile_positionInField[1]),
-                max(self.current_tile_positionInField[1]) + 1,
-                1,
-            ):  # iterating over the columns in the field
-                # assigning the correct number of the tile (0 or 1) to the respective cell,
-                # depending on which number the tile has at that position of it´s grid
-                # (i.e. in the field now still at one row up)
-                # Rules for the result of a drop:
-                # 1.: If a 1 drops into a 0, the 1 stays
-                # 2.1: If a 0 drops into a 1, and both are part of the current tile, then the 0 stays.
-                # 2.2: If a 0 drops into a 1, but the 1 belongs to the field already and not to the current tile, then the 1 stays.
+        #dropping the current tile by merging it with the new place of the tile after the
+        #drop by bitwise OR
+        current_tile = self.current_tile[1]
 
-                # getting the coordinates of the cells of the current tile in the field
-                coord_current_tile = list(zip(*current_tile_positionInField_old))
-                if (self.field[n_row_new - 1, n_column] == 1) and (
-                    self.field[n_row_new, n_column] == 0
-                ):
-                    self.field[n_row_new, n_column] = np.int8(1)
-                elif (
-                    (self.field[n_row_new - 1, n_column] == 0)
-                    and (self.field[n_row_new, n_column] == 1)
-                    and ((n_row_new - 1, n_column) in coord_current_tile)
-                    and ((n_row_new, n_column) in coord_current_tile)
-                ):
-                    self.field[n_row_new, n_column] = np.int8(0)
-                elif (
-                    (self.field[n_row_new - 1, n_column] == 0)
-                    and (self.field[n_row_new, n_column] == 1)
-                    and ((n_row_new - 1, n_column) in coord_current_tile)
-                    and ((n_row_new, n_column) not in coord_current_tile)
-                ):
-                    self.field[n_row_new, n_column] = np.int8(1)
+        self.field[min(self.current_tile_positionInField[0]):min(self.current_tile_positionInField[0])+current_tile_number_of_rows,
+                   min(self.current_tile_positionInField[1]):min(self.current_tile_positionInField[1])+current_tile_number_of_columns] |= current_tile
 
-        # emptying (i.e. assigning 0s) to the topmost row of the old tile-position in the field,
-        # because those cells now got empty because the tile dropped down by one row now
-        for n_column in range(
-            min(self.current_tile_positionInField[1]),
-            max(self.current_tile_positionInField[1]) + 1,
-            1,
-        ):
-            self.field[min(current_tile_positionInField_old[0]), n_column] = np.int8(0)
-
-        return True
+        #clearning the topmost-row of the former current_tile_positionInField because the tile now
+        #moved down by one row
+        self.field[min(current_tile_positionInField_old), 
+                   min(self.current_tile_positionInField[1]):min(self.current_tile_positionInField[1])+current_tile_number_of_columns] = np.int8(0)
 
     def _drop_possible(self) -> bool:
         """
@@ -822,8 +781,8 @@ class TetrisEnv:
         if self._overlap_at_launch(tile_to_put_into_field=tile_to_put_into_field):
             return False
         else:
-            current_tile_number_of_rows = len(tile_to_put_into_field[0])
-            current_tile_number_of_columns = len(tile_to_put_into_field[1][0])
+            current_tile_number_of_rows = self._current_tile_number_of_rows()
+            current_tile_number_of_columns = self._current_tile_number_of_columns()
 
             # putting the tile into the field using a bitwise OR
             self.field[
@@ -849,8 +808,8 @@ class TetrisEnv:
                     at 'self.launch_position' into the field;
                     False otherwise.
         """
-        current_tile_number_of_rows = len(tile_to_check[1])
-        current_tile_number_of_columns = len(tile_to_check[1][0])
+        current_tile_number_of_rows = self._current_tile_number_of_rows()
+        current_tile_number_of_columns = self._current_tile_number_of_columns()
 
         # Check for condition 1: Is any of the indices of the launch_position negative?
         negative_launch_pos_indices = (
@@ -890,8 +849,8 @@ class TetrisEnv:
                     tiles in the field at 'self.launch_position'.
         """
         # Getting the section of the field where the tile would go
-        current_tile_number_of_rows = len(tile_to_put_into_field[0])
-        current_tile_number_of_columns = len(tile_to_put_into_field[1][0])
+        current_tile_number_of_rows = self._current_tile_number_of_rows()
+        current_tile_number_of_columns = self._current_tile_number_of_columns()
 
         field_section = self.field[
             self.launch_position[0]
