@@ -35,3 +35,13 @@ class OutOfBoundsError(Exception):
     """
 
     pass
+
+class GamewiseLogicalError(Exception):
+    """
+    A custom, domain-specific exception for when an operation/
+    a function call at a specific situation / state within
+    the game doesn't make sense logically resp.
+    violates the logic/rules of the game
+    """
+
+    pass
