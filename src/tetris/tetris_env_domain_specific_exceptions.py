@@ -36,6 +36,7 @@ class OutOfBoundsError(Exception):
 
     pass
 
+
 class GamewiseLogicalError(Exception):
     """
     A custom, domain-specific exception for when an operation/

@@ -5,13 +5,14 @@ import random
 from collections import deque
 from itertools import product
 from enum import Enum
+from typing import Union
 
 from tetris.tetris_env_domain_specific_exceptions import (
     EmptyContainerError,
     NoneTypeError,
     WrongDatatypeError,
     OutOfBoundsError,
-    GamewiseLogicalError
+    GamewiseLogicalError,
 )
 
 plt.ion()
@@ -156,21 +157,36 @@ class TetrisEnv:
         # retaining the old 'current_tile_positionInField'-variable before it is updated below
         current_tile_positionInField_old = self.current_tile_positionInField.copy()
 
-        #Increasing all row-numbers by one (i.e. the tile moves downward by one row)
-        self.current_tile_positionInField[0] += np.ones(shape=(current_tile_number_of_columns,), dtype=np.int8)
+        # Increasing all row-numbers by one (i.e. the tile moves downward by one row)
+        self.current_tile_positionInField[0] += np.ones(
+            shape=(current_tile_number_of_columns,), dtype=np.int8
+        )
 
         # Updating the tile in the field (i.e. doing the actual dropping)
-        #dropping the current tile by merging it with the new place of the tile after the
-        #drop by bitwise OR
+        # dropping the current tile by merging it with the new place of the tile after the
+        # drop by bitwise OR
         current_tile = self.current_tile[1]
 
-        self.field[min(self.current_tile_positionInField[0]):min(self.current_tile_positionInField[0])+current_tile_number_of_rows,
-                   min(self.current_tile_positionInField[1]):min(self.current_tile_positionInField[1])+current_tile_number_of_columns] |= current_tile
+        self.field[
+            min(self.current_tile_positionInField[0]) : min(
+                self.current_tile_positionInField[0]
+            )
+            + current_tile_number_of_rows,
+            min(self.current_tile_positionInField[1]) : min(
+                self.current_tile_positionInField[1]
+            )
+            + current_tile_number_of_columns,
+        ] |= current_tile
 
-        #clearning the topmost-row of the former current_tile_positionInField because the tile now
-        #moved down by one row
-        self.field[min(current_tile_positionInField_old), 
-                   min(self.current_tile_positionInField[1]):min(self.current_tile_positionInField[1])+current_tile_number_of_columns] = np.int8(0)
+        # clearning the topmost-row of the former current_tile_positionInField because the tile now
+        # moved down by one row
+        self.field[
+            min(current_tile_positionInField_old),
+            min(self.current_tile_positionInField[1]) : min(
+                self.current_tile_positionInField[1]
+            )
+            + current_tile_number_of_columns,
+        ] = np.int8(0)
 
     def _drop_possible(self) -> bool:
         """
@@ -243,31 +259,39 @@ class TetrisEnv:
         else:
             return False
 
-    def remove_full_rows(self) -> int:
+    def remove_full_rows(self, full_rows_indices: Union[list, np.ndarray]) -> int:
         """
-        Checks whether one row or multiple rows is/are full,
-        i.e. contain(s) only 1s.
-        If so, this row/those rows is/are removed, and all tiles above move
-        down by the number of full rows (one or more).
+        Removes all rows given by 'full_rows_indices' from the field.
+        After that, all tiles above the removed rows are moved down
+        by the number of previously removed rows.
+
+        Args:
+            full_rows_indices (list or np.ndarray): A 1D-container holding the indices
+                                                    of full rows.
+                                                    If empty, there are no rows to be
+                                                    removed.
 
         Returns:
             Rows removed (int): The number of rows which were full and were thus removed.
         """
+        if not full_rows_indices:
+            return 0
+
         # removing the full rows from the field
-        field_rows_deleted = np.delete(arr=self.field, obj=indices_full_rows, axis=0)
+        field_rows_deleted = np.delete(arr=self.field, obj=full_rows_indices, axis=0)
 
         # adding as many new (i.e. empty) rows to the top of the field as were just deleted
         self.field = np.vstack(
             (
                 np.zeros(
-                    shape=(len(indices_full_rows), self.field_width), dtype=np.int8
+                    shape=(len(full_rows_indices), self.field_width), dtype=np.int8
                 ),
                 field_rows_deleted,
             )
         )
 
-        return len(indices_full_rows)
-    
+        return len(full_rows_indices)
+
     def _check_for_full_rows(self, drop_possible: bool) -> np.ndarray:
         """
         Returns a np.ndarray containing the indices of rows
@@ -296,14 +320,11 @@ class TetrisEnv:
         """
         if drop_possible:
             raise GamewiseLogicalError
-        
+
         full_rows_bool = np.all(self.field == 1, axis=1)
         full_rows_indices = np.where(full_rows_bool)[0]
 
         return full_rows_indices
-        
-
-
 
     def handle_action(self, action: int):
         if action == 0:  # i.e. do nothing
@@ -911,7 +932,7 @@ class TetrisEnv:
         column_indices += self.launch_position[1]
 
         self.current_tile_positionInField = [list(row_indices), list(column_indices)]
-    
+
     def _current_tile_number_of_rows(self) -> int:
         """
         Returns:
@@ -922,9 +943,9 @@ class TetrisEnv:
         """
         if self.current_tile is None:
             raise NoneTypeError
-        
+
         return self.current_tile[1].shape[0]
-    
+
     def _current_tile_number_of_columns(self) -> int:
         """
         Returns:
@@ -935,6 +956,5 @@ class TetrisEnv:
         """
         if self.current_tile is None:
             raise NoneTypeError
-        
-        return self.current_tile[1].shape[1]
 
+        return self.current_tile[1].shape[1]
