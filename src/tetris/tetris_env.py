@@ -76,7 +76,9 @@ class TetrisEnv:
 
         self.launch_position = [0, math.floor(field_width / 2)]
 
-        self.field = self._create_empty_field(field_height=field_height, field_width=field_width)
+        self.field = self._create_empty_field(
+            field_height=field_height, field_width=field_width
+        )
 
         self.tiles = {
             "I": np.ones((4, 1)),
@@ -115,7 +117,7 @@ class TetrisEnv:
               from that queue was done.
             - tries to put 'self.current_tile' into the field at 'self.launch_position'.
             - updates 'self.current_tile_positionInField'
-        
+
         Returns:
             (bool): True, if the tile could successfully be launched into the field,
                     False, if the tile could not be launched into the field, because
@@ -130,9 +132,9 @@ class TetrisEnv:
 
         put_successful = self._put_tile_into_field(self.current_tile)
 
-        if not put_successful: #i.e. game over
-           return False
-        else: 
+        if not put_successful:  # i.e. game over
+            return False
+        else:
             self._set_current_tile_position_in_field_at_launch(self.current_tile)
             return True
 
@@ -514,12 +516,12 @@ class TetrisEnv:
             set(self.current_tile_positionInField[1].copy())
         )
 
-        self.current_tile_positionInField[0] = (
-            current_tile_positionInField_rows_set_old.copy()
-        )
-        self.current_tile_positionInField[1] = (
-            current_tile_positionInField_columns_set_old.copy()
-        )
+        self.current_tile_positionInField[
+            0
+        ] = current_tile_positionInField_rows_set_old.copy()
+        self.current_tile_positionInField[
+            1
+        ] = current_tile_positionInField_columns_set_old.copy()
 
         # rotating resp. modifying the data held in 'self.current_tile_positionInField'
         if (
@@ -652,12 +654,11 @@ class TetrisEnv:
         plt.scatter(x=self.field, color="red")
 
         plt.show(block=True)
-    
 
     def reset(self):
         """
         Resets the environment to an initial state.
-        
+
         The initial state means the start of a new game.
         That means:
             - The field is emptied.
@@ -666,30 +667,36 @@ class TetrisEnv:
             - 'self.current_action' is set to None
             - 'self.tiles_queue' is emptied and freshly populated
             - Points achieved are set to zero.
-            
+
         """
-        self.field = self._create_empty_field(field_height=self.field_height, field_width=self.field_width)
+        self.field = self._create_empty_field(
+            field_height=self.field_height, field_width=self.field_width
+        )
 
         self.current_tile = None
 
-        self.current_tile_positionInField[0] = self._empty_list(list_to_empty=self.current_tile_positionInField[0])
-        self.current_tile_positionInField[1] = self._empty_list(list_to_empty=self.current_tile_positionInField[1])
+        self.current_tile_positionInField[0] = self._empty_list(
+            list_to_empty=self.current_tile_positionInField[0]
+        )
+        self.current_tile_positionInField[1] = self._empty_list(
+            list_to_empty=self.current_tile_positionInField[1]
+        )
 
         self.current_action = None
 
         self.tiles_queue = deque()
         self.tiles_queue = self._populate_tiles_queue()
 
-        #TODO:
-        #Set game-points achieved to zero.
-    
+        # TODO:
+        # Set game-points achieved to zero.
+
     def _create_empty_field(self, field_height: int, field_width: int) -> np.ndarray:
         """
         Creates an empty field with the shape (field_height, field_width).
 
         Returns:
             (np.ndarray): The empty field.
-        
+
         Raises:
             WrongDatatypeError: When at least one of the values given
                                 to the parameters doesn't match the
