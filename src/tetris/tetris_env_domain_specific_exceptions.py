@@ -7,6 +7,7 @@ class EmptyContainerError(Exception):
 
     pass
 
+
 class NoneTypeError(Exception):
     """
     A custom, domain-specific exception for when an object

@@ -232,7 +232,7 @@ class TetrisEnv:
         if self._current_tile_at_lowest_row_in_field():
             return False
         else:
-            #loop-based approach
+            # loop-based approach
             # return all(self.field[max(self.current_tile_positionInField_old[0]), column]
             #     + self.field[max(self.current_tile_positionInField_old[0]) + 1, column]
             #     in [0, 1]
@@ -243,17 +243,22 @@ class TetrisEnv:
             #     )
             # )
 
-            #vectorized approach
+            # vectorized approach
             columns_of_current_tile = list(set(self.current_tile_positionInField[1]))
 
-            lowest_row_current_tile = self.field[max(self.current_tile_positionInField[0]), columns_of_current_tile]
-            row_below_lowest_row_current_tile = self.field[max(self.current_tile_positionInField[0])+1, columns_of_current_tile]
+            lowest_row_current_tile = self.field[
+                max(self.current_tile_positionInField[0]), columns_of_current_tile
+            ]
+            row_below_lowest_row_current_tile = self.field[
+                max(self.current_tile_positionInField[0]) + 1, columns_of_current_tile
+            ]
 
-            sum_of_both_rows = lowest_row_current_tile + row_below_lowest_row_current_tile
+            sum_of_both_rows = (
+                lowest_row_current_tile + row_below_lowest_row_current_tile
+            )
 
             return all(sum_of_both_rows in [0, 1])
 
-    
     def _current_tile_at_lowest_row_in_field(self) -> bool:
         """
         Checks whether the lowest row of 'self.current_tile'
@@ -264,19 +269,17 @@ class TetrisEnv:
                     is currently located at the lowest row in the
                     field;
                     False otherwise.
-        
+
         Raises:
             NoneTypeError: If 'self.current_tile' is None.
         """
         if self.current_tile is None:
             raise NoneTypeError
-        
-        if (
-            max(self.current_tile_positionInField[0]) + 1 == self.field_height
-        ): return True
+
+        if max(self.current_tile_positionInField[0]) + 1 == self.field_height:
+            return True
         else:
             return False
-
 
     def check_for_and_handle_full_row(self) -> int:
         """
