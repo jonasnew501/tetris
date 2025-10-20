@@ -141,16 +141,23 @@ class TetrisEnv:
             self._set_current_tile_position_in_field_at_launch(self.current_tile)
             return True
 
-    def drop(self) -> bool:
+    def drop_current_tile(self, drop_possible: bool):
         """
         Drops the current tile in the field by one row.
 
         Expects a drop of the current tile to be possible in the current
         state of the field.
 
-        Returns:
-        A boolean indicating if a drop was possible and thus conducted or not.
+        Args:
+            drop_possible (bool): Indicating whether a drop of the current
+                                  tile is currently possible or not.
+        
+        Raises:
+            GamewiseLogicalError: If 'drop_possible' is False
         """
+        if drop_possible is False:
+            raise GamewiseLogicalError
+        
         current_tile_number_of_rows = self._current_tile_number_of_rows()
         current_tile_number_of_columns = self._current_tile_number_of_columns()
 
@@ -181,7 +188,7 @@ class TetrisEnv:
         # clearning the topmost-row of the former current_tile_positionInField because the tile now
         # moved down by one row
         self.field[
-            min(current_tile_positionInField_old),
+            min(current_tile_positionInField_old[0]),
             min(self.current_tile_positionInField[1]) : min(
                 self.current_tile_positionInField[1]
             )
