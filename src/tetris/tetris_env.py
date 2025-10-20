@@ -739,6 +739,49 @@ class TetrisEnv:
                   False otherwise.
         """
 
+    def _update_current_tile_positionInField_at_rotation(self) -> list[list[int], list[int]]:
+        """
+        Creates a variable of the same principle as 'self.current_tile_positionInField'
+        holding the row and column indices it would have after a rotation of
+        'self.current_tile' by 90 degrees clockwise would have been done.
+
+        I.e. an actual rotation, i.e. update of 'self.field' or
+        'self.current_tile_positionInField' is not done, but only this variable
+        described above is created and returned.
+
+        Returns:
+            list[list[int], list[int]]: The variable of the form/principle of 'self.current_tile_positionInField'
+                                        after a simulated rotation by 90 degrees clockwise.
+        """
+        current_tile_positionInField_copy = self.current_tile_positionInField.copy()
+
+        current_tile_shape = self._get_shape_of_current_tile()
+
+        # First getting/computing the shape after a rotation would have been done
+        # (i.e. just flipping rows and columns)
+        current_tile_shape_after_rotation = tuple(reversed(current_tile_shape))
+
+        diff_in_rows = current_tile_shape_after_rotation[0] - current_tile_shape[0]
+        diff_in_columns = current_tile_shape_after_rotation[1] - current_tile_shape[1]
+
+        #calculation of new row and column indices
+        #rows
+        if diff_in_rows < 0:
+            new_row_indices_unique = list(set(current_tile_positionInField_copy[0]))[:diff_in_rows]
+        elif diff_in_rows > 0:
+            new_row_indices_unique = range(min(current_tile_positionInField_copy[0]), max(current_tile_positionInField_copy[0])+diff_in_rows+1, 1)
+        
+        #columns
+        if diff_in_columns < 0:
+            new_column_indices_unique = list(set(current_tile_positionInField_copy[1]))[:diff_in_columns]
+        elif diff_in_rows > 0:
+            new_column_indices_unique = range(min(current_tile_positionInField_copy[1]), max(current_tile_positionInField_copy[1])+diff_in_columns+1, 1)
+
+        #creating the lists of row and column indices as held in 'self.current_tile_positionInField' in principle
+        new_row_indices = list(np.repeat(new_row_indices_unique, repeats=current_tile_shape_after_rotation[1]))
+        new_column_indices = list(np.tile(new_column_indices_unique, reps=current_tile_shape_after_rotation[0]))
+
+        return list(new_row_indices, new_column_indices)
 
 
 
