@@ -458,7 +458,7 @@ class TetrisEnv:
     def _check_tile_at_edge(self, edge: Literal["left", "right", "bottom"],
                             tile_positionInField: list[list[int], list[int]]) -> bool:
         """
-        Checks whether the (current) tile (at lest one column of it)
+        Checks whether the (current) tile (at least one column of it)
         is currently located on the leftmost, rightmost, or bottommost
         edge of the field.
 
@@ -470,7 +470,7 @@ class TetrisEnv:
         tile.
 
         Args:
-            edge (Literal["left", "right"]): Which edge to check for.
+            edge (Literal["left", "right", "bottom"]): Which edge to check for.
             tile_positionInField (list[list[int], list[int]]): The row and column indices
                                                                of the (fictional) tile to
                                                                check.
@@ -481,7 +481,7 @@ class TetrisEnv:
                                                                see in __init__-function of this class).
 
         Returns:
-            bool: True, if 'self.current_tile' is currently located
+            bool: True, if the (current) tile is currently located
                   on the edge to check of the field;
                   False otherwise.
         """
@@ -738,6 +738,34 @@ class TetrisEnv:
             bool: True, if a rotation by 90 degrees to the right is possible;
                   False otherwise.
         """
+        #Checking if with a rotation there would be no out-of-bounds problem
+        #(i.e. that the then rotated tile would reach out of the field)
+        #Checks are only necessary for the right and bottom edge
+        #of the field.
+        shape_of_current_tile = self._get_shape_of_current_tile()
+
+        if shape_of_current_tile[0] == shape_of_current_tile[1]:
+            return True
+        
+        current_tile_at_right_edge = self._check_tile_at_edge(edge="right")
+        current_tile_at_bottom_edge = self._check_tile_at_edge(edge="bottom")
+
+        #if the tile has more rows than columns and the tile is located
+        #at the right edge, after a rotation the tile would reach out
+        #of the right edge of the field.
+        #Equivalently, if the tile has more columns than rows and the
+        #tile is located at the bottom edge, after a rotation the tile
+        #would reach out of the bottom edge of the field.
+        if (shape_of_current_tile[0] > shape_of_current_tile[1]) and current_tile_at_right_edge:
+            pass
+        if (shape_of_current_tile[1] > shape_of_current_tile[0]) and current_tile_at_bottom_edge:
+            pass
+
+        
+
+        
+
+
 
 
 
@@ -761,8 +789,7 @@ class TetrisEnv:
 
         current_tile_shape_after_rotation = self._get_shape_of_current_tile_after_rotation()
 
-        diff_in_rows = current_tile_shape_after_rotation[0] - current_tile_shape[0]
-        diff_in_columns = current_tile_shape_after_rotation[1] - current_tile_shape[1]
+        diff_in_rows, diff_in_columns = self._get_diff_in_rows_and_columns_of_current_tile_after_rotation()
 
         #calculation of new row and column indices
         #rows
@@ -792,7 +819,7 @@ class TetrisEnv:
 
         An actual rotation, i.e. an update of 'self.field' or
         'self.current_tile_positionInField' or of other attributes
-        is not done, but only this variable described above is
+        is not done, but only the variable described above is
         created and returned.
         """
 
@@ -832,6 +859,11 @@ class TetrisEnv:
         less that the initial tile),
         and the difference in columns is '1' (because the rotated tile has one column
         more than the initial tile).
+
+        An actual rotation, i.e. an update of 'self.field' or
+        'self.current_tile_positionInField' or of other attributes
+        is not done, but only the variable described above is
+        created and returned.
 
         Returns:
             tuple[int, int]: A tuple containing two integers:
