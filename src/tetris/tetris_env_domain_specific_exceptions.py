@@ -42,7 +42,16 @@ class GamewiseLogicalError(Exception):
     A custom, domain-specific exception for when an operation/
     a function call at a specific situation / state within
     the game doesn't make sense logically resp.
-    violates the logic/rules of the game
+    violates the logic/rules of the game.
+    """
+
+    pass
+
+class UnsupportedParameterValue(Exception):
+    """
+    A custom, domain-specific exception for when a value
+    passed to a parameter of a function is not supported
+    (logically) by that function.
     """
 
     pass
