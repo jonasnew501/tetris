@@ -5,7 +5,7 @@ import random
 from collections import deque
 from itertools import product
 from enum import Enum
-from typing import Union
+from typing import Union, Literal
 
 from tetris.tetris_env_domain_specific_exceptions import (
     EmptyContainerError,
@@ -92,12 +92,6 @@ class TetrisEnv:
             "L_inv": np.array([[0, 1], [0, 1], [1, 1]]),
             "T": np.array([[0, 1, 0], [1, 1, 1]]),
         }
-
-        # TODO: Das Enum noch (richtig) verwenden
-        class Possible_Actions(Enum):
-            move_left = 1
-            move_right = 2
-            move_up = 3
 
         self.current_action = None
 
@@ -332,65 +326,52 @@ class TetrisEnv:
         full_rows_indices = np.where(full_rows_bool)[0]
 
         return full_rows_indices
+    
 
-    def handle_action(self, action: int):
-        if action == 0:  # i.e. do nothing
-            pass
-        if action == 1:  # i.e. move tile to the left
-            self.move(direction=1)
-        elif action == 2:  # i.e. move tile to the right
-            self.move(direction=2)
-        elif action == 3:  # i.e. rotate tile
-            self.rotate()
-
-    def move(self, direction: int) -> bool:
+    class PossibleActions(Enum):
         """
-        Moves the current tile in the field one column
-        either to the left or to the right.
+        Possible actions that can be taken in the game.
+        """
+        do_nothing = 0
+        move_left = 1
+        move_right = 2
+        rotate = 3
 
-        Params:
-        -'direction': 1=left, 2=right
+    def handle_action(self, action: PossibleActions):
+        """
+        Handles all possible actions that can be taken in the game.
+        """
+        if action == self.PossibleActions.do_nothing:
+            pass
+        if action == self.PossibleActions.move_left:
+            self.move(direction=action)
+        elif action == self.PossibleActions.move_right:
+            self.move(direction=action)
+        elif action == self.PossibleActions.rotate:
+            self.rotate()
+        else:
+            raise ValueError("Unknown action: {action}")
+    
 
-        Returns:
-        A boolean indicating if the desired movement was possible
-        and thus conducted or not.
+
+    def move(self, direction: PossibleActions):
+        """
+        Moves the current tile in the field either to the left or to the right
+        by one column.
+
+        Args:
+            direction (PossibleActions): Possible values are 'move_left' and 'move_right'.
         """
         # retaining the old 'current_tile_positionInField'-variable before it is updated below
         current_tile_positionInField_old = self.current_tile_positionInField.copy()
 
-        # Checking if a move into the desired direction is possible
-        if direction == 1:
-            if (
-                min(current_tile_positionInField_old[1]) == 0
-            ):  # the movement to the left isn´t possible anymore because the tile currently is already at the leftmost column in the field
-                return False
-            else:
-                move_possible = all(
-                    self.field[row, min(current_tile_positionInField_old[1]) - 1] == 0
-                    for row in range(
-                        min(current_tile_positionInField_old[0]),
-                        max(current_tile_positionInField_old[0]) + 1,
-                        1,
-                    )
-                )
-
-        if direction == 2:
-            if (
-                max(current_tile_positionInField_old[1]) + 1 == self.field_width
-            ):  # the movement to the right isn´t possible anymore because the tile currently is already at the right column in the field
-                return False
-            else:
-                move_possible = all(
-                    self.field[row, max(current_tile_positionInField_old[1]) + 1] == 0
-                    for row in range(
-                        min(current_tile_positionInField_old[0]),
-                        max(current_tile_positionInField_old[0]) + 1,
-                        1,
-                    )
-                )
-
-        if not move_possible:
-            return False
+        #move to the left
+        if direction == self.PossibleActions.move_left:
+            if not self._move_possible(direction=direction):
+                return
+            
+            #updating 'self.current_tile_positionInField'
+            self.current_tile_positionInField[1] -= np.ones(shape=)
 
         # First updating the variable "current_tile_positionInField" by decreasing/increasing
         # all column-numbers by one (i.e. the tiles moves leftward or rightward by one column)
@@ -463,6 +444,92 @@ class TetrisEnv:
                 self.field[n_row, min(current_tile_positionInField_old[1])] = np.int8(0)
 
         return True
+    
+    def _move_possible(self, direction: PossibleActions) -> bool:
+        """
+        Checks if moving 'self.current_tile' to the desired 'direction'
+        by one column is currently possible or not.
+
+        Args:
+            direction (PossibleActions): Possible values are 'move_left' and 'move_right'.
+        
+        Returns:
+            (bool): True, if the move checked is possible;
+                    False otherwise.
+        """
+        if direction == self.PossibleActions.move_left:
+            tile_at_edge = self._check_tile_at_edge(edge="left")
+            if tile_at_edge:
+                return False
+        
+            #Checking whether the sums of the individual cells
+            #of the leftmost column of the current tile in all rows
+            #and the column in the field left of this leftmost column
+            #are at most 1
+            rows_of_current_tile = list(set(self.current_tile_positionInField[0]))
+
+            leftmost_column_current_tile = self.field[rows_of_current_tile, min(self.current_tile_positionInField[1])]
+            column_left_of_leftmost_column_current_tile = self.field[rows_of_current_tile, min(self.current_tile_positionInField[1]) - 1]
+
+            sum_of_both_columns = leftmost_column_current_tile + column_left_of_leftmost_column_current_tile
+
+            return all(sum_of_both_columns in [0, 1])
+
+        if direction == self.PossibleActions.move_right:
+            tile_at_edge = self._check_tile_at_edge(edge="right")
+            if tile_at_edge:
+                return False
+            
+            rows_of_current_tile = list(set(self.current_tile_positionInField[0]))
+
+            rightmost_column_current_tile = self.field[rows_of_current_tile, max(self.current_tile_positionInField[1])]
+            column_right_of_rightmost_column_current_tile = self.field[rows_of_current_tile, max(self.current_tile_positionInField[1]) + 1]
+
+            sum_of_both_columns = rightmost_column_current_tile + column_right_of_rightmost_column_current_tile
+
+            return all(sum_of_both_columns in [0, 1])
+
+
+
+
+            
+
+
+
+    
+    def _check_tile_at_edge(self, edge: Literal["left", "right"]) -> bool:
+        """
+        Checks whether 'self.current_tile' (at lest one column of it)
+        is currently located on the leftmost or rightmost edge of the field.
+
+        Args:
+            edge (Literal["left", "right"]): Which edge to check for.
+
+        Returns:
+            bool: True, if 'self.current_tile' is currently located
+                  on the edge to check of the field;
+                  False otherwise.
+        """
+        if edge == "left":
+            pos_leftmost_column_current_tile = min(self.current_tile_positionInField[1])
+
+            if pos_leftmost_column_current_tile == 0:
+                return True
+            else:
+                return False
+        
+        elif edge == "right":
+            pos_rightmost_column_current_tile = max(self.current_tile_positionInField[1])
+            if pos_rightmost_column_current_tile == self.field_width - 1:
+                return True
+            else:
+                return False
+        
+        else:
+            raise ValueError(f"Invalid edge value: {edge!r}. Must be 'left' or 'right'.")
+
+
+
 
     # TODO: Debug!
     def rotate(self) -> bool:
