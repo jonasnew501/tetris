@@ -788,7 +788,7 @@ class TetrisEnv:
         return list(new_row_indices, new_column_indices)
 
 
-    def _get_current_tile_shape_after_rotation(self) -> tuple[int, int]:
+    def _get_shape_of_current_tile_after_rotation(self) -> tuple[int, int]:
         """
         Calculates and returns the shape 'self.current_tile' would have
         after a rotation by 90 degrees clockwise would have been
