@@ -750,8 +750,8 @@ class TetrisEnv:
         'self.current_tile' by 90 degrees clockwise would have been done.
 
         I.e. an actual rotation, i.e. update of 'self.field' or
-        'self.current_tile_positionInField' is not done, but only this variable
-        described above is created and returned.
+        'self.current_tile_positionInField' or of other attributes
+        is not done, but only this variable described above is created and returned.
 
         Returns:
             list[list[int], list[int]]: The variable of the form/principle of 'self.current_tile_positionInField'
@@ -793,6 +793,11 @@ class TetrisEnv:
         Calculates and returns the shape 'self.current_tile' would have
         after a rotation by 90 degrees clockwise would have been
         conducted.
+
+        An actual rotation, i.e. an update of 'self.field' or
+        'self.current_tile_positionInField' or of other attributes
+        is not done, but only this variable described above is
+        created and returned.
         """
 
         current_tile_shape = self._get_shape_of_current_tile()
