@@ -454,19 +454,31 @@ class TetrisEnv:
 
 
 
-
-            
-
-
-
     
-    def _check_tile_at_edge(self, edge: Literal["left", "right"]) -> bool:
+    def _check_tile_at_edge(self, edge: Literal["left", "right", "bottom"],
+                            tile_positionInField: list[list[int], list[int]]) -> bool:
         """
-        Checks whether 'self.current_tile' (at lest one column of it)
-        is currently located on the leftmost or rightmost edge of the field.
+        Checks whether the (current) tile (at lest one column of it)
+        is currently located on the leftmost, rightmost, or bottommost
+        edge of the field.
+
+        The check can aim at the current tile 'self.current_tile',
+        but also on any other (fictional) tile in the field.
+        This is possible the parameter 'tile_positionInField' does not
+        necessarily need to be 'self.current_tile_positionInField', but can
+        represent resp. hold row and column indices of any (fictional)
+        tile.
 
         Args:
             edge (Literal["left", "right"]): Which edge to check for.
+            tile_positionInField (list[list[int], list[int]]): The row and column indices
+                                                               of the (fictional) tile to
+                                                               check.
+                                                               This variable must follow the
+                                                               principle of the attribute
+                                                               'self.current_tile_positionInField'
+                                                               of this class at hand (description
+                                                               see in __init__-function of this class).
 
         Returns:
             bool: True, if 'self.current_tile' is currently located
@@ -474,34 +486,34 @@ class TetrisEnv:
                   False otherwise.
         """
         if edge == "left":
-            pos_leftmost_column_current_tile = min(self.current_tile_positionInField[1])
-
+            pos_leftmost_column_current_tile = min(tile_positionInField[1])
             if pos_leftmost_column_current_tile == 0:
                 return True
             else:
                 return False
         
         elif edge == "right":
-            pos_rightmost_column_current_tile = max(self.current_tile_positionInField[1])
+            pos_rightmost_column_current_tile = max(tile_positionInField[1])
             if pos_rightmost_column_current_tile == self.field_width - 1:
                 return True
             else:
                 return False
         
+        elif edge == "bottom":
+            pos_bottommost_column_current_tile = max(tile_positionInField[0])
+            if pos_bottommost_column_current_tile == self.field_height - 1:
+                return True
+            else:
+                return False
+        
         else:
-            raise ValueError(f"Invalid edge value: {edge!r}. Must be 'left' or 'right'.")
+            raise ValueError(f"Invalid edge value: {edge!r}. Must be 'left', 'right' or 'bottom'.")
 
 
 
-
-    # TODO: Debug!
-    def rotate(self) -> bool:
+    def rotate(self):
         """
         Rotates the current tile by 90 degrees to the right.
-
-        Returns:
-        A boolean indicating if the desired rotation was possible
-        and thus conducted or not.
         """
         # checking if a rotation is possible in the field
         # (depends on how the rotated tile will be positioned afterwards
@@ -716,6 +728,21 @@ class TetrisEnv:
 
         print("-----Rotate fully executed-----")
         return True
+    
+    def _check_rotation_possible(self):
+        """
+        Checks whether rotating 'self.current_tile' at its current
+        position in the field by 90 degrees to the right is possible.
+
+        Returns:
+            bool: True, if a rotation by 90 degrees to the right is possible;
+                  False otherwise.
+        """
+
+
+
+
+
 
     def _get_shape_of_current_tile(self) -> tuple:
         """
