@@ -759,11 +759,7 @@ class TetrisEnv:
         """
         current_tile_positionInField_copy = self.current_tile_positionInField.copy()
 
-        current_tile_shape = self._get_shape_of_current_tile()
-
-        # First getting/computing the shape after a rotation would have been done
-        # (i.e. just flipping rows and columns)
-        current_tile_shape_after_rotation = tuple(reversed(current_tile_shape))
+        current_tile_shape_after_rotation = self._get_shape_of_current_tile_after_rotation()
 
         diff_in_rows = current_tile_shape_after_rotation[0] - current_tile_shape[0]
         diff_in_columns = current_tile_shape_after_rotation[1] - current_tile_shape[1]
@@ -822,6 +818,37 @@ class TetrisEnv:
         n_columns = len(set(self.current_tile_positionInField[1].copy()))
 
         return (n_rows, n_columns)
+
+    def _get_diff_in_rows_and_columns_of_current_tile_after_rotation(self) -> tuple[int, int]:
+        """
+        Calculates and returns the difference in rows and columns 'self.current_tile'
+        would have when it would be rotated by 90 degrees clockwise.
+
+        Example:
+        Say the current_tile has 3 rows and 2 columns (i.e. shape=(3,2)).
+        After a rotation by 90 degrees clockwise it would have 2 rows and 3 columns
+        (i.e. shape=(2, 3)).
+        Thus, the difference in rows is '-1' (because the rotated tile has one row
+        less that the initial tile),
+        and the difference in columns is '1' (because the rotated tile has one column
+        more than the initial tile).
+
+        Returns:
+            tuple[int, int]: A tuple containing two integers:
+                - diff_in_rows (int): The difference in rows after a rotation by 90 degrees clockwise.
+                - diff_in_columns (int): The difference in columns after a rotation by 90 degrees clockwise.
+        """
+
+        current_tile_shape = self._get_shape_of_current_tile()
+
+        current_tile_shape_after_rotation = self._get_shape_of_current_tile_after_rotation()
+
+        diff_in_rows = current_tile_shape_after_rotation[0] - current_tile_shape[0]
+        diff_in_columns = current_tile_shape_after_rotation[1] - current_tile_shape[1]
+
+        return (diff_in_rows, diff_in_columns)
+
+
 
     def visualize_field(self):
         # TODO: Finish with constantly updating plot
