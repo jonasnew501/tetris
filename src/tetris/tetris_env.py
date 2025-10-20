@@ -739,6 +739,10 @@ class TetrisEnv:
                   False otherwise.
         """
 
+
+
+
+
     def _get_current_tile_positionInField_after_rotation(self) -> list[list[int], list[int]]:
         """
         Creates a variable of the same principle as 'self.current_tile_positionInField'
@@ -784,7 +788,20 @@ class TetrisEnv:
         return list(new_row_indices, new_column_indices)
 
 
+    def _get_current_tile_shape_after_rotation(self) -> tuple[int, int]:
+        """
+        Calculates and returns the shape 'self.current_tile' would have
+        after a rotation by 90 degrees clockwise would have been
+        conducted.
+        """
 
+        current_tile_shape = self._get_shape_of_current_tile()
+
+        # First getting/computing the shape after a rotation would have been done
+        # (i.e. just flipping rows and columns)
+        current_tile_shape_after_rotation = tuple(reversed(current_tile_shape))
+
+        return current_tile_shape_after_rotation
 
 
     def _get_shape_of_current_tile(self) -> tuple:
