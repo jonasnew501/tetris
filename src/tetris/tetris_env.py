@@ -739,7 +739,7 @@ class TetrisEnv:
                   False otherwise.
         """
 
-    def _update_current_tile_positionInField_at_rotation(self) -> list[list[int], list[int]]:
+    def _get_current_tile_positionInField_after_rotation(self) -> list[list[int], list[int]]:
         """
         Creates a variable of the same principle as 'self.current_tile_positionInField'
         holding the row and column indices it would have after a rotation of
