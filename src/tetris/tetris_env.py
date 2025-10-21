@@ -757,7 +757,6 @@ class TetrisEnv:
         """
         return np.rot90(tile_to_rotate, k=1, axes=(1, 0))
 
-
     def _check_rotation_possible(self):
         """
         Checks whether rotating 'self.current_tile' at its current
@@ -838,23 +837,63 @@ class TetrisEnv:
         if shape_of_current_tile[0] == shape_of_current_tile[1]:
             return False
 
-        #Determining the cells of the field which 'self.current_tile' doesn't occupy
-        #now, but will occupy when it was rotated by 90 degrees clockwise.
+        # Determining the cells of the field which 'self.current_tile' doesn't occupy
+        # now, but will occupy when it was rotated by 90 degrees clockwise.
         current_tile_positionInField = self.current_tile_positionInField.copy()
-        current_tile_positionInField_after_rotation = self._get_current_tile_positionInField_after_rotation()
+        current_tile_positionInField_after_rotation = (
+            self._get_current_tile_positionInField_after_rotation()
+        )
 
-        current_tile_cells_occupied = list(zip(current_tile_positionInField[0], current_tile_positionInField[1]))
-        current_tile_cells_occupied_after_rotation = list(zip(current_tile_positionInField_after_rotation[0], current_tile_positionInField_after_rotation[1]))
+        current_tile_cells_occupied = list(
+            zip(current_tile_positionInField[0], current_tile_positionInField[1])
+        )
+        current_tile_cells_occupied_after_rotation = list(
+            zip(
+                current_tile_positionInField_after_rotation[0],
+                current_tile_positionInField_after_rotation[1],
+            )
+        )
 
-        new_cells_occupied_after_rotation = [tup for tup in current_tile_cells_occupied_after_rotation if tup in current_tile_cells_occupied_after_rotation and tup not in current_tile_cells_occupied]
+        new_cells_occupied_after_rotation = [
+            tup
+            for tup in current_tile_cells_occupied_after_rotation
+            if tup in current_tile_cells_occupied_after_rotation
+            and tup not in current_tile_cells_occupied
+        ]
 
-        field_at_new_cells_occupied_after_rotation = self._get_slice_of_field_from_coords(coords=new_cells_occupied_after_rotation)
+        field_at_new_cells_occupied_after_rotation = (
+            self._get_slice_of_field_from_coords(
+                coords=new_cells_occupied_after_rotation
+            )
+        )
 
-        
         # current_tile_at_new_cells_occupied_after_rotation
 
         # Summe der beiden obigen bilden und schauen, ob summe jeweils in [0, 1]
     
+    def _get_slice_of_current_tile_at_new_cells_occupied_after_rotation(self) -> np.ndarray:
+        """
+        From the rotated tile, slices that part of the tile which would now
+        occupy new cells in the field (i.e. cells resp. an area of the field
+        which the non-rotated tile did not occupy in the field yet, but
+        the rotated tile will).
+        The part of the tile which occupied the field before the rotation
+        and which still occupies that same place in the field after the
+        rotation is omitted, i.e. not incorporated the the slice created here.
+
+        An update of 'self.field' or 'self.current_tile_positionInField'
+        or of other attributes is not done,
+        only the operations described above are
+        done and the respective np.ndarray is returned.
+
+        Returns:
+            np.ndarray: The slice of the current_tile which will occupy new
+                        cells in the field after a rotation.
+        """
+        
+
+
+
 
     def _get_slice_of_field_from_coords(self, coords: list[tuple]) -> np.ndarray:
         """
@@ -873,38 +912,37 @@ class TetrisEnv:
             coords (list[tulple[int, int]]): A list of one or multiple tuples of the form
                                              (row-index, column-index).
                                              Every tuple defines a coordinate in 'self.field'
-        
+
         Returns:
             field_slice (np.ndarray): The slice of 'self.field' defined by 'coords'.
-        
+
         Raises:
             GamewiseLogicalError: If either the rows and/or the columns were identified as not
                                   being adjacent to each other, i.e. they have gaps in between.
         """
-        #splitting the coordinates into rows and columns
+        # splitting the coordinates into rows and columns
         rows = [row for row, _ in coords]
         columns = [column for _, column in coords]
 
-        #Checking for adjacency of both rows and columns
-        adjacent_rows = list(range(min(rows), max(rows)+1, 1))
-        adjacent_columns = list(range(min(columns), max(columns)+1, 1))
+        # Checking for adjacency of both rows and columns
+        adjacent_rows = list(range(min(rows), max(rows) + 1, 1))
+        adjacent_columns = list(range(min(columns), max(columns) + 1, 1))
 
         check_adjacent_rows = sorted(rows) == adjacent_rows
         check_adjacent_columns = sorted(columns) == adjacent_columns
 
         if (not check_adjacent_rows) or (not check_adjacent_columns):
-            raise GamewiseLogicalError(f"The rows and/or columns from the coords were identified as not being adjacent.\n \
+            raise GamewiseLogicalError(
+                f"The rows and/or columns from the coords were identified as not being adjacent.\n \
                                        However, this is required by the logic of this function.\n \
-                                       rows: {rows}, columns: {columns}.")
-        
-        field_slice = self.field[min(rows):max(rows)+1, min(columns):max(columns)+1]
+                                       rows: {rows}, columns: {columns}."
+            )
+
+        field_slice = self.field[
+            min(rows) : max(rows) + 1, min(columns) : max(columns) + 1
+        ]
 
         return field_slice
-
-
-
-
-
 
     def _get_current_tile_positionInField_after_rotation(
         self,
