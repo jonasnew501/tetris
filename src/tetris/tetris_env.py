@@ -537,12 +537,13 @@ class TetrisEnv:
         This method expects that a rotation of 'self.current_tile' is currently possible.
         """
 
-        # first updating the rotation of the current tile in 'self.current_tile'
-        current_rotation = self.current_tile[2]
-        new_rotation = (
-            (current_rotation + 1) if (current_rotation + 1) < 4 else 0
-        )  # because a rotation of "4" would just mean it is at rotation 0 (i.e. initial position) again
-        self.current_tile[2] = new_rotation
+        self.current_tile_positionInField = self._get_current_tile_positionInField_after_rotation()
+
+        self.current_tile[2] = self._update_rotation_value()
+
+        current_tile_rotated = self._rotate_tile(tile_to_rotate=self.current_tile[1])
+
+        #TODO: Continue here
 
         # changing the rows and columns in 'current_tile_positionInField' to sets and then to lists again, to make the following rotation-operation possible
         # also saving the sets for later use
