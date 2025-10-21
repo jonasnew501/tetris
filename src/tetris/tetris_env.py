@@ -801,7 +801,7 @@ class TetrisEnv:
 
         return False
 
-    def _collition_with_rotation(self) -> bool:
+    def _collision_with_rotation(self) -> bool:
         """
         Checks whether with a rotation the area of the field,
         which the then rotated tile will cover, and which was previously not covered
@@ -811,7 +811,7 @@ class TetrisEnv:
         A 'collision' means that the sum of individual cells is
         at most 1.
 
-        If a collition would happen, a rotation is not possible.
+        If a collision would happen, a rotation is not possible.
 
         An actual rotation, i.e. an update of 'self.field' or
         'self.current_tile_positionInField' or of other attributes
