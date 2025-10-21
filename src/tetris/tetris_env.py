@@ -717,32 +717,9 @@ class TetrisEnv:
             bool: True, if a rotation by 90 degrees to the right is possible;
                   False otherwise.
         """
-        #Checking if with a rotation there would be no out-of-bounds problem
-        #(i.e. that the then rotated tile would reach out of the field)
-        #Checks are only necessary for the right and bottom edge
-        #of the field.
-        shape_of_current_tile = self._get_shape_of_current_tile()
-
-        if shape_of_current_tile[0] == shape_of_current_tile[1]:
-            return True
+        out_of_bounds_with_rotation = self._out_of_bounds_with_rotation()
         
-        current_tile_at_right_edge = self._check_tile_at_edge(edge="right")
-        current_tile_at_bottom_edge = self._check_tile_at_edge(edge="bottom")
-
-        #if the tile has more rows than columns and the tile is located
-        #at the right edge, after a rotation the tile would reach out
-        #of the right edge of the field.
-        #Equivalently, if the tile has more columns than rows and the
-        #tile is located at the bottom edge, after a rotation the tile
-        #would reach out of the bottom edge of the field.
-        if ((shape_of_current_tile[0] > shape_of_current_tile[1]) and current_tile_at_right_edge) or \
-            ((shape_of_current_tile[1] > shape_of_current_tile[0]) and current_tile_at_bottom_edge):
-            return False
         
-        #Checking if with a rotation the area of the field, which the then rotated tile will cover,
-        #and which was previously not covered by the current tile, will collide with the respective
-        #part of the then rotated tile or not.
-        #If a collition would happen, a rotation is not possible.
 
 
     
@@ -784,7 +761,25 @@ class TetrisEnv:
         return False
 
 
+    def _collition_with_rotation(self) -> bool:
+        """
+        Checks whether with a rotation the area of the field,
+        which the then rotated tile will cover, and which was previously not covered
+        by the current tile, will collide with the respective
+        part of the then rotated tile or not.
 
+        If a collition would happen, a rotation is not possible.
+
+        An actual rotation, i.e. an update of 'self.field' or
+        'self.current_tile_positionInField' or of other attributes
+        is not done, but only the check described above is
+        done and the respective boolean is returned.
+
+        Returns:
+            bool: True, if a collision with the rotated tile
+                  and the field as described above would happen;
+                  False otherwise.
+        """
 
 
 
