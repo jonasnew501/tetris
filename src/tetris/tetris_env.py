@@ -209,7 +209,7 @@ class TetrisEnv:
             (bool): True, if a drop is possible;
                     False otherwise.
         """
-        if self._current_tile_at_lowest_row_in_field():
+        if self._check_tile_at_edge(edge="bottom", tile_positionInField=self.current_tile_positionInField):
             return False
         else:
             # loop-based approach
@@ -239,27 +239,6 @@ class TetrisEnv:
 
             return all(sum_of_both_rows in [0, 1])
 
-    def _current_tile_at_lowest_row_in_field(self) -> bool:
-        """
-        Checks whether the lowest row of 'self.current_tile'
-        is currently located at the lowest row in the field.
-
-        Returns:
-            (bool): True, if the lowest row of 'self.current_tile
-                    is currently located at the lowest row in the
-                    field;
-                    False otherwise.
-
-        Raises:
-            NoneTypeError: If 'self.current_tile' is None.
-        """
-        if self.current_tile is None:
-            raise NoneTypeError
-
-        if max(self.current_tile_positionInField[0]) + 1 == self.field_height:
-            return True
-        else:
-            return False
 
     def remove_full_rows(self, full_rows_indices: Union[list, np.ndarray]) -> int:
         """
@@ -756,10 +735,30 @@ class TetrisEnv:
         #Equivalently, if the tile has more columns than rows and the
         #tile is located at the bottom edge, after a rotation the tile
         #would reach out of the bottom edge of the field.
-        if (shape_of_current_tile[0] > shape_of_current_tile[1]) and current_tile_at_right_edge:
-            pass
-        if (shape_of_current_tile[1] > shape_of_current_tile[0]) and current_tile_at_bottom_edge:
-            pass
+        if ((shape_of_current_tile[0] > shape_of_current_tile[1]) and current_tile_at_right_edge) or \
+            ((shape_of_current_tile[1] > shape_of_current_tile[0]) and current_tile_at_bottom_edge):
+            return False
+        
+        #Checking if with a rotation the area of the field, which the then rotated tile will cover,
+        #and which was previously not covered by the current tile, will collide with the respective
+        #part of the then rotated tile or not.
+        #If a collition would happen, a rotation is not possible.
+
+
+    
+    def _out_of_bounds_with_rotation(self) -> bool:
+        """
+        Checks whether 'self.current_tile' would be out of bounds
+        of the field when it would be rotated by 90 degrees
+        clockwise.
+
+        
+
+        Returns:
+            (bool): True, if 'tile_to_check' would be out-of-bounds when launched
+                    at 'self.launch_position' into the field;
+                    False otherwise.
+        """
 
         
 
