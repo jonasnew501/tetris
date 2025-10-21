@@ -533,87 +533,9 @@ class TetrisEnv:
     def rotate(self):
         """
         Rotates the current tile by 90 degrees to the right.
+
+        This method expects that a rotation of 'self.current_tile' is currently possible.
         """
-        # checking if a rotation is possible in the field
-        # (depends on how the rotated tile will be positioned afterwards
-        # and if there is enough space to the right of the tile for the flip).
-
-        # Getting the shape of the current tile
-        current_shape = self._get_shape_of_current_tile()
-
-        # First getting/computing the shape after a rotation would have been done
-        # (i.e. just flipping rows and columns)
-        shape_after_rotation = tuple(reversed(current_shape))
-        diff_in_rows = shape_after_rotation[0] - current_shape[0]
-        diff_in_columns = shape_after_rotation[1] - current_shape[1]
-
-        # TODO: Add a test, whether the current tile is too close to the right-hand border of the field
-        #      in order to conduct a rotation.
-
-        if (
-            self.current_tile[0] == "O"
-        ):  # this code is redundant, however still included for reasons of completeness:
-            # Rotating the 'O' tetromino is always possible but also completely without effect
-            # since it is quadratic.
-            return False  # in this case, False is returned, indicating that a rotation wasn't done (since it wouldn't have an effect anyway for the 'O' tetromino)
-
-        # Checks for the case, that with a rotation the number of columns of the then rotated tile increases,
-        # and thus the number of rows decreases.
-        elif (
-            diff_in_columns > 0
-        ):  # i.e. the number of columns would increase with a rotation
-            # checking whether the current tile is too close to the right-hand border of the field
-            # in order to conduct a rotation.
-            # TODO: Das scheint noch nicht zu funktionieren
-            if (
-                max(self.current_tile_positionInField[1]) + diff_in_columns
-            ) > self.field_width:  # a rotation is not possible, an out-of-bounds-error would occur
-                return False
-
-            # checking whether in the field to the right of the current
-            # tile there are enough empty cells, so a rotation is possible
-            for column in range(
-                max(self.current_tile_positionInField[1]) + 1,
-                max(self.current_tile_positionInField[1]) + 1 + (diff_in_columns),
-                1,
-            ):
-                for row in range(
-                    min(self.current_tile_positionInField[0]),
-                    max(self.current_tile_positionInField[0]) + 1 + (diff_in_rows),
-                    1,
-                ):
-                    if not self.field[row, column] == 0:
-                        return False
-
-        # Checks for the case, that with a rotation the number of columns of the then rotated tile decreases,
-        # and thus the number of rows increases.
-        elif (
-            diff_in_columns < 0
-        ):  # i.e. the number of columns would decrease with a rotation (automatically meaning that the number of rows will increase)
-            # checking whether the current tile is too close to the bottommost border of the field
-            # in order to conduct a rotation.
-            # TODO: Das scheint noch nicht zu funktionieren
-            if (
-                max(self.current_tile_positionInField[0]) + diff_in_rows
-            ) > self.field_height:  # a rotation is not possible, an out-of-bounds-error would occur
-                return False
-
-            # checking whether in the field below the current tile there are
-            # enough empty cells, so a rotation is possible.
-            for row in range(
-                max(self.current_tile_positionInField[0]) + 1,
-                max(self.current_tile_positionInField[0]) + 1 + (diff_in_rows),
-                1,
-            ):
-                for column in range(
-                    min(self.current_tile_positionInField[1]),
-                    max(self.current_tile_positionInField[1]) + 1 + (diff_in_columns),
-                    1,
-                ):
-                    if not self.field[row, column] == 0:
-                        return False
-
-        # at this point it is known that a rotation of the current tile is possible
 
         # first updating the rotation of the current tile in 'self.current_tile'
         current_rotation = self.current_tile[2]
@@ -747,6 +669,25 @@ class TetrisEnv:
 
         print("-----Rotate fully executed-----")
         return True
+    
+    def _update_rotation_value(self) -> int:
+        """
+        Updates the rotation-value held in
+        'self.current_tile[2]' by one rotation
+        by 90 degrees clockwise.
+
+        'self.current_tile[2]' is not altered
+        by this function.
+
+        Returns:
+            new_rotation_value (int): The updated rotation value.
+        """
+        current_rotation_value = self.current_tile[2]
+        new_rotation_value = (
+            (current_rotation_value + 1) if (current_rotation_value + 1) < 4 else 0
+        )  # because a rotation of "4" would just mean it is at rotation 0 (i.e. initial position) again
+    
+        return new_rotation_value
 
     def _rotate_tile(self, tile_to_rotate: np.ndarray) -> np.ndarray:
         """
@@ -757,7 +698,7 @@ class TetrisEnv:
         """
         return np.rot90(tile_to_rotate, k=1, axes=(1, 0))
 
-    def _check_rotation_possible(self):
+    def _check_rotation_possible(self) -> bool:
         """
         Checks whether rotating 'self.current_tile' at its current
         position in the field by 90 degrees to the right is possible.
@@ -767,6 +708,12 @@ class TetrisEnv:
                   False otherwise.
         """
         out_of_bounds_with_rotation = self._out_of_bounds_with_rotation()
+        collision_with_rotation = self._collision_with_rotation()
+
+        if (not out_of_bounds_with_rotation) and (not collision_with_rotation):
+            return True
+        else:
+            return False
 
     def _out_of_bounds_with_rotation(self) -> bool:
         """
