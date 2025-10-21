@@ -889,8 +889,49 @@ class TetrisEnv:
         Returns:
             np.ndarray: The slice of the current_tile which will occupy new
                         cells in the field after a rotation.
-        """
         
+        Raises:
+            GamewiseLogicalError: If the current_tile has as many rows as it has
+                                  columns.
+                                  Reason: This function expects the current_tile
+                                          to have a different number of rows and
+                                          columns, because only then a new part
+                                          of the field would be occupied with
+                                          a rotation.
+        """
+        shape_of_current_tile = self._get_shape_of_current_tile()
+
+        if shape_of_current_tile[0] == shape_of_current_tile[1]:
+            raise GamewiseLogicalError("'self.current_tile' has the same number of rows and columns.\n \
+                                       However, this function expects current tile to have a different number of rows and columns.\n \
+                                       Only call this function with a current_tile that has a different number of rows and columns.")
+        
+
+        current_tile_number_of_rows = self._current_tile_number_of_rows()
+        current_tile_number_of_columns = self._current_tile_number_of_columns()
+        
+        #The following row- and column-indices of the current (non-rotated) tile
+        #start from 0, i.e. are individual to the tile and not related to the
+        #tiles' position in the field.
+        current_tile_row_indices = list(range(0, current_tile_number_of_rows, 1))
+        current_tile_column_indices = list(range(0, current_tile_number_of_columns, 1))
+    
+        current_tile_copy = self.current_tile[1].copy()
+        current_tile_rotated = self._rotate_tile(tile_to_rotate=current_tile_copy)
+
+        diff_in_rows, diff_in_columns = self._get_diff_in_rows_and_columns_of_current_tile_after_rotation()
+
+        if (diff_in_rows > 0) and (diff_in_columns < 0):
+            current_tile_rotated_new_cells_slice = current_tile_rotated[max(current_tile_row_indices):max(current_tile_row_indices)+diff_in_rows+1,
+                                                                        min(current_tile_column_indices):max(current_tile_column_indices)+diff_in_columns+1]
+        elif (diff_in_columns > 0) and (diff_in_rows < 0):
+            current_tile_rotated_new_cells_slice = current_tile_rotated[max(current_tile_column_indices):max(current_tile_column_indices)+diff_in_columns+1,
+                                                                        min(current_tile_row_indices):max(current_tile_row_indices)+diff_in_rows+1]
+            
+        
+        return current_tile_rotated_new_cells_slice
+
+
 
 
 
