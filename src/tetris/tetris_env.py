@@ -752,17 +752,36 @@ class TetrisEnv:
         of the field when it would be rotated by 90 degrees
         clockwise.
 
-        
+        An actual rotation, i.e. an update of 'self.field' or
+        'self.current_tile_positionInField' or of other attributes
+        is not done, but only the check described above is
+        done and the respective boolean is returned.
 
         Returns:
-            (bool): True, if 'tile_to_check' would be out-of-bounds when launched
-                    at 'self.launch_position' into the field;
+            (bool): True, if 'self.current_tile' would be
+                    out-of-bounds when rotated by 90 degrees
+                    clockwise;
                     False otherwise.
         """
+        shape_of_current_tile = self._get_shape_of_current_tile()
 
+        if shape_of_current_tile[0] == shape_of_current_tile[1]:
+            return False
         
+        current_tile_at_right_edge = self._check_tile_at_edge(edge="right")
+        current_tile_at_bottom_edge = self._check_tile_at_edge(edge="bottom")
 
+        #if the tile has more rows than columns and the tile is located
+        #at the right edge, after a rotation the tile would reach out
+        #of the right edge of the field.
+        #Equivalently, if the tile has more columns than rows and the
+        #tile is located at the bottom edge, after a rotation the tile
+        #would reach out of the bottom edge of the field.
+        if ((shape_of_current_tile[0] > shape_of_current_tile[1]) and current_tile_at_right_edge) or \
+            ((shape_of_current_tile[1] > shape_of_current_tile[0]) and current_tile_at_bottom_edge):
+            return True
         
+        return False
 
 
 
