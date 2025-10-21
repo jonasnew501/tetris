@@ -748,6 +748,16 @@ class TetrisEnv:
         print("-----Rotate fully executed-----")
         return True
 
+    def _rotate_tile(self, tile_to_rotate: np.ndarray) -> np.ndarray:
+        """
+        Rotates 'tile_to_rotate' by 90 degrees clockwise.
+
+        Returns:
+            rotated_tile (np.ndarray): The rotated tile.
+        """
+        return np.rot90(tile_to_rotate, k=1, axes=(1, 0))
+
+
     def _check_rotation_possible(self):
         """
         Checks whether rotating 'self.current_tile' at its current
@@ -829,25 +839,67 @@ class TetrisEnv:
             return False
 
         #Determining the cells of the field which 'self.current_tile' doesn't occupy
-        #not, but will occupy when it was rotated by 90 degrees clockwise.
+        #now, but will occupy when it was rotated by 90 degrees clockwise.
         current_tile_positionInField = self.current_tile_positionInField.copy()
         current_tile_positionInField_after_rotation = self._get_current_tile_positionInField_after_rotation()
 
         current_tile_cells_occupied = list(zip(current_tile_positionInField[0], current_tile_positionInField[1]))
-        current_tile_cells_occupied_after_rotation = list(zip(current_tile_cells_occupied_after_rotation[0], current_tile_cells_occupied_after_rotation[1]))
+        current_tile_cells_occupied_after_rotation = list(zip(current_tile_positionInField_after_rotation[0], current_tile_positionInField_after_rotation[1]))
 
         new_cells_occupied_after_rotation = [tup for tup in current_tile_cells_occupied_after_rotation if tup in current_tile_cells_occupied_after_rotation and tup not in current_tile_cells_occupied]
 
-        # field_at_new_cells_occupied_after_rotation
+        field_at_new_cells_occupied_after_rotation = self._get_slice_of_field_from_coords(coords=new_cells_occupied_after_rotation)
 
+        
         # current_tile_at_new_cells_occupied_after_rotation
 
         # Summe der beiden obigen bilden und schauen, ob summe jeweils in [0, 1]
     
 
+    def _get_slice_of_field_from_coords(self, coords: list[tuple]) -> np.ndarray:
+        """
+        Slices out the area defined by 'coords' from 'self.field'
+        and returns that slice.
 
+        'self.field' is not altered by this function.
 
+        It is required that the coords are adjacent to each other, either
+        horizontally or vertically (not diagonally). That means there
+        must be no gap between one section in the field defined
+        by the coordinates and another section in the field defined
+        by the coordinates.
 
+        Args:
+            coords (list[tulple[int, int]]): A list of one or multiple tuples of the form
+                                             (row-index, column-index).
+                                             Every tuple defines a coordinate in 'self.field'
+        
+        Returns:
+            field_slice (np.ndarray): The slice of 'self.field' defined by 'coords'.
+        
+        Raises:
+            GamewiseLogicalError: If either the rows and/or the columns were identified as not
+                                  being adjacent to each other, i.e. they have gaps in between.
+        """
+        #splitting the coordinates into rows and columns
+        rows = [row for row, _ in coords]
+        columns = [column for _, column in coords]
+
+        #Checking for adjacency of both rows and columns
+        adjacent_rows = list(range(min(rows), max(rows)+1, 1))
+        adjacent_columns = list(range(min(columns), max(columns)+1, 1))
+
+        check_adjacent_rows = sorted(rows) == adjacent_rows
+        check_adjacent_columns = sorted(columns) == adjacent_columns
+
+        if (not check_adjacent_rows) or (not check_adjacent_columns):
+            raise GamewiseLogicalError(f"The rows and/or columns from the coords were identified as not being adjacent.\n \
+                                       However, this is required by the logic of this function.\n \
+                                       rows: {rows}, columns: {columns}.")
+        
+        field_slice = self.field[min(rows):max(rows)+1, min(columns):max(columns)+1]
+
+        return field_slice
 
 
 
