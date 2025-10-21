@@ -146,13 +146,13 @@ class TetrisEnv:
         Args:
             drop_possible (bool): Indicating whether a drop of the current
                                   tile is currently possible or not.
-        
+
         Raises:
             GamewiseLogicalError: If 'drop_possible' is False
         """
         if drop_possible is False:
             raise GamewiseLogicalError
-        
+
         current_tile_number_of_rows = self._current_tile_number_of_rows()
         current_tile_number_of_columns = self._current_tile_number_of_columns()
 
@@ -209,7 +209,9 @@ class TetrisEnv:
             (bool): True, if a drop is possible;
                     False otherwise.
         """
-        if self._check_tile_at_edge(edge="bottom", tile_positionInField=self.current_tile_positionInField):
+        if self._check_tile_at_edge(
+            edge="bottom", tile_positionInField=self.current_tile_positionInField
+        ):
             return False
         else:
             # loop-based approach
@@ -238,7 +240,6 @@ class TetrisEnv:
             )
 
             return all(sum_of_both_rows in [0, 1])
-
 
     def remove_full_rows(self, full_rows_indices: Union[list, np.ndarray]) -> int:
         """
@@ -306,12 +307,12 @@ class TetrisEnv:
         full_rows_indices = np.where(full_rows_bool)[0]
 
         return full_rows_indices
-    
 
     class PossibleActions(Enum):
         """
         Possible actions that can be taken in the game.
         """
+
         do_nothing = 0
         move_left = 1
         move_right = 2
@@ -331,8 +332,6 @@ class TetrisEnv:
             self.rotate()
         else:
             raise ValueError("Unknown action: {action}")
-    
-
 
     def move(self, direction: PossibleActions):
         """
@@ -348,45 +347,72 @@ class TetrisEnv:
         # retaining the old 'current_tile_positionInField'-variable before it is updated below
         current_tile_positionInField_old = self.current_tile_positionInField.copy()
 
-        #move to the left
+        # move to the left
         if direction == self.PossibleActions.move_left:
             if not self._move_possible(direction=direction):
                 return
-            
-            #updating 'self.current_tile_positionInField'
-            self.current_tile_positionInField[1] -= np.ones(shape=(len(self.current_tile_positionInField[1]),), dtype=np.int8)
+
+            # updating 'self.current_tile_positionInField'
+            self.current_tile_positionInField[1] -= np.ones(
+                shape=(len(self.current_tile_positionInField[1]),), dtype=np.int8
+            )
 
             # Updating the tile in the field (i.e. doing the actual movement)
             current_tile = self.current_tile[1]
 
-            self.field[min(self.current_tile_positionInField[0]): min(self.current_tile_positionInField[0])+current_tile_number_of_rows,
-                       min(self.current_tile_positionInField[1]): min(self.current_tile_positionInField[1])+current_tile_number_of_columns] |= current_tile
-            
-            #emptying the rightmost column of the previous position of the current tile, because that column not got empty due to the move
-            self.field[list(set(self.current_tile_positionInField[0])), max(current_tile_positionInField_old[1])] = np.int8(0)
-        
-        #move to the right
+            self.field[
+                min(self.current_tile_positionInField[0]) : min(
+                    self.current_tile_positionInField[0]
+                )
+                + current_tile_number_of_rows,
+                min(self.current_tile_positionInField[1]) : min(
+                    self.current_tile_positionInField[1]
+                )
+                + current_tile_number_of_columns,
+            ] |= current_tile
+
+            # emptying the rightmost column of the previous position of the current tile, because that column not got empty due to the move
+            self.field[
+                list(set(self.current_tile_positionInField[0])),
+                max(current_tile_positionInField_old[1]),
+            ] = np.int8(0)
+
+        # move to the right
         elif direction == self.PossibleActions.move_right:
             if not self._move_possible(direction=direction):
                 return
-            
+
             # Updating 'self.current_tile_positionInField
-            self.current_tile_positionInField[1] += np.ones(shape=(len(self.current_tile_positionInField[1]),), dtype=np.int8)
+            self.current_tile_positionInField[1] += np.ones(
+                shape=(len(self.current_tile_positionInField[1]),), dtype=np.int8
+            )
 
             # Updating the tile in the field (i.e. doing the actual movement)
             current_tile = self.current_tile[1]
 
-            self.field[min(self.current_tile_positionInField[0]): min(self.current_tile_positionInField[0])+current_tile_number_of_rows,
-                       min(self.current_tile_positionInField[1]): min(self.current_tile_positionInField[1])+current_tile_number_of_columns] |= current_tile
-            
-            #emptying the leftmost column of the previous position of the current tile, because that column not got empty due to the move
-            self.field[list(set(self.current_tile_positionInField[0])), min(current_tile_positionInField_old[1])] = np.int8(0)
+            self.field[
+                min(self.current_tile_positionInField[0]) : min(
+                    self.current_tile_positionInField[0]
+                )
+                + current_tile_number_of_rows,
+                min(self.current_tile_positionInField[1]) : min(
+                    self.current_tile_positionInField[1]
+                )
+                + current_tile_number_of_columns,
+            ] |= current_tile
+
+            # emptying the leftmost column of the previous position of the current tile, because that column not got empty due to the move
+            self.field[
+                list(set(self.current_tile_positionInField[0])),
+                min(current_tile_positionInField_old[1]),
+            ] = np.int8(0)
 
         else:
-            raise UnsupportedParameterValue(f"The value ({direction!r}) passed to the parameter 'direction' of this function is not supported in this function.\n \
-                                            Only 'move_left' and 'move_right' are supported!")
+            raise UnsupportedParameterValue(
+                f"The value ({direction!r}) passed to the parameter 'direction' of this function is not supported in this function.\n \
+                                            Only 'move_left' and 'move_right' are supported!"
+            )
 
-    
     def _move_possible(self, direction: PossibleActions) -> bool:
         """
         Checks if moving 'self.current_tile' to the desired 'direction'
@@ -394,7 +420,7 @@ class TetrisEnv:
 
         Args:
             direction (PossibleActions): Possible values are 'move_left' and 'move_right'.
-        
+
         Returns:
             (bool): True, if the move checked is possible;
                     False otherwise.
@@ -403,17 +429,24 @@ class TetrisEnv:
             tile_at_edge = self._check_tile_at_edge(edge="left")
             if tile_at_edge:
                 return False
-        
-            #Checking whether the sums of the individual cells
-            #of the leftmost column of the current tile in all rows
-            #and the column in the field left of this leftmost column
-            #are at most 1
+
+            # Checking whether the sums of the individual cells
+            # of the leftmost column of the current tile in all rows
+            # and the column in the field left of this leftmost column
+            # are at most 1
             rows_of_current_tile = list(set(self.current_tile_positionInField[0]))
 
-            leftmost_column_current_tile = self.field[rows_of_current_tile, min(self.current_tile_positionInField[1])]
-            column_left_of_leftmost_column_current_tile = self.field[rows_of_current_tile, min(self.current_tile_positionInField[1]) - 1]
+            leftmost_column_current_tile = self.field[
+                rows_of_current_tile, min(self.current_tile_positionInField[1])
+            ]
+            column_left_of_leftmost_column_current_tile = self.field[
+                rows_of_current_tile, min(self.current_tile_positionInField[1]) - 1
+            ]
 
-            sum_of_both_columns = leftmost_column_current_tile + column_left_of_leftmost_column_current_tile
+            sum_of_both_columns = (
+                leftmost_column_current_tile
+                + column_left_of_leftmost_column_current_tile
+            )
 
             return all(sum_of_both_columns in [0, 1])
 
@@ -421,21 +454,28 @@ class TetrisEnv:
             tile_at_edge = self._check_tile_at_edge(edge="right")
             if tile_at_edge:
                 return False
-            
+
             rows_of_current_tile = list(set(self.current_tile_positionInField[0]))
 
-            rightmost_column_current_tile = self.field[rows_of_current_tile, max(self.current_tile_positionInField[1])]
-            column_right_of_rightmost_column_current_tile = self.field[rows_of_current_tile, max(self.current_tile_positionInField[1]) + 1]
+            rightmost_column_current_tile = self.field[
+                rows_of_current_tile, max(self.current_tile_positionInField[1])
+            ]
+            column_right_of_rightmost_column_current_tile = self.field[
+                rows_of_current_tile, max(self.current_tile_positionInField[1]) + 1
+            ]
 
-            sum_of_both_columns = rightmost_column_current_tile + column_right_of_rightmost_column_current_tile
+            sum_of_both_columns = (
+                rightmost_column_current_tile
+                + column_right_of_rightmost_column_current_tile
+            )
 
             return all(sum_of_both_columns in [0, 1])
 
-
-
-    
-    def _check_tile_at_edge(self, edge: Literal["left", "right", "bottom"],
-                            tile_positionInField: list[list[int], list[int]]) -> bool:
+    def _check_tile_at_edge(
+        self,
+        edge: Literal["left", "right", "bottom"],
+        tile_positionInField: list[list[int], list[int]],
+    ) -> bool:
         """
         Checks whether the (current) tile (at least one column of it)
         is currently located on the leftmost, rightmost, or bottommost
@@ -470,25 +510,25 @@ class TetrisEnv:
                 return True
             else:
                 return False
-        
+
         elif edge == "right":
             pos_rightmost_column_current_tile = max(tile_positionInField[1])
             if pos_rightmost_column_current_tile == self.field_width - 1:
                 return True
             else:
                 return False
-        
+
         elif edge == "bottom":
             pos_bottommost_column_current_tile = max(tile_positionInField[0])
             if pos_bottommost_column_current_tile == self.field_height - 1:
                 return True
             else:
                 return False
-        
+
         else:
-            raise ValueError(f"Invalid edge value: {edge!r}. Must be 'left', 'right' or 'bottom'.")
-
-
+            raise ValueError(
+                f"Invalid edge value: {edge!r}. Must be 'left', 'right' or 'bottom'."
+            )
 
     def rotate(self):
         """
@@ -591,12 +631,12 @@ class TetrisEnv:
             set(self.current_tile_positionInField[1].copy())
         )
 
-        self.current_tile_positionInField[
-            0
-        ] = current_tile_positionInField_rows_set_old.copy()
-        self.current_tile_positionInField[
-            1
-        ] = current_tile_positionInField_columns_set_old.copy()
+        self.current_tile_positionInField[0] = (
+            current_tile_positionInField_rows_set_old.copy()
+        )
+        self.current_tile_positionInField[1] = (
+            current_tile_positionInField_columns_set_old.copy()
+        )
 
         # rotating resp. modifying the data held in 'self.current_tile_positionInField'
         if (
@@ -707,7 +747,7 @@ class TetrisEnv:
 
         print("-----Rotate fully executed-----")
         return True
-    
+
     def _check_rotation_possible(self):
         """
         Checks whether rotating 'self.current_tile' at its current
@@ -718,11 +758,7 @@ class TetrisEnv:
                   False otherwise.
         """
         out_of_bounds_with_rotation = self._out_of_bounds_with_rotation()
-        
-        
 
-
-    
     def _out_of_bounds_with_rotation(self) -> bool:
         """
         Checks whether 'self.current_tile' would be out of bounds
@@ -744,22 +780,26 @@ class TetrisEnv:
 
         if shape_of_current_tile[0] == shape_of_current_tile[1]:
             return False
-        
+
         current_tile_at_right_edge = self._check_tile_at_edge(edge="right")
         current_tile_at_bottom_edge = self._check_tile_at_edge(edge="bottom")
 
-        #if the tile has more rows than columns and the tile is located
-        #at the right edge, after a rotation the tile would reach out
-        #of the right edge of the field.
-        #Equivalently, if the tile has more columns than rows and the
-        #tile is located at the bottom edge, after a rotation the tile
-        #would reach out of the bottom edge of the field.
-        if ((shape_of_current_tile[0] > shape_of_current_tile[1]) and current_tile_at_right_edge) or \
-            ((shape_of_current_tile[1] > shape_of_current_tile[0]) and current_tile_at_bottom_edge):
+        # if the tile has more rows than columns and the tile is located
+        # at the right edge, after a rotation the tile would reach out
+        # of the right edge of the field.
+        # Equivalently, if the tile has more columns than rows and the
+        # tile is located at the bottom edge, after a rotation the tile
+        # would reach out of the bottom edge of the field.
+        if (
+            (shape_of_current_tile[0] > shape_of_current_tile[1])
+            and current_tile_at_right_edge
+        ) or (
+            (shape_of_current_tile[1] > shape_of_current_tile[0])
+            and current_tile_at_bottom_edge
+        ):
             return True
-        
-        return False
 
+        return False
 
     def _collition_with_rotation(self) -> bool:
         """
@@ -781,10 +821,9 @@ class TetrisEnv:
                   False otherwise.
         """
 
-
-
-
-    def _get_current_tile_positionInField_after_rotation(self) -> list[list[int], list[int]]:
+    def _get_current_tile_positionInField_after_rotation(
+        self,
+    ) -> list[list[int], list[int]]:
         """
         Creates a variable of the same principle as 'self.current_tile_positionInField'
         holding the row and column indices it would have after a rotation of
@@ -800,29 +839,52 @@ class TetrisEnv:
         """
         current_tile_positionInField_copy = self.current_tile_positionInField.copy()
 
-        current_tile_shape_after_rotation = self._get_shape_of_current_tile_after_rotation()
+        current_tile_shape_after_rotation = (
+            self._get_shape_of_current_tile_after_rotation()
+        )
 
-        diff_in_rows, diff_in_columns = self._get_diff_in_rows_and_columns_of_current_tile_after_rotation()
+        diff_in_rows, diff_in_columns = (
+            self._get_diff_in_rows_and_columns_of_current_tile_after_rotation()
+        )
 
-        #calculation of new row and column indices
-        #rows
+        # calculation of new row and column indices
+        # rows
         if diff_in_rows < 0:
-            new_row_indices_unique = list(set(current_tile_positionInField_copy[0]))[:diff_in_rows]
+            new_row_indices_unique = list(set(current_tile_positionInField_copy[0]))[
+                :diff_in_rows
+            ]
         elif diff_in_rows > 0:
-            new_row_indices_unique = range(min(current_tile_positionInField_copy[0]), max(current_tile_positionInField_copy[0])+diff_in_rows+1, 1)
-        
-        #columns
-        if diff_in_columns < 0:
-            new_column_indices_unique = list(set(current_tile_positionInField_copy[1]))[:diff_in_columns]
-        elif diff_in_rows > 0:
-            new_column_indices_unique = range(min(current_tile_positionInField_copy[1]), max(current_tile_positionInField_copy[1])+diff_in_columns+1, 1)
+            new_row_indices_unique = range(
+                min(current_tile_positionInField_copy[0]),
+                max(current_tile_positionInField_copy[0]) + diff_in_rows + 1,
+                1,
+            )
 
-        #creating the lists of row and column indices as held in 'self.current_tile_positionInField' in principle
-        new_row_indices = list(np.repeat(new_row_indices_unique, repeats=current_tile_shape_after_rotation[1]))
-        new_column_indices = list(np.tile(new_column_indices_unique, reps=current_tile_shape_after_rotation[0]))
+        # columns
+        if diff_in_columns < 0:
+            new_column_indices_unique = list(set(current_tile_positionInField_copy[1]))[
+                :diff_in_columns
+            ]
+        elif diff_in_rows > 0:
+            new_column_indices_unique = range(
+                min(current_tile_positionInField_copy[1]),
+                max(current_tile_positionInField_copy[1]) + diff_in_columns + 1,
+                1,
+            )
+
+        # creating the lists of row and column indices as held in 'self.current_tile_positionInField' in principle
+        new_row_indices = list(
+            np.repeat(
+                new_row_indices_unique, repeats=current_tile_shape_after_rotation[1]
+            )
+        )
+        new_column_indices = list(
+            np.tile(
+                new_column_indices_unique, reps=current_tile_shape_after_rotation[0]
+            )
+        )
 
         return list(new_row_indices, new_column_indices)
-
 
     def _get_shape_of_current_tile_after_rotation(self) -> tuple[int, int]:
         """
@@ -844,7 +906,6 @@ class TetrisEnv:
 
         return current_tile_shape_after_rotation
 
-
     def _get_shape_of_current_tile(self) -> tuple:
         """
         From 'self.current_tile_positionInField', computes and returns
@@ -859,7 +920,9 @@ class TetrisEnv:
 
         return (n_rows, n_columns)
 
-    def _get_diff_in_rows_and_columns_of_current_tile_after_rotation(self) -> tuple[int, int]:
+    def _get_diff_in_rows_and_columns_of_current_tile_after_rotation(
+        self,
+    ) -> tuple[int, int]:
         """
         Calculates and returns the difference in rows and columns 'self.current_tile'
         would have when it would be rotated by 90 degrees clockwise.
@@ -886,14 +949,14 @@ class TetrisEnv:
 
         current_tile_shape = self._get_shape_of_current_tile()
 
-        current_tile_shape_after_rotation = self._get_shape_of_current_tile_after_rotation()
+        current_tile_shape_after_rotation = (
+            self._get_shape_of_current_tile_after_rotation()
+        )
 
         diff_in_rows = current_tile_shape_after_rotation[0] - current_tile_shape[0]
         diff_in_columns = current_tile_shape_after_rotation[1] - current_tile_shape[1]
 
         return (diff_in_rows, diff_in_columns)
-
-
 
     def visualize_field(self):
         # TODO: Finish with constantly updating plot

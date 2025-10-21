@@ -47,6 +47,7 @@ class GamewiseLogicalError(Exception):
 
     pass
 
+
 class UnsupportedParameterValue(Exception):
     """
     A custom, domain-specific exception for when a value
