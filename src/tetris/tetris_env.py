@@ -808,6 +808,9 @@ class TetrisEnv:
         by the current tile, will collide with the respective
         part of the then rotated tile or not.
 
+        A 'collision' means that the sum of individual cells is
+        at most 1.
+
         If a collition would happen, a rotation is not possible.
 
         An actual rotation, i.e. an update of 'self.field' or
@@ -820,6 +823,36 @@ class TetrisEnv:
                   and the field as described above would happen;
                   False otherwise.
         """
+        shape_of_current_tile = self._get_shape_of_current_tile()
+
+        if shape_of_current_tile[0] == shape_of_current_tile[1]:
+            return False
+
+        #Determining the cells of the field which 'self.current_tile' doesn't occupy
+        #not, but will occupy when it was rotated by 90 degrees clockwise.
+        current_tile_positionInField = self.current_tile_positionInField.copy()
+        current_tile_positionInField_after_rotation = self._get_current_tile_positionInField_after_rotation()
+
+        current_tile_cells_occupied = list(zip(current_tile_positionInField[0], current_tile_positionInField[1]))
+        current_tile_cells_occupied_after_rotation = list(zip(current_tile_cells_occupied_after_rotation[0], current_tile_cells_occupied_after_rotation[1]))
+
+        new_cells_occupied_after_rotation = [tup for tup in current_tile_cells_occupied_after_rotation if tup in current_tile_cells_occupied_after_rotation and tup not in current_tile_cells_occupied]
+
+        # field_at_new_cells_occupied_after_rotation
+
+        # current_tile_at_new_cells_occupied_after_rotation
+
+        # Summe der beiden obigen bilden und schauen, ob summe jeweils in [0, 1]
+    
+
+
+
+
+
+
+
+
+
 
     def _get_current_tile_positionInField_after_rotation(
         self,
