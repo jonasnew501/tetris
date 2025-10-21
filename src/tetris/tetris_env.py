@@ -867,9 +867,14 @@ class TetrisEnv:
             )
         )
 
-        # current_tile_at_new_cells_occupied_after_rotation
+        current_tile_at_new_cells_occupied_after_rotation = self._get_slice_of_current_tile_at_new_cells_occupied_after_rotation()
 
-        # Summe der beiden obigen bilden und schauen, ob summe jeweils in [0, 1]
+        assert field_at_new_cells_occupied_after_rotation.shape == current_tile_at_new_cells_occupied_after_rotation.shape, "The two slices do not have the same shape, however, this is required."
+
+        sum_of_both_slices = field_at_new_cells_occupied_after_rotation + current_tile_at_new_cells_occupied_after_rotation
+
+        return not all(sum_of_both_slices in [0, 1])
+
     
     def _get_slice_of_current_tile_at_new_cells_occupied_after_rotation(self) -> np.ndarray:
         """
