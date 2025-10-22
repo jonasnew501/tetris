@@ -99,4 +99,7 @@ The 'src'-folder contains the source-code, the 'tests'-folder contains the testi
 
 
 ## What I Learned
+*This section will be written soon.*
+<!--
 XXXXXX
+-->
