@@ -536,6 +536,7 @@ class TetrisEnv:
 
         This method expects that a rotation of 'self.current_tile' is currently possible.
         """
+        current_tile_positionInField_before_rotation = self.current_tile_positionInField.copy()
 
         self.current_tile_positionInField = self._get_current_tile_positionInField_after_rotation()
 
@@ -543,140 +544,13 @@ class TetrisEnv:
 
         current_tile_rotated = self._rotate_tile(tile_to_rotate=self.current_tile[1])
 
-        top_left_corner_of_current_tile_rotated_in_field = sorted(list(zip(*self.current_tile_positionInField)), key=lambda tup: sum(tup))[0]
+        top_left_corner_of_current_tile_rotated_in_field = sorted(list(zip(*self.current_tile_positionInField.copy())), key=lambda tup: sum(tup))[0]
 
         self._put_tile_into_field(tile_to_put_into_field=current_tile_rotated, position=list(top_left_corner_of_current_tile_rotated_in_field))
 
+        self._clear_unoccupied_cells_in_field_after_rotation(current_tile_positionInField_before_rotation=current_tile_positionInField_before_rotation,
+                                                             current_tile_positionInField_after_rotation=self.current_tile_positionInField.copy())
 
-
-
-        #TODO: Continue here
-
-        # changing the rows and columns in 'current_tile_positionInField' to sets and then to lists again, to make the following rotation-operation possible
-        # also saving the sets for later use
-        current_tile_positionInField_rows_set_old = list(
-            set(self.current_tile_positionInField[0].copy())
-        )
-        current_tile_positionInField_columns_set_old = list(
-            set(self.current_tile_positionInField[1].copy())
-        )
-
-        self.current_tile_positionInField[0] = (
-            current_tile_positionInField_rows_set_old.copy()
-        )
-        self.current_tile_positionInField[1] = (
-            current_tile_positionInField_columns_set_old.copy()
-        )
-
-        # rotating resp. modifying the data held in 'self.current_tile_positionInField'
-        if (
-            diff_in_columns > 0
-        ):  # i.e. the number of columns would increase with a rotation
-            self.current_tile_positionInField[0] = self.current_tile_positionInField[0][
-                : -abs(diff_in_rows)
-            ]
-            self.current_tile_positionInField[1].extend(
-                list(
-                    range(
-                        max(self.current_tile_positionInField[1]) + 1,
-                        max(self.current_tile_positionInField[1])
-                        + abs(diff_in_columns)
-                        + 1,
-                        1,
-                    )
-                )
-            )
-
-        elif (
-            diff_in_columns < 0
-        ):  # i.e. the number of columns would decrease with a rotation (automatically meaning that the number of rows will increase)
-            self.current_tile_positionInField[0].extend(
-                list(
-                    range(
-                        max(self.current_tile_positionInField[0]) + 1,
-                        max(self.current_tile_positionInField[0])
-                        + abs(diff_in_rows)
-                        + 1,
-                        1,
-                    )
-                )
-            )
-            self.current_tile_positionInField[1] = self.current_tile_positionInField[1][
-                : -abs(diff_in_columns)
-            ]
-
-        # multiplying-out the set-like rows and columns in 'current_tile_positionInField' again,
-        # so that the actual initial structure of this attribute is obtained again.
-        # the "Multiplying-out" is actually called the "Cartesian product", which can be
-        # obtained by using "product" from "itertools"
-        # Cartesian product
-        coords = list(
-            product(
-                self.current_tile_positionInField[0],
-                self.current_tile_positionInField[1],
-            )
-        )
-        # Transpose to get two lists: rows and columns
-        rows_full, cols_full = zip(*coords)
-        # Assembling the result back together
-        self.current_tile_positionInField = [list(rows_full), list(cols_full)]
-
-        # conducting the actual 90 degree rotation to the right
-        # 1.: Swapping the rows of the current tile in the field
-        tile_swapped = np.flip(
-            self.field.copy()[
-                min(current_tile_positionInField_rows_set_old) : max(
-                    current_tile_positionInField_rows_set_old
-                )
-                + 1,
-                min(current_tile_positionInField_columns_set_old) : max(
-                    current_tile_positionInField_columns_set_old
-                )
-                + 1,
-            ],
-            axis=0,
-        )
-
-        # 2.: Transposing that swapped tile (now the tile (still not in the field yet) is actually rotated by 90 degrees to the right)
-        tile_t = tile_swapped.T
-
-        # 3.: Deleting the current (non-rotated) tile from the field
-        self.field[
-            min(current_tile_positionInField_rows_set_old) : max(
-                current_tile_positionInField_rows_set_old
-            )
-            + 1,
-            min(current_tile_positionInField_columns_set_old) : max(
-                current_tile_positionInField_columns_set_old
-            )
-            + 1,
-        ] = 0
-
-        # 4.: From the already updated data in 'self.current_tile_positionInField', again getting the sets
-        current_tile_positionInField_rows_set_new = list(
-            set(self.current_tile_positionInField[0].copy())
-        )
-        current_tile_positionInField_columns_set_new = list(
-            set(self.current_tile_positionInField[1].copy())
-        )
-
-        # 5.: Putting the swapped tile into the correct position in the field
-        self.field[
-            min(current_tile_positionInField_rows_set_new) : max(
-                current_tile_positionInField_rows_set_new
-            )
-            + 1,
-            min(current_tile_positionInField_columns_set_new) : max(
-                current_tile_positionInField_columns_set_new
-            )
-            + 1,
-        ] = tile_t
-
-        # TODO:
-        # asserting that the current tile in the field now actually has the correct shape
-
-        print("-----Rotate fully executed-----")
-        return True
     
     def _clear_unoccupied_cells_in_field_after_rotation(self, current_tile_positionInField_before_rotation: list[list[int], list[int]], current_tile_positionInField_after_rotation: list[list[int], list[int]]):
         """
