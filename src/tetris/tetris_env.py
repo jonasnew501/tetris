@@ -543,6 +543,10 @@ class TetrisEnv:
 
         current_tile_rotated = self._rotate_tile(tile_to_rotate=self.current_tile[1])
 
+        top_left_corner_of_current_tile_rotated_in_field = sorted(list(zip(*self.current_tile_positionInField)), key=lambda tup: sum(tup))[0]
+
+        self._put_tile_into_field(tile_to_put_into_field=current_tile_rotated, position=list(top_left_corner_of_current_tile_rotated_in_field))
+
 
 
 
@@ -674,6 +678,35 @@ class TetrisEnv:
         print("-----Rotate fully executed-----")
         return True
     
+    def _clear_unoccupied_cells_in_field_after_rotation(self, current_tile_positionInField_before_rotation: list[list[int], list[int]], current_tile_positionInField_after_rotation: list[list[int], list[int]]):
+        """
+        After a tile having a different number of rows and columns is rotated,
+        there are cells in the field, which are then not occupied by the
+        current tile anymore.
+
+        This function sets those cells in 'self.field' to zero.
+
+        Args:
+            current_tile_positionInField_before_rotation (list[list[int], list[int]]):
+            The value held in 'self.current_tile_positionInField' before a rotation of
+            'self.current_tile' was conducted resp. before this attribute was updated to the
+            state after the rotation.
+            current_tile_positionInField_after_rotation (list[list[int], list[int]]):
+            The value held in 'self.current_tile_positionInField' after a rotation
+            of 'self.current_tile' was conducted resp. after this attribute was updated to the
+            state after the rotation.
+        """
+        coordinates_current_tile_positionInField_before_rotation = list(zip(*current_tile_positionInField_before_rotation))
+        coordinates_current_tile_positionInField_after_rotation = list(zip(*current_tile_positionInField_after_rotation))
+
+        unoccupied_cells_after_rotation = [tup for tup in coordinates_current_tile_positionInField_before_rotation if tup not in coordinates_current_tile_positionInField_after_rotation]
+
+        rows_unoccupied_cells = [row for row, _ in unoccupied_cells_after_rotation]
+        columns_unoccupied_cells = [col for _, col in unoccupied_cells_after_rotation]
+
+        self.field[min(rows_unoccupied_cells) : max(rows_unoccupied_cells) + 1,
+                   min(columns_unoccupied_cells) : max(columns_unoccupied_cells) + 1] = np.int(8)
+
     def _update_rotation_value(self) -> int:
         """
         Updates the rotation-value held in
@@ -1209,14 +1242,7 @@ class TetrisEnv:
         if self._overlap_at_launch(tile_to_put_into_field=tile_to_put_into_field):
             return False
         else:
-            current_tile_number_of_rows = self._current_tile_number_of_rows()
-            current_tile_number_of_columns = self._current_tile_number_of_columns()
-
-            # putting the tile into the field using a bitwise OR
-            self.field[
-                self.launch_position[0] : self.launch_position[0] + current_tile_number_of_rows,
-                self.launch_position[1] : self.launch_position[1] + current_tile_number_of_columns,
-            ] |= tile_to_put_into_field
+            self._put_tile_into_field(tile_to_put_into_field=tile_to_put_into_field, position=self.launch_position)
 
             return True
     
