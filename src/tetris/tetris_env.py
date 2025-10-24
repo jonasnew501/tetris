@@ -128,7 +128,9 @@ class TetrisEnv:
         # the tiles queue is populated again
         self._populate_tiles_queue()
 
-        put_successful = self._put_tile_into_field(self.current_tile)
+        put_successful = self._put_tile_into_field(
+            self.current_tile[1], position=self.launch_position
+        )
 
         if not put_successful:  # i.e. game over
             return False
@@ -312,6 +314,7 @@ class TetrisEnv:
         """
         Possible actions that can be taken in the game.
         """
+
         do_nothing = 0
         move_left = 1
         move_right = 2
@@ -339,7 +342,7 @@ class TetrisEnv:
             self.rotate()
         else:
             raise ValueError("Unknown action: {action}")
-        
+
         self._set_current_action(action=action)
 
     def _set_current_action(self, action: PossibleActions):
@@ -348,15 +351,17 @@ class TetrisEnv:
 
         Args:
             action (PossibleActions): The action to be assigned
-        
+
         Raises:
             ValueError: If the value passed to 'action'
                         is not listed in the Enum
                         'PossibleActions'
         """
         if not isinstance(action, self.PossibleActions):
-            raise ValueError(f"Invalid action: {action}. Must be a member of PossibleActions.")
-        
+            raise ValueError(
+                f"Invalid action: {action}. Must be a member of PossibleActions."
+            )
+
         self.current_action = action
 
     def move(self, direction: PossibleActions):
@@ -562,23 +567,38 @@ class TetrisEnv:
 
         This method expects that a rotation of 'self.current_tile' is currently possible.
         """
-        current_tile_positionInField_before_rotation = self.current_tile_positionInField.copy()
+        current_tile_positionInField_before_rotation = (
+            self.current_tile_positionInField.copy()
+        )
 
-        self.current_tile_positionInField = self._get_current_tile_positionInField_after_rotation()
+        self.current_tile_positionInField = (
+            self._get_current_tile_positionInField_after_rotation()
+        )
 
         self.current_tile[2] = self._update_rotation_value()
 
         current_tile_rotated = self._rotate_tile(tile_to_rotate=self.current_tile[1])
 
-        top_left_corner_of_current_tile_rotated_in_field = sorted(list(zip(*self.current_tile_positionInField.copy())), key=lambda tup: sum(tup))[0]
+        top_left_corner_of_current_tile_rotated_in_field = sorted(
+            list(zip(*self.current_tile_positionInField.copy())),
+            key=lambda tup: sum(tup),
+        )[0]
 
-        self._put_tile_into_field(tile_to_put_into_field=current_tile_rotated, position=list(top_left_corner_of_current_tile_rotated_in_field))
+        self._put_tile_into_field(
+            tile_to_put_into_field=current_tile_rotated,
+            position=list(top_left_corner_of_current_tile_rotated_in_field),
+        )
 
-        self._clear_unoccupied_cells_in_field_after_rotation(current_tile_positionInField_before_rotation=current_tile_positionInField_before_rotation,
-                                                             current_tile_positionInField_after_rotation=self.current_tile_positionInField.copy())
+        self._clear_unoccupied_cells_in_field_after_rotation(
+            current_tile_positionInField_before_rotation=current_tile_positionInField_before_rotation,
+            current_tile_positionInField_after_rotation=self.current_tile_positionInField.copy(),
+        )
 
-    
-    def _clear_unoccupied_cells_in_field_after_rotation(self, current_tile_positionInField_before_rotation: list[list[int], list[int]], current_tile_positionInField_after_rotation: list[list[int], list[int]]):
+    def _clear_unoccupied_cells_in_field_after_rotation(
+        self,
+        current_tile_positionInField_before_rotation: list[list[int], list[int]],
+        current_tile_positionInField_after_rotation: list[list[int], list[int]],
+    ):
         """
         After a tile having a different number of rows and columns is rotated,
         there are cells in the field, which are then not occupied by the
@@ -596,16 +616,26 @@ class TetrisEnv:
             of 'self.current_tile' was conducted resp. after this attribute was updated to the
             state after the rotation.
         """
-        coordinates_current_tile_positionInField_before_rotation = list(zip(*current_tile_positionInField_before_rotation))
-        coordinates_current_tile_positionInField_after_rotation = list(zip(*current_tile_positionInField_after_rotation))
+        coordinates_current_tile_positionInField_before_rotation = list(
+            zip(*current_tile_positionInField_before_rotation)
+        )
+        coordinates_current_tile_positionInField_after_rotation = list(
+            zip(*current_tile_positionInField_after_rotation)
+        )
 
-        unoccupied_cells_after_rotation = [tup for tup in coordinates_current_tile_positionInField_before_rotation if tup not in coordinates_current_tile_positionInField_after_rotation]
+        unoccupied_cells_after_rotation = [
+            tup
+            for tup in coordinates_current_tile_positionInField_before_rotation
+            if tup not in coordinates_current_tile_positionInField_after_rotation
+        ]
 
         rows_unoccupied_cells = [row for row, _ in unoccupied_cells_after_rotation]
         columns_unoccupied_cells = [col for _, col in unoccupied_cells_after_rotation]
 
-        self.field[min(rows_unoccupied_cells) : max(rows_unoccupied_cells) + 1,
-                   min(columns_unoccupied_cells) : max(columns_unoccupied_cells) + 1] = np.int(8)
+        self.field[
+            min(rows_unoccupied_cells) : max(rows_unoccupied_cells) + 1,
+            min(columns_unoccupied_cells) : max(columns_unoccupied_cells) + 1,
+        ] = np.int(8)
 
     def _update_rotation_value(self) -> int:
         """
@@ -623,7 +653,7 @@ class TetrisEnv:
         new_rotation_value = (
             (current_rotation_value + 1) if (current_rotation_value + 1) < 4 else 0
         )  # because a rotation of "4" would just mean it is at rotation 0 (i.e. initial position) again
-    
+
         return new_rotation_value
 
     def _rotate_tile(self, tile_to_rotate: np.ndarray) -> np.ndarray:
@@ -751,16 +781,25 @@ class TetrisEnv:
             )
         )
 
-        current_tile_at_new_cells_occupied_after_rotation = self._get_slice_of_current_tile_at_new_cells_occupied_after_rotation()
+        current_tile_at_new_cells_occupied_after_rotation = (
+            self._get_slice_of_current_tile_at_new_cells_occupied_after_rotation()
+        )
 
-        assert field_at_new_cells_occupied_after_rotation.shape == current_tile_at_new_cells_occupied_after_rotation.shape, "The two slices do not have the same shape, however, this is required."
+        assert (
+            field_at_new_cells_occupied_after_rotation.shape
+            == current_tile_at_new_cells_occupied_after_rotation.shape
+        ), "The two slices do not have the same shape, however, this is required."
 
-        sum_of_both_slices = field_at_new_cells_occupied_after_rotation + current_tile_at_new_cells_occupied_after_rotation
+        sum_of_both_slices = (
+            field_at_new_cells_occupied_after_rotation
+            + current_tile_at_new_cells_occupied_after_rotation
+        )
 
         return not all(sum_of_both_slices in [0, 1])
 
-    
-    def _get_slice_of_current_tile_at_new_cells_occupied_after_rotation(self) -> np.ndarray:
+    def _get_slice_of_current_tile_at_new_cells_occupied_after_rotation(
+        self,
+    ) -> np.ndarray:
         """
         From the rotated tile, slices that part of the tile which would now
         occupy new cells in the field (i.e. cells resp. an area of the field
@@ -778,7 +817,7 @@ class TetrisEnv:
         Returns:
             np.ndarray: The slice of the current_tile which will occupy new
                         cells in the field after a rotation.
-        
+
         Raises:
             GamewiseLogicalError: If the current_tile has as many rows as it has
                                   columns.
@@ -791,39 +830,48 @@ class TetrisEnv:
         shape_of_current_tile = self._get_shape_of_current_tile()
 
         if shape_of_current_tile[0] == shape_of_current_tile[1]:
-            raise GamewiseLogicalError("'self.current_tile' has the same number of rows and columns.\n \
+            raise GamewiseLogicalError(
+                "'self.current_tile' has the same number of rows and columns.\n \
                                        However, this function expects current tile to have a different number of rows and columns.\n \
-                                       Only call this function with a current_tile that has a different number of rows and columns.")
-        
+                                       Only call this function with a current_tile that has a different number of rows and columns."
+            )
 
         current_tile_number_of_rows = self._current_tile_number_of_rows()
         current_tile_number_of_columns = self._current_tile_number_of_columns()
-        
-        #The following row- and column-indices of the current (non-rotated) tile
-        #start from 0, i.e. are individual to the tile and not related to the
-        #tiles' position in the field.
+
+        # The following row- and column-indices of the current (non-rotated) tile
+        # start from 0, i.e. are individual to the tile and not related to the
+        # tiles' position in the field.
         current_tile_row_indices = list(range(0, current_tile_number_of_rows, 1))
         current_tile_column_indices = list(range(0, current_tile_number_of_columns, 1))
-    
+
         current_tile_copy = self.current_tile[1].copy()
         current_tile_rotated = self._rotate_tile(tile_to_rotate=current_tile_copy)
 
-        diff_in_rows, diff_in_columns = self._get_diff_in_rows_and_columns_of_current_tile_after_rotation()
+        diff_in_rows, diff_in_columns = (
+            self._get_diff_in_rows_and_columns_of_current_tile_after_rotation()
+        )
 
         if (diff_in_rows > 0) and (diff_in_columns < 0):
-            current_tile_rotated_new_cells_slice = current_tile_rotated[max(current_tile_row_indices):max(current_tile_row_indices)+diff_in_rows+1,
-                                                                        min(current_tile_column_indices):max(current_tile_column_indices)+diff_in_columns+1]
+            current_tile_rotated_new_cells_slice = current_tile_rotated[
+                max(current_tile_row_indices) : max(current_tile_row_indices)
+                + diff_in_rows
+                + 1,
+                min(current_tile_column_indices) : max(current_tile_column_indices)
+                + diff_in_columns
+                + 1,
+            ]
         elif (diff_in_columns > 0) and (diff_in_rows < 0):
-            current_tile_rotated_new_cells_slice = current_tile_rotated[max(current_tile_column_indices):max(current_tile_column_indices)+diff_in_columns+1,
-                                                                        min(current_tile_row_indices):max(current_tile_row_indices)+diff_in_rows+1]
-            
-        
+            current_tile_rotated_new_cells_slice = current_tile_rotated[
+                max(current_tile_column_indices) : max(current_tile_column_indices)
+                + diff_in_columns
+                + 1,
+                min(current_tile_row_indices) : max(current_tile_row_indices)
+                + diff_in_rows
+                + 1,
+            ]
+
         return current_tile_rotated_new_cells_slice
-
-
-
-
-
 
     def _get_slice_of_field_from_coords(self, coords: list[tuple]) -> np.ndarray:
         """
@@ -1119,7 +1167,9 @@ class TetrisEnv:
 
         return list_to_empty.clear()
 
-    def _put_tile_into_field_at_launch_position(self, tile_to_put_into_field: np.ndarray) -> bool:
+    def _put_tile_into_field_at_launch_position(
+        self, tile_to_put_into_field: np.ndarray
+    ) -> bool:
         """
         Puts 'tile_to_put_into_field' into the field at 'self.launch_position'.
 
@@ -1142,11 +1192,16 @@ class TetrisEnv:
         if self._overlap_at_launch(tile_to_put_into_field=tile_to_put_into_field):
             return False
         else:
-            self._put_tile_into_field(tile_to_put_into_field=tile_to_put_into_field, position=self.launch_position)
+            self._put_tile_into_field(
+                tile_to_put_into_field=tile_to_put_into_field,
+                position=self.launch_position,
+            )
 
             return True
-    
-    def _put_tile_into_field(self, tile_to_put_into_field: np.ndarray, position: list[int, int]):
+
+    def _put_tile_into_field(
+        self, tile_to_put_into_field: np.ndarray, position: list[int, int]
+    ):
         """
         Puts 'tile_to_put_into_field' into the field at 'position' via a bitwise OR-operation.
 
@@ -1160,7 +1215,7 @@ class TetrisEnv:
                                        where the tile is tried to be put into the field.
                                        The tile will be put into the field so that its top-left corner
                                        (i.e. row 0, column 0 of the tile) is located at 'position'
-    
+
         Raises:
             UnsupportedParameterValue: When the dimensionality of 'tile_to_put_into_field' is not 2.
             WrongDatatypeError:
@@ -1168,23 +1223,34 @@ class TetrisEnv:
                 - When 'position' is not of type 'list[int, int]'
         """
         if not isinstance(tile_to_put_into_field, np.ndarray):
-            raise WrongDatatypeError(f"'tile_to_put_into_field' is of type {type(tile_to_put_into_field)}, however needs to be of type 'np.ndarray'.")
-        
-        if (not isinstance(position, list)) or (not isinstance(position[0], int)) or (not isinstance(position[1], int)):
-            raise WrongDatatypeError(f"'position' needs to be of type 'list', and its contents both need to be of type 'int'. One or both of these requirements were violated.")
-        
-        if dim := self._get_dimensionality_of_ndarray(ndarray=tile_to_put_into_field) != 2:
-            raise UnsupportedParameterValue(f"The dimensionality of 'tile_to_put_into_field' is {dim}, however needs to be 2.")
+            raise WrongDatatypeError(
+                f"'tile_to_put_into_field' is of type {type(tile_to_put_into_field)}, however needs to be of type 'np.ndarray'."
+            )
 
+        if (
+            (not isinstance(position, list))
+            or (not isinstance(position[0], int))
+            or (not isinstance(position[1], int))
+        ):
+            raise WrongDatatypeError(
+                f"'position' needs to be of type 'list', and its contents both need to be of type 'int'. One or both of these requirements were violated."
+            )
+
+        if (
+            dim := self._get_dimensionality_of_ndarray(ndarray=tile_to_put_into_field)
+            != 2
+        ):
+            raise UnsupportedParameterValue(
+                f"The dimensionality of 'tile_to_put_into_field' is {dim}, however needs to be 2."
+            )
 
         current_tile_number_of_rows = self._current_tile_number_of_rows()
         current_tile_number_of_columns = self._current_tile_number_of_columns()
 
-        self.field[position[0] : position[0] + current_tile_number_of_rows,
-                   position[1] : position[1] + current_tile_number_of_columns,
-                   ] |= tile_to_put_into_field
-
-
+        self.field[
+            position[0] : position[0] + current_tile_number_of_rows,
+            position[1] : position[1] + current_tile_number_of_columns,
+        ] |= tile_to_put_into_field
 
     def _get_dimensionality_of_ndarray(self, ndarray: np.ndarray) -> int:
         """
@@ -1192,7 +1258,7 @@ class TetrisEnv:
 
         Returns:
             dimensionality (int): The dimensionality of 'ndarray'.
-        
+
         Raises:
             WrongDatatypeError: When 'ndarray' is not of type 'np.ndarray'
         """
@@ -1200,7 +1266,6 @@ class TetrisEnv:
             raise WrongDatatypeError
 
         return ndarray.ndim
-
 
     def _out_of_bounds_at_launch(self, tile_to_check: np.ndarray) -> bool:
         """
@@ -1260,8 +1325,11 @@ class TetrisEnv:
         current_tile_number_of_rows = self._current_tile_number_of_rows()
         current_tile_number_of_columns = self._current_tile_number_of_columns()
 
-        field_section = self.field[self.launch_position[0] : self.launch_position[0] + current_tile_number_of_rows,
-            self.launch_position[1] : self.launch_position[1] + current_tile_number_of_columns,
+        field_section = self.field[
+            self.launch_position[0] : self.launch_position[0]
+            + current_tile_number_of_rows,
+            self.launch_position[1] : self.launch_position[1]
+            + current_tile_number_of_columns,
         ]
 
         # Checking if there would be an overlap with the field in any cell

@@ -29,18 +29,15 @@ def main():
 
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_LEFT:
-                        env.current_action = 1
-                        env.handle_action(action=1)
+                        env.handle_action(action=env.PossibleActions.move_left)
                         print("Moved left")
                         break
                     elif event.key == pygame.K_RIGHT:
-                        env.current_action = 2
-                        env.handle_action(action=2)
+                        env.handle_action(action=env.PossibleActions.move_right)
                         print("Moved right")
                         break
                     elif event.key == pygame.K_UP:
-                        env.current_action = 3
-                        env.handle_action(action=3)
+                        env.handle_action(action=env.PossibleActions.rotate)
                         print("Rotated")
                         break
                     elif event.key == pygame.K_ESCAPE:
@@ -51,15 +48,8 @@ def main():
             if not drop_conducted:
                 env.launch_tile()
 
-            # TODO: Remove again
-            # if not launched:
-            #     env.launch_tile()
-            #     for _ in range (3):
-            #         _ = env.drop()
-            #     launched = not launched
-
             # dropping the current tile by one row
-            drop_conducted = env.drop()
+            drop_conducted = env.drop_current_tile(drop_possible=env._drop_possible())
 
             print(env.field)
             # print(f"current_tile: {env.current_tile}")
