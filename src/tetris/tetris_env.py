@@ -339,6 +339,25 @@ class TetrisEnv:
             self.rotate()
         else:
             raise ValueError("Unknown action: {action}")
+        
+        self._set_current_action(action=action)
+
+    def _set_current_action(self, action: PossibleActions):
+        """
+        Assigns 'action' to the attribute 'self.current_action'.
+
+        Args:
+            action (PossibleActions): The action to be assigned
+        
+        Raises:
+            ValueError: If the value passed to 'action'
+                        is not listed in the Enum
+                        'PossibleActions'
+        """
+        if not isinstance(action, self.PossibleActions):
+            raise ValueError(f"Invalid action: {action}. Must be a member of PossibleActions.")
+        
+        self.current_action = action
 
     def move(self, direction: PossibleActions):
         """
