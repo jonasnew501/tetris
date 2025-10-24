@@ -312,7 +312,6 @@ class TetrisEnv:
         """
         Possible actions that can be taken in the game.
         """
-
         do_nothing = 0
         move_left = 1
         move_right = 2
@@ -321,6 +320,14 @@ class TetrisEnv:
     def handle_action(self, action: PossibleActions):
         """
         Handles all possible actions that can be taken in the game.
+
+        Args:
+            action (PossibleActions): The action to be handled.
+
+        Raises:
+            ValueError: If the value passed to 'action'
+                        is not listed in the Enum
+                        'PossibleActions'
         """
         if action == self.PossibleActions.do_nothing:
             pass
