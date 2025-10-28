@@ -106,6 +106,20 @@ class TetrisEnv:
             [],
         ]
 
+    #-----ENUMs------------------------------------------------------------------------
+    class PossibleActions(Enum):
+            """
+            Possible actions that can be taken in the game.
+            """
+
+            do_nothing = 0
+            move_left = 1
+            move_right = 2
+            rotate = 3
+    
+    #----------------------------------------------------------------------------------
+
+    #-----central functions------------------------------------------------------------
     def launch_tile(self) -> bool:
         """
         Launches the next tile to come from 'self.tiles_queue' into the field.
@@ -191,58 +205,7 @@ class TetrisEnv:
             )
             + current_tile_number_of_columns,
         ] = np.int8(0)
-
-    def _drop_possible(self) -> bool:
-        """
-        Checks whether a drop of the current tile is possible.
-
-        Information about the function logic/implementation:
-        A drop is only possible if the sum of the individual cells in the current lowest
-        row of the tile in all columns and the respective cells in the field one row
-        below that row is at most 1.
-        Explanation: If the sum was 2, that would mean that both in a cell of the current
-                     lowest row and the cell below that (i.e. the cell in the field) are
-                     both 1s, i.e. both those cells are occupied already. Thus a drop
-                     is not possible. However, if the sum of both cells is 0 or 1,
-                     that means that either none of the cells is occupied, or only one
-                     of them, which means that a drop is possible.
-
-        Returns:
-            (bool): True, if a drop is possible;
-                    False otherwise.
-        """
-        if self._check_tile_at_edge(
-            edge="bottom", tile_positionInField=self.current_tile_positionInField
-        ):
-            return False
-        else:
-            # loop-based approach
-            # return all(self.field[max(self.current_tile_positionInField_old[0]), column]
-            #     + self.field[max(self.current_tile_positionInField_old[0]) + 1, column]
-            #     in [0, 1]
-            #     for column in range(
-            #         min(self.current_tile_positionInField_old[1]),
-            #         max(self.current_tile_positionInField_old[1]) + 1,
-            #         1,
-            #     )
-            # )
-
-            # vectorized approach
-            columns_of_current_tile = list(set(self.current_tile_positionInField[1]))
-
-            lowest_row_current_tile = self.field[
-                max(self.current_tile_positionInField[0]), columns_of_current_tile
-            ]
-            row_below_lowest_row_current_tile = self.field[
-                max(self.current_tile_positionInField[0]) + 1, columns_of_current_tile
-            ]
-
-            sum_of_both_rows = (
-                lowest_row_current_tile + row_below_lowest_row_current_tile
-            )
-
-            return all(sum_of_both_rows in [0, 1])
-
+    
     def remove_full_rows(self, full_rows_indices: Union[list, np.ndarray]) -> int:
         """
         Removes all rows given by 'full_rows_indices' from the field.
@@ -275,51 +238,7 @@ class TetrisEnv:
         )
 
         return len(full_rows_indices)
-
-    def _check_for_full_rows(self, drop_possible: bool) -> np.ndarray:
-        """
-        Returns a np.ndarray containing the indices of rows
-        in the field, that contain full rows.
-
-        A full row is a row which only contains occupied cells.
-
-        It is required that the check for full rows can only be
-        conducted after a drop of the current tile is not
-        possible anymore. However a new tile must also not
-        already be launched yet.
-
-        Args:
-            drop_possible (bool): Indicating whether a drop of the current_tile
-                                  is currently possible or not.
-
-        Returns:
-            Indices of full rows (np.ndarray): The indices of the rows
-                                               that contain full rows.
-                                               An empty array means that
-                                               there are no full rows.
-
-        Raises:
-            GamewiseLogicalError: When 'drop_possible' is True.
-                                  Reason: See description above.
-        """
-        if drop_possible:
-            raise GamewiseLogicalError
-
-        full_rows_bool = np.all(self.field == 1, axis=1)
-        full_rows_indices = np.where(full_rows_bool)[0]
-
-        return full_rows_indices
-
-    class PossibleActions(Enum):
-        """
-        Possible actions that can be taken in the game.
-        """
-
-        do_nothing = 0
-        move_left = 1
-        move_right = 2
-        rotate = 3
-
+    
     def handle_action(self, action: PossibleActions):
         """
         Handles all possible actions that can be taken in the game.
@@ -344,26 +263,7 @@ class TetrisEnv:
             raise ValueError("Unknown action: {action}")
 
         self._set_current_action(action=action)
-
-    def _set_current_action(self, action: PossibleActions):
-        """
-        Assigns 'action' to the attribute 'self.current_action'.
-
-        Args:
-            action (PossibleActions): The action to be assigned
-
-        Raises:
-            ValueError: If the value passed to 'action'
-                        is not listed in the Enum
-                        'PossibleActions'
-        """
-        if not isinstance(action, self.PossibleActions):
-            raise ValueError(
-                f"Invalid action: {action}. Must be a member of PossibleActions."
-            )
-
-        self.current_action = action
-
+    
     def move(self, direction: PossibleActions):
         """
         Moves the current tile in the field either to the left or to the right
@@ -444,63 +344,237 @@ class TetrisEnv:
                                             Only 'move_left' and 'move_right' are supported!"
             )
 
-    def _move_possible(self, direction: PossibleActions) -> bool:
+    def rotate(self):
         """
-        Checks if moving 'self.current_tile' to the desired 'direction'
-        by one column is currently possible or not.
+        Rotates the current tile by 90 degrees clockwise.
 
-        Args:
-            direction (PossibleActions): Possible values are 'move_left' and 'move_right'.
+        This method expects that a rotation of 'self.current_tile' is currently possible.
+        """
+        current_tile_positionInField_before_rotation = (
+            self.current_tile_positionInField.copy()
+        )
+
+        self.current_tile_positionInField = (
+            self._get_current_tile_positionInField_after_rotation()
+        )
+
+        self.current_tile[2] = self._update_rotation_value()
+
+        current_tile_rotated = self._rotate_tile(tile_to_rotate=self.current_tile[1])
+
+        top_left_corner_of_current_tile_rotated_in_field = sorted(
+            list(zip(*self.current_tile_positionInField.copy())),
+            key=lambda tup: sum(tup),
+        )[0]
+
+        self._put_tile_into_field(
+            tile_to_put_into_field=current_tile_rotated,
+            position=list(top_left_corner_of_current_tile_rotated_in_field),
+        )
+
+        self._clear_unoccupied_cells_in_field_after_rotation(
+            current_tile_positionInField_before_rotation=current_tile_positionInField_before_rotation,
+            current_tile_positionInField_after_rotation=self.current_tile_positionInField.copy(),
+        )
+    
+    def reset(self):
+        """
+        Resets the environment to an initial state.
+
+        The initial state means the start of a new game.
+        That means:
+            - The field is emptied.
+            - 'self.current_tile' is set to None
+            - 'self.current_tile_positionInField' is emptied
+            - 'self.current_action' is set to None
+            - 'self.tiles_queue' is emptied and freshly populated
+            - Points achieved are set to zero.
+
+        """
+        self.field = self._create_empty_field(
+            field_height=self.field_height, field_width=self.field_width
+        )
+
+        self.current_tile = None
+
+        self.current_tile_positionInField[0] = self._empty_list(
+            list_to_empty=self.current_tile_positionInField[0]
+        )
+        self.current_tile_positionInField[1] = self._empty_list(
+            list_to_empty=self.current_tile_positionInField[1]
+        )
+
+        self.current_action = None
+
+        self.tiles_queue = deque()
+        self._populate_tiles_queue()
+
+        # TODO:
+        # Set game-points achieved to zero.
+    
+    #----------------------------------------------------------------------------------
+
+    #-----Helper-functions-------------------------------------------------------------
+    def _tiles_queue_pop_left(self) -> list[str, np.ndarray, int]:
+        """
+        Pops the first resp. leftmost element of 'self.tiles_queue'
+        and returns it.
 
         Returns:
-            (bool): True, if the move checked is possible;
+            (list): The leftmost element of 'self.tiles_queue'
+                    holding "[Name of the tile, the tiles' array, the tiles' rotation]"
+
+        Raises:
+            EmptyContainerError: If 'self.tiles_queue' is empty
+                                 before attempting to retrieve
+                                 the leftmost element.
+        """
+        if not self.tiles_queue:
+            raise EmptyContainerError
+
+        return self.tiles_queue.popleft()
+    
+    def _populate_tiles_queue(self):
+        """
+        Populates 'self.tiles_queue' with tiles randomly selected
+        from all tiles available defined in 'self.tiles'.
+
+        'self.tiles_queue' is filled up until it's length matches
+        the desired length (='self.len_tiles_queue').
+        """
+        while len(self.tiles_queue) < self.len_tiles_queue:
+            self.tiles_queue.append([*random.choice(list(self.tiles.items())), 0])
+    
+    def _put_tile_into_field(
+        self, tile_to_put_into_field: np.ndarray, position: list[int, int]
+    ):
+        """
+        Puts 'tile_to_put_into_field' into the field at 'position' via a bitwise OR-operation.
+
+        This function expects the put-operation to succeed. I.e. tests whether the put-operation
+        at 'position' of 'tile_to_put_into_field' are not done by this function.
+
+        Args:
+            tile_to_put_into_field (np.ndarray): The tile to put into the field.
+                                                 Needs to be a two-dimensional array.
+            position (list[int, int]): The position in the field in form of "[row_index, column_index]"
+                                       where the tile is tried to be put into the field.
+                                       The tile will be put into the field so that its top-left corner
+                                       (i.e. row 0, column 0 of the tile) is located at 'position'
+
+        Raises:
+            UnsupportedParameterValue: When the dimensionality of 'tile_to_put_into_field' is not 2.
+            WrongDatatypeError:
+                - When 'tile_to_put_into_field' is not of type 'np.ndarray'
+                - When 'position' is not of type 'list[int, int]'
+        """
+        if not isinstance(tile_to_put_into_field, np.ndarray):
+            raise WrongDatatypeError(
+                f"'tile_to_put_into_field' is of type {type(tile_to_put_into_field)}, however needs to be of type 'np.ndarray'."
+            )
+
+        if (
+            (not isinstance(position, list))
+            or (not isinstance(position[0], int))
+            or (not isinstance(position[1], int))
+        ):
+            raise WrongDatatypeError(
+                f"'position' needs to be of type 'list', and its contents both need to be of type 'int'. One or both of these requirements were violated."
+            )
+
+        if (
+            dim := self._get_dimensionality_of_ndarray(ndarray=tile_to_put_into_field)
+            != 2
+        ):
+            raise UnsupportedParameterValue(
+                f"The dimensionality of 'tile_to_put_into_field' is {dim}, however needs to be 2."
+            )
+
+        current_tile_number_of_rows = self._current_tile_number_of_rows()
+        current_tile_number_of_columns = self._current_tile_number_of_columns()
+
+        self.field[
+            position[0] : position[0] + current_tile_number_of_rows,
+            position[1] : position[1] + current_tile_number_of_columns,
+        ] |= tile_to_put_into_field
+
+    def _set_current_tile_position_in_field_at_launch(
+        self, tile_to_put_into_field: np.ndarray
+    ):
+        """
+        Updates 'self.current_tile_positionInField'.
+        """
+        # creating the row-indices
+        tile_n_rows, tile_n_columns = tile_to_put_into_field.shape
+
+        # For every row, there are as many row-indices as there are columns:
+        # E.g. for a 3*2-array/-tile it would be "[0, 0, 1, 1, 2, 2]"
+        row_indices = np.repeat(np.arange(tile_n_rows), repeats=tile_n_columns)
+
+        # For every row, all column indices are listed, i.e. the column-indices
+        # repeat n_row-times.
+        # E.g. for a 3*2-array/-tile, it would be "[0, 1, 0, 1, 0, 1]"
+        column_indices = np.tile(np.arange(tile_n_columns), reps=tile_n_rows)
+
+        # Adding the launch-position offsets to get the actual positions of
+        # the row- and column-indices in the field
+        row_indices += self.launch_position[0]
+        column_indices += self.launch_position[1]
+
+        self.current_tile_positionInField = [list(row_indices), list(column_indices)]
+
+
+
+    def _drop_possible(self) -> bool:
+        """
+        Checks whether a drop of the current tile is possible.
+
+        Information about the function logic/implementation:
+        A drop is only possible if the sum of the individual cells in the current lowest
+        row of the tile in all columns and the respective cells in the field one row
+        below that row is at most 1.
+        Explanation: If the sum was 2, that would mean that both in a cell of the current
+                     lowest row and the cell below that (i.e. the cell in the field) are
+                     both 1s, i.e. both those cells are occupied already. Thus a drop
+                     is not possible. However, if the sum of both cells is 0 or 1,
+                     that means that either none of the cells is occupied, or only one
+                     of them, which means that a drop is possible.
+
+        Returns:
+            (bool): True, if a drop is possible;
                     False otherwise.
         """
-        if direction == self.PossibleActions.move_left:
-            tile_at_edge = self._check_tile_at_edge(edge="left")
-            if tile_at_edge:
-                return False
+        if self._check_tile_at_edge(
+            edge="bottom", tile_positionInField=self.current_tile_positionInField
+        ):
+            return False
+        else:
+            # loop-based approach
+            # return all(self.field[max(self.current_tile_positionInField_old[0]), column]
+            #     + self.field[max(self.current_tile_positionInField_old[0]) + 1, column]
+            #     in [0, 1]
+            #     for column in range(
+            #         min(self.current_tile_positionInField_old[1]),
+            #         max(self.current_tile_positionInField_old[1]) + 1,
+            #         1,
+            #     )
+            # )
 
-            # Checking whether the sums of the individual cells
-            # of the leftmost column of the current tile in all rows
-            # and the column in the field left of this leftmost column
-            # are at most 1
-            rows_of_current_tile = list(set(self.current_tile_positionInField[0]))
+            # vectorized approach
+            columns_of_current_tile = list(set(self.current_tile_positionInField[1]))
 
-            leftmost_column_current_tile = self.field[
-                rows_of_current_tile, min(self.current_tile_positionInField[1])
+            lowest_row_current_tile = self.field[
+                max(self.current_tile_positionInField[0]), columns_of_current_tile
             ]
-            column_left_of_leftmost_column_current_tile = self.field[
-                rows_of_current_tile, min(self.current_tile_positionInField[1]) - 1
+            row_below_lowest_row_current_tile = self.field[
+                max(self.current_tile_positionInField[0]) + 1, columns_of_current_tile
             ]
 
-            sum_of_both_columns = (
-                leftmost_column_current_tile
-                + column_left_of_leftmost_column_current_tile
+            sum_of_both_rows = (
+                lowest_row_current_tile + row_below_lowest_row_current_tile
             )
 
-            return all(sum_of_both_columns in [0, 1])
-
-        if direction == self.PossibleActions.move_right:
-            tile_at_edge = self._check_tile_at_edge(edge="right")
-            if tile_at_edge:
-                return False
-
-            rows_of_current_tile = list(set(self.current_tile_positionInField[0]))
-
-            rightmost_column_current_tile = self.field[
-                rows_of_current_tile, max(self.current_tile_positionInField[1])
-            ]
-            column_right_of_rightmost_column_current_tile = self.field[
-                rows_of_current_tile, max(self.current_tile_positionInField[1]) + 1
-            ]
-
-            sum_of_both_columns = (
-                rightmost_column_current_tile
-                + column_right_of_rightmost_column_current_tile
-            )
-
-            return all(sum_of_both_columns in [0, 1])
+            return all(sum_of_both_rows in [0, 1])
 
     def _check_tile_at_edge(
         self,
@@ -561,38 +635,146 @@ class TetrisEnv:
                 f"Invalid edge value: {edge!r}. Must be 'left', 'right' or 'bottom'."
             )
 
-    def rotate(self):
+    def _current_tile_number_of_rows(self) -> int:
         """
-        Rotates the current tile by 90 degrees clockwise.
+        Returns:
+            int: the number of rows of 'self.current_tile'.
 
-        This method expects that a rotation of 'self.current_tile' is currently possible.
+        Raises:
+            NoneTypeError: If 'self.current_tile' is None.
         """
-        current_tile_positionInField_before_rotation = (
-            self.current_tile_positionInField.copy()
-        )
+        if self.current_tile is None:
+            raise NoneTypeError
 
-        self.current_tile_positionInField = (
-            self._get_current_tile_positionInField_after_rotation()
-        )
+        return self.current_tile[1].shape[0]
 
-        self.current_tile[2] = self._update_rotation_value()
+    def _current_tile_number_of_columns(self) -> int:
+        """
+        Returns:
+            int: the number of columns of 'self.current_tile'.
 
-        current_tile_rotated = self._rotate_tile(tile_to_rotate=self.current_tile[1])
+        Raises:
+            NoneTypeError: If 'self.current_tile' is None.
+        """
+        if self.current_tile is None:
+            raise NoneTypeError
 
-        top_left_corner_of_current_tile_rotated_in_field = sorted(
-            list(zip(*self.current_tile_positionInField.copy())),
-            key=lambda tup: sum(tup),
-        )[0]
+        return self.current_tile[1].shape[1]
 
-        self._put_tile_into_field(
-            tile_to_put_into_field=current_tile_rotated,
-            position=list(top_left_corner_of_current_tile_rotated_in_field),
-        )
+    def _check_for_full_rows(self, drop_possible: bool) -> np.ndarray:
+        """
+        Returns a np.ndarray containing the indices of rows
+        in the field, that contain full rows.
 
-        self._clear_unoccupied_cells_in_field_after_rotation(
-            current_tile_positionInField_before_rotation=current_tile_positionInField_before_rotation,
-            current_tile_positionInField_after_rotation=self.current_tile_positionInField.copy(),
-        )
+        A full row is a row which only contains occupied cells.
+
+        It is required that the check for full rows can only be
+        conducted after a drop of the current tile is not
+        possible anymore. However a new tile must also not
+        already be launched yet.
+
+        Args:
+            drop_possible (bool): Indicating whether a drop of the current_tile
+                                  is currently possible or not.
+
+        Returns:
+            Indices of full rows (np.ndarray): The indices of the rows
+                                               that contain full rows.
+                                               An empty array means that
+                                               there are no full rows.
+
+        Raises:
+            GamewiseLogicalError: When 'drop_possible' is True.
+                                  Reason: See description above.
+        """
+        if drop_possible:
+            raise GamewiseLogicalError
+
+        full_rows_bool = np.all(self.field == 1, axis=1)
+        full_rows_indices = np.where(full_rows_bool)[0]
+
+        return full_rows_indices
+
+    def _set_current_action(self, action: PossibleActions):
+        """
+        Assigns 'action' to the attribute 'self.current_action'.
+
+        Args:
+            action (PossibleActions): The action to be assigned
+
+        Raises:
+            ValueError: If the value passed to 'action'
+                        is not listed in the Enum
+                        'PossibleActions'
+        """
+        if not isinstance(action, self.PossibleActions):
+            raise ValueError(
+                f"Invalid action: {action}. Must be a member of PossibleActions."
+            )
+
+        self.current_action = action
+
+    def _move_possible(self, direction: PossibleActions) -> bool:
+        """
+        Checks if moving 'self.current_tile' to the desired 'direction'
+        by one column is currently possible or not.
+
+        Args:
+            direction (PossibleActions): Possible values are 'move_left' and 'move_right'.
+
+        Returns:
+            (bool): True, if the move checked is possible;
+                    False otherwise.
+        """
+        if direction == self.PossibleActions.move_left:
+            tile_at_edge = self._check_tile_at_edge(edge="left")
+            if tile_at_edge:
+                return False
+
+            # Checking whether the sums of the individual cells
+            # of the leftmost column of the current tile in all rows
+            # and the column in the field left of this leftmost column
+            # are at most 1
+            rows_of_current_tile = list(set(self.current_tile_positionInField[0]))
+
+            leftmost_column_current_tile = self.field[
+                rows_of_current_tile, min(self.current_tile_positionInField[1])
+            ]
+            column_left_of_leftmost_column_current_tile = self.field[
+                rows_of_current_tile, min(self.current_tile_positionInField[1]) - 1
+            ]
+
+            sum_of_both_columns = (
+                leftmost_column_current_tile
+                + column_left_of_leftmost_column_current_tile
+            )
+
+            return all(sum_of_both_columns in [0, 1])
+
+        if direction == self.PossibleActions.move_right:
+            tile_at_edge = self._check_tile_at_edge(edge="right")
+            if tile_at_edge:
+                return False
+
+            rows_of_current_tile = list(set(self.current_tile_positionInField[0]))
+
+            rightmost_column_current_tile = self.field[
+                rows_of_current_tile, max(self.current_tile_positionInField[1])
+            ]
+            column_right_of_rightmost_column_current_tile = self.field[
+                rows_of_current_tile, max(self.current_tile_positionInField[1]) + 1
+            ]
+
+            sum_of_both_columns = (
+                rightmost_column_current_tile
+                + column_right_of_rightmost_column_current_tile
+            )
+
+            return all(sum_of_both_columns in [0, 1])
+
+    
+
+    
 
     def _clear_unoccupied_cells_in_field_after_rotation(
         self,
@@ -1067,40 +1249,7 @@ class TetrisEnv:
 
         plt.show(block=True)
 
-    def reset(self):
-        """
-        Resets the environment to an initial state.
-
-        The initial state means the start of a new game.
-        That means:
-            - The field is emptied.
-            - 'self.current_tile' is set to None
-            - 'self.current_tile_positionInField' is emptied
-            - 'self.current_action' is set to None
-            - 'self.tiles_queue' is emptied and freshly populated
-            - Points achieved are set to zero.
-
-        """
-        self.field = self._create_empty_field(
-            field_height=self.field_height, field_width=self.field_width
-        )
-
-        self.current_tile = None
-
-        self.current_tile_positionInField[0] = self._empty_list(
-            list_to_empty=self.current_tile_positionInField[0]
-        )
-        self.current_tile_positionInField[1] = self._empty_list(
-            list_to_empty=self.current_tile_positionInField[1]
-        )
-
-        self.current_action = None
-
-        self.tiles_queue = deque()
-        self.tiles_queue = self._populate_tiles_queue()
-
-        # TODO:
-        # Set game-points achieved to zero.
+    
 
     def _create_empty_field(self, field_height: int, field_width: int) -> np.ndarray:
         """
@@ -1119,35 +1268,9 @@ class TetrisEnv:
 
         return np.zeros(shape=(field_height, field_width), dtype=np.int8)
 
-    def _tiles_queue_pop_left(self) -> list[str, np.ndarray, int]:
-        """
-        Pops the first resp. leftmost element of 'self.tiles_queue'
-        and returns it.
+    
 
-        Returns:
-            (list): The leftmost element of 'self.tiles_queue'
-                    holding "[Name of the tile, the tiles' array, the tiles' rotation]"
-
-        Raises:
-            EmptyContainerError: If 'self.tiles_queue' is empty
-                                 before attempting to retrieve
-                                 the leftmost element.
-        """
-        if not self.tiles_queue:
-            raise EmptyContainerError
-
-        return self.tiles_queue.popleft()
-
-    def _populate_tiles_queue(self):
-        """
-        Populates 'self.tiles_queue' with tiles randomly selected
-        from all tiles available defined in 'self.tiles'.
-
-        'self.tiles_queue' is filled up until it's length matches
-        the desired length (='self.len_tiles_queue').
-        """
-        while len(self.tiles_queue) < self.len_tiles_queue:
-            self.tiles_queue.append([*random.choice(list(self.tiles.items())), 0])
+    
 
     def _empty_list(self, list_to_empty: list) -> list:
         """
@@ -1199,58 +1322,7 @@ class TetrisEnv:
 
             return True
 
-    def _put_tile_into_field(
-        self, tile_to_put_into_field: np.ndarray, position: list[int, int]
-    ):
-        """
-        Puts 'tile_to_put_into_field' into the field at 'position' via a bitwise OR-operation.
-
-        This function expects the put-operation to succeed. I.e. tests whether the put-operation
-        at 'position' of 'tile_to_put_into_field' are not done by this function.
-
-        Args:
-            tile_to_put_into_field (np.ndarray): The tile to put into the field.
-                                                 Needs to be a two-dimensional array.
-            position (list[int, int]): The position in the field in form of "[row_index, column_index]"
-                                       where the tile is tried to be put into the field.
-                                       The tile will be put into the field so that its top-left corner
-                                       (i.e. row 0, column 0 of the tile) is located at 'position'
-
-        Raises:
-            UnsupportedParameterValue: When the dimensionality of 'tile_to_put_into_field' is not 2.
-            WrongDatatypeError:
-                - When 'tile_to_put_into_field' is not of type 'np.ndarray'
-                - When 'position' is not of type 'list[int, int]'
-        """
-        if not isinstance(tile_to_put_into_field, np.ndarray):
-            raise WrongDatatypeError(
-                f"'tile_to_put_into_field' is of type {type(tile_to_put_into_field)}, however needs to be of type 'np.ndarray'."
-            )
-
-        if (
-            (not isinstance(position, list))
-            or (not isinstance(position[0], int))
-            or (not isinstance(position[1], int))
-        ):
-            raise WrongDatatypeError(
-                f"'position' needs to be of type 'list', and its contents both need to be of type 'int'. One or both of these requirements were violated."
-            )
-
-        if (
-            dim := self._get_dimensionality_of_ndarray(ndarray=tile_to_put_into_field)
-            != 2
-        ):
-            raise UnsupportedParameterValue(
-                f"The dimensionality of 'tile_to_put_into_field' is {dim}, however needs to be 2."
-            )
-
-        current_tile_number_of_rows = self._current_tile_number_of_rows()
-        current_tile_number_of_columns = self._current_tile_number_of_columns()
-
-        self.field[
-            position[0] : position[0] + current_tile_number_of_rows,
-            position[1] : position[1] + current_tile_number_of_columns,
-        ] |= tile_to_put_into_field
+    
 
     def _get_dimensionality_of_ndarray(self, ndarray: np.ndarray) -> int:
         """
@@ -1336,54 +1408,3 @@ class TetrisEnv:
         overlap = np.any(field_section & tile_to_put_into_field)
 
         return overlap
-
-    def _set_current_tile_position_in_field_at_launch(
-        self, tile_to_put_into_field: np.ndarray
-    ):
-        """
-        Updates 'self.current_tile_positionInField'.
-        """
-        # creating the row-indices
-        tile_n_rows, tile_n_columns = tile_to_put_into_field.shape
-
-        # For every row, there are as many row-indices as there are columns:
-        # E.g. for a 3*2-array/-tile it would be "[0, 0, 1, 1, 2, 2]"
-        row_indices = np.repeat(np.arange(tile_n_rows), repeats=tile_n_columns)
-
-        # For every row, all column indices are listed, i.e. the column-indices
-        # repeat n_row-times.
-        # E.g. for a 3*2-array/-tile, it would be "[0, 1, 0, 1, 0, 1]"
-        column_indices = np.tile(np.arange(tile_n_columns), reps=tile_n_rows)
-
-        # Adding the launch-position offsets to get the actual positions of
-        # the row- and column-indices in the field
-        row_indices += self.launch_position[0]
-        column_indices += self.launch_position[1]
-
-        self.current_tile_positionInField = [list(row_indices), list(column_indices)]
-
-    def _current_tile_number_of_rows(self) -> int:
-        """
-        Returns:
-            int: the number of rows of 'self.current_tile'.
-
-        Raises:
-            NoneTypeError: If 'self.current_tile' is None.
-        """
-        if self.current_tile is None:
-            raise NoneTypeError
-
-        return self.current_tile[1].shape[0]
-
-    def _current_tile_number_of_columns(self) -> int:
-        """
-        Returns:
-            int: the number of columns of 'self.current_tile'.
-
-        Raises:
-            NoneTypeError: If 'self.current_tile' is None.
-        """
-        if self.current_tile is None:
-            raise NoneTypeError
-
-        return self.current_tile[1].shape[1]
