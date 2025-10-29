@@ -125,7 +125,7 @@ class TetrisEnv:
     # ----------------------------------------------------------------------------------
 
     # -----central functions------------------------------------------------------------
-    def launch_tile(self) -> bool:
+    def launch_tile(self):
         """
         Launches the next tile to come from 'self.tiles_queue' into the field.
 
@@ -134,13 +134,11 @@ class TetrisEnv:
               from that queue was done.
             - tries to put 'self.current_tile' into the field at 'self.launch_position'.
             - updates 'self.current_tile_positionInField'
-
-        Returns:
-            (bool): True, if the tile could successfully be launched into the field,
-                    False, if the tile could not be launched into the field, because
-                    there was an overlap with the field at the cells where the tile
-                    was tried to be launched.
-                    The latter case means that the game is over.
+            - updates 'self.game_over'
+        
+        Raises:
+            OutOfBoundsError: If 'self.current_tile' out be out of the bounds of the
+                              field when it would be put into the field.
         """
         self.current_tile = self._tiles_queue_pop_left()
 
@@ -148,16 +146,23 @@ class TetrisEnv:
         # the tiles queue is populated again
         self._populate_tiles_queue()
         
-        if put_possible := self._put_possible(tile_to_put_into_field=self.current_tile, position=self.launch_position):
+        out_of_bounds_at_put, overlap_at_put = self._put_possible(tile_to_put_into_field=self.current_tile, position=self.launch_position)
+
+
+        if out_of_bounds_at_put:
+            raise OutOfBoundsError("The tile would be out-of-bounds when it would be launched at 'self.launch_position'.\n \
+                                   Check 'field_width', 'field_heigth', and 'launch_position' to contain reasonable values.")
+
+        elif not out_of_bounds_at_put and not overlap_at_put:
             self._put_tile_into_field(
             self.current_tile[1], position=self.launch_position
-        )
-
-        if put_possible:
+            )
             self._set_current_tile_position_in_field_at_launch(self.current_tile)
-            return True
-        else:
-            return False
+
+            self.game_over = False
+        
+        elif not out_of_bounds_at_put and overlap_at_put:
+            self.game_over = True
 
     def drop_current_tile(self, drop_possible: bool):
         """
