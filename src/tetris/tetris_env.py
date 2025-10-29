@@ -104,10 +104,7 @@ class TetrisEnv:
 
         self.current_tile = None
 
-        self.current_tile_positionInField = [
-            [],
-            []
-        ]
+        self.current_tile_positionInField = [[], []]
 
         self.game_over = False
 
@@ -747,7 +744,9 @@ class TetrisEnv:
                     False otherwise.
         """
         if direction == self.PossibleActions.move_left:
-            tile_at_edge = self._check_tile_at_edge(edge="left", tile_positionInField=self.current_tile_positionInField)
+            tile_at_edge = self._check_tile_at_edge(
+                edge="left", tile_positionInField=self.current_tile_positionInField
+            )
             if tile_at_edge:
                 return False
 
@@ -772,7 +771,9 @@ class TetrisEnv:
             return np.all(np.isin(sum_of_both_columns, [0, 1]))
 
         if direction == self.PossibleActions.move_right:
-            tile_at_edge = self._check_tile_at_edge(edge="right", tile_positionInField=self.current_tile_positionInField)
+            tile_at_edge = self._check_tile_at_edge(
+                edge="right", tile_positionInField=self.current_tile_positionInField
+            )
             if tile_at_edge:
                 return False
 

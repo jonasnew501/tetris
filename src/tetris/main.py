@@ -47,7 +47,7 @@ def main():
             # print("------------------------------")
             if not drop_conducted:
                 env.launch_tile()
-            
+
             if env.game_over:
                 env.reset()
                 env.launch_tile()
