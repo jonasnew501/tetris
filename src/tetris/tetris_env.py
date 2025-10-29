@@ -60,6 +60,9 @@ class TetrisEnv:
                                                                    and the list at index 1 holds the column-indices.
                                                                    By zipping both lists element-wise the excact locations of every
                                                                    part/cell of the current tile are obtained.
+        game_over (bool): Flagging whether the current game is over or not.
+                          The game is over when a new tile is tried to be put into the field at 'launch_position',
+                          however this is not possible anymore due to a collision with the field.
 
 
 
@@ -106,6 +109,8 @@ class TetrisEnv:
             [],
         ]
 
+        self.game_over = False
+
     # -----ENUMs------------------------------------------------------------------------
     class PossibleActions(Enum):
         """
@@ -135,22 +140,24 @@ class TetrisEnv:
                     False, if the tile could not be launched into the field, because
                     there was an overlap with the field at the cells where the tile
                     was tried to be launched.
+                    The latter case means that the game is over.
         """
         self.current_tile = self._tiles_queue_pop_left()
 
         # since now one tile was removed from the tiles_queue,
         # the tiles queue is populated again
         self._populate_tiles_queue()
-
-        put_successful = self._put_tile_into_field(
+        
+        if put_possible := self._put_possible(tile_to_put_into_field=self.current_tile, position=self.launch_position):
+            self._put_tile_into_field(
             self.current_tile[1], position=self.launch_position
         )
 
-        if not put_successful:  # i.e. game over
-            return False
-        else:
+        if put_possible:
             self._set_current_tile_position_in_field_at_launch(self.current_tile)
             return True
+        else:
+            return False
 
     def drop_current_tile(self, drop_possible: bool):
         """
@@ -1294,38 +1301,6 @@ class TetrisEnv:
         return ndarray.ndim
     
 
-    def _put_tile_into_field_at_launch_position(
-        self, tile_to_put_into_field: np.ndarray
-    ) -> bool:
-        """
-        Puts 'tile_to_put_into_field' into the field at 'self.launch_position'.
-
-        Returns:
-            (bool): True, if 'tile_to_put_into_field' could successfully be put
-                    into the field,
-                    False, if the 'tile_to_put_into_field' collides with other
-                    tiles in the field at 'self.launch_position'.
-
-        Raises:
-            OutOfBoundsError: When 'tile_to_put_into_field' would reach out of
-                              one or more borders of the field.
-                              This problem is caused by the tiles' composition
-                              in combination with 'self.launch_position'.
-        """
-
-        if self._out_of_bounds_at_launch(tile_to_check=tile_to_put_into_field):
-            raise OutOfBoundsError
-
-        if self._overlap_at_launch(tile_to_put_into_field=tile_to_put_into_field):
-            return False
-        else:
-            self._put_tile_into_field(
-                tile_to_put_into_field=tile_to_put_into_field,
-                position=self.launch_position,
-            )
-
-            return True
-
     def _put_possible(self, tile_to_put_into_field: np.ndarray, position: list[int, int]) -> bool:
         """
         Checks whether putting 'tile_to_put_into_field' at 'position', with the
@@ -1333,13 +1308,24 @@ class TetrisEnv:
         is possible.
 
         Returns:
-            bool: True, if putting 'tile_to_put_into_field' at 'position'
-                  is possible;
-                  False otherwise.
+            tuple[bool, bool]: A tuple containing two booleans:
+                - out_of_bounds_at_put (bool): True, if 'tile_to_put_into_field' would be out of bounds
+                                               when put into the field;
+                                               False otherwise.
+                - overlap_at_put (bool): True, if 'tile_to_put_into_field' would overlap with the field
+                                         when put into the field;
+                                         False otherwise.
         """
+        out_of_bounds_at_put = False
+        overlap_at_put = False
+
         out_of_bounds_at_put = self._out_of_bounds_at_put(tile_to_put_into_field=tile_to_put_into_field,
                                                           position=position)
-        # overlap_at_put = 
+        
+        if not out_of_bounds_at_put:
+            overlap_at_put = self._overlap_at_put(tile_to_put_into_field=tile_to_put_into_field, position=position)
+        
+        return (out_of_bounds_at_put, overlap_at_put)
 
 
     def _out_of_bounds_at_put(self, tile_to_put_into_field: np.ndarray, position: list[int, int]) -> bool:
