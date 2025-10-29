@@ -413,8 +413,12 @@ class TetrisEnv:
 
         self.current_tile = None
 
-        self.current_tile_positionInField[0].clear()
-        self.current_tile_positionInField[1].clear()
+        self.current_tile_positionInField[0] = self._empty_list(
+            list_to_empty=self.current_tile_positionInField[0]
+        )
+        self.current_tile_positionInField[1] = self._empty_list(
+            list_to_empty=self.current_tile_positionInField[1]
+        )
 
         self.current_action = None
 
