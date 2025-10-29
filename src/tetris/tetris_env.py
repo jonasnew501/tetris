@@ -106,7 +106,7 @@ class TetrisEnv:
 
         self.current_tile_positionInField = [
             [],
-            [],
+            []
         ]
 
         self.game_over = False
@@ -147,7 +147,7 @@ class TetrisEnv:
         self._populate_tiles_queue()
 
         out_of_bounds_at_put, overlap_at_put = self._put_possible(
-            tile_to_put_into_field=self.current_tile, position=self.launch_position
+            tile_to_put_into_field=self.current_tile[1], position=self.launch_position
         )
 
         if out_of_bounds_at_put:
@@ -160,7 +160,7 @@ class TetrisEnv:
             self._put_tile_into_field(
                 self.current_tile[1], position=self.launch_position
             )
-            self._set_current_tile_position_in_field_at_launch(self.current_tile)
+            self._set_current_tile_position_in_field_at_launch(self.current_tile[1])
 
             self.game_over = False
 
@@ -191,9 +191,9 @@ class TetrisEnv:
         current_tile_positionInField_old = self.current_tile_positionInField.copy()
 
         # Increasing all row-numbers by one (i.e. the tile moves downward by one row)
-        self.current_tile_positionInField[0] += np.ones(
-            shape=(current_tile_number_of_columns,), dtype=np.int8
-        )
+        self.current_tile_positionInField[0] += list(np.ones(
+            shape=(len(self.current_tile_positionInField[0]),), dtype=np.int8
+        ))
 
         # Updating the tile in the field (i.e. doing the actual dropping)
         # dropping the current tile by merging it with the new place of the tile after the
@@ -299,9 +299,9 @@ class TetrisEnv:
                 return
 
             # updating 'self.current_tile_positionInField'
-            self.current_tile_positionInField[1] -= np.ones(
+            self.current_tile_positionInField[1] -= list(np.ones(
                 shape=(len(self.current_tile_positionInField[1]),), dtype=np.int8
-            )
+            ))
 
             # Updating the tile in the field (i.e. doing the actual movement)
             current_tile = self.current_tile[1]
@@ -329,9 +329,9 @@ class TetrisEnv:
                 return
 
             # Updating 'self.current_tile_positionInField
-            self.current_tile_positionInField[1] += np.ones(
+            self.current_tile_positionInField[1] += list(np.ones(
                 shape=(len(self.current_tile_positionInField[1]),), dtype=np.int8
-            )
+            ))
 
             # Updating the tile in the field (i.e. doing the actual movement)
             current_tile = self.current_tile[1]
@@ -413,12 +413,8 @@ class TetrisEnv:
 
         self.current_tile = None
 
-        self.current_tile_positionInField[0] = self._empty_list(
-            list_to_empty=self.current_tile_positionInField[0]
-        )
-        self.current_tile_positionInField[1] = self._empty_list(
-            list_to_empty=self.current_tile_positionInField[1]
-        )
+        self.current_tile_positionInField[0].clear()
+        self.current_tile_positionInField[1].clear()
 
         self.current_action = None
 
@@ -590,7 +586,7 @@ class TetrisEnv:
                 lowest_row_current_tile + row_below_lowest_row_current_tile
             )
 
-            return all(sum_of_both_rows in [0, 1])
+            return np.all(np.isin(sum_of_both_rows, [0, 1]))
 
     def _check_tile_at_edge(
         self,
@@ -743,7 +739,7 @@ class TetrisEnv:
                     False otherwise.
         """
         if direction == self.PossibleActions.move_left:
-            tile_at_edge = self._check_tile_at_edge(edge="left")
+            tile_at_edge = self._check_tile_at_edge(edge="left", tile_positionInField=self.current_tile_positionInField)
             if tile_at_edge:
                 return False
 
@@ -765,10 +761,10 @@ class TetrisEnv:
                 + column_left_of_leftmost_column_current_tile
             )
 
-            return all(sum_of_both_columns in [0, 1])
+            return np.all(np.isin(sum_of_both_columns, [0, 1]))
 
         if direction == self.PossibleActions.move_right:
-            tile_at_edge = self._check_tile_at_edge(edge="right")
+            tile_at_edge = self._check_tile_at_edge(edge="right", tile_positionInField=self.current_tile_positionInField)
             if tile_at_edge:
                 return False
 
@@ -786,7 +782,7 @@ class TetrisEnv:
                 + column_right_of_rightmost_column_current_tile
             )
 
-            return all(sum_of_both_columns in [0, 1])
+            return np.all(np.isin(sum_of_both_columns, [0, 1]))
 
     def _get_current_tile_positionInField_after_rotation(
         self,
@@ -851,7 +847,7 @@ class TetrisEnv:
             )
         )
 
-        return list(new_row_indices, new_column_indices)
+        return list(list(new_row_indices), list(new_column_indices))
 
     def _update_rotation_value(self) -> int:
         """
@@ -1432,7 +1428,7 @@ class TetrisEnv:
         ]
 
         # Checking if there would be an overlap with the field in any cell
-        overlap = np.any(field_section & tile_to_put_into_field)
+        overlap = np.any((field_section == 1) & (tile_to_put_into_field == 1))
 
         return overlap
 
