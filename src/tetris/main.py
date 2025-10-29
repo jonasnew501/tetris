@@ -46,15 +46,16 @@ def main():
 
             # print("------------------------------")
             if not drop_conducted:
-                env.launch_tile()
+                _ = env.launch_tile()
 
             # dropping the current tile by one row
-            drop_conducted = env.drop_current_tile(drop_possible=env._drop_possible())
+            if drop_possible := env._drop_possible():
+                env.drop_current_tile(drop_possible=drop_possible)
+                drop_conducted = True
+            else:
+                drop_conducted = False
 
             print(env.field)
-            # print(f"current_tile: {env.current_tile}")
-            # print(f"current_tile_positionInField: {env.current_tile_positionInField}")
-            # print(f"current_action: {env.current_action}")
             print()
 
             time.sleep(0.5)
