@@ -191,9 +191,10 @@ class TetrisEnv:
         current_tile_positionInField_old = self.current_tile_positionInField.copy()
 
         # Increasing all row-numbers by one (i.e. the tile moves downward by one row)
-        self.current_tile_positionInField[0] += list(np.ones(
+        self.current_tile_positionInField[0] += np.ones(
             shape=(len(self.current_tile_positionInField[0]),), dtype=np.int8
-        ))
+        )
+        self.current_tile_positionInField[0].tolist()
 
         # Updating the tile in the field (i.e. doing the actual dropping)
         # dropping the current tile by merging it with the new place of the tile after the
@@ -299,9 +300,10 @@ class TetrisEnv:
                 return
 
             # updating 'self.current_tile_positionInField'
-            self.current_tile_positionInField[1] -= list(np.ones(
+            self.current_tile_positionInField[1] -= np.ones(
                 shape=(len(self.current_tile_positionInField[1]),), dtype=np.int8
-            ))
+            )
+            self.current_tile_positionInField[1].tolist()
 
             # Updating the tile in the field (i.e. doing the actual movement)
             current_tile = self.current_tile[1]
@@ -329,9 +331,10 @@ class TetrisEnv:
                 return
 
             # Updating 'self.current_tile_positionInField
-            self.current_tile_positionInField[1] += list(np.ones(
+            self.current_tile_positionInField[1] += np.ones(
                 shape=(len(self.current_tile_positionInField[1]),), dtype=np.int8
-            ))
+            )
+            self.current_tile_positionInField[1].tolist()
 
             # Updating the tile in the field (i.e. doing the actual movement)
             current_tile = self.current_tile[1]
@@ -511,6 +514,7 @@ class TetrisEnv:
         current_tile_number_of_rows = self._current_tile_number_of_rows()
         current_tile_number_of_columns = self._current_tile_number_of_columns()
 
+        tile_to_put_into_field = tile_to_put_into_field.astype(np.int8)
         self.field[
             position[0] : position[0] + current_tile_number_of_rows,
             position[1] : position[1] + current_tile_number_of_columns,
