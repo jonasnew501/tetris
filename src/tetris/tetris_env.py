@@ -1292,6 +1292,40 @@ class TetrisEnv:
             raise WrongDatatypeError
 
         return ndarray.ndim
+    
+
+    def _put_tile_into_field_at_launch_position(
+        self, tile_to_put_into_field: np.ndarray
+    ) -> bool:
+        """
+        Puts 'tile_to_put_into_field' into the field at 'self.launch_position'.
+
+        Returns:
+            (bool): True, if 'tile_to_put_into_field' could successfully be put
+                    into the field,
+                    False, if the 'tile_to_put_into_field' collides with other
+                    tiles in the field at 'self.launch_position'.
+
+        Raises:
+            OutOfBoundsError: When 'tile_to_put_into_field' would reach out of
+                              one or more borders of the field.
+                              This problem is caused by the tiles' composition
+                              in combination with 'self.launch_position'.
+        """
+
+        if self._out_of_bounds_at_launch(tile_to_check=tile_to_put_into_field):
+            raise OutOfBoundsError
+
+        if self._overlap_at_launch(tile_to_put_into_field=tile_to_put_into_field):
+            return False
+        else:
+            self._put_tile_into_field(
+                tile_to_put_into_field=tile_to_put_into_field,
+                position=self.launch_position,
+            )
+
+            return True
+
 
     def _out_of_bounds_at_launch(self, tile_to_check: np.ndarray) -> bool:
         """
