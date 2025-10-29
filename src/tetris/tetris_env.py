@@ -403,6 +403,7 @@ class TetrisEnv:
             - 'self.current_tile_positionInField' is emptied
             - 'self.current_action' is set to None
             - 'self.tiles_queue' is emptied and freshly populated
+            - 'self.game_over' is set to False
             - Points achieved are set to zero.
 
         """
@@ -423,6 +424,8 @@ class TetrisEnv:
 
         self.tiles_queue = deque()
         self._populate_tiles_queue()
+
+        self.game_over = False
 
         # TODO:
         # Set game-points achieved to zero.
