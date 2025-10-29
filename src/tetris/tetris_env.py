@@ -1326,8 +1326,21 @@ class TetrisEnv:
 
             return True
 
+    def _put_possible(self, tile_to_put_into_field: np.ndarray, position: list[int, int]) -> bool:
+        """
+        Checks whether putting 'tile_to_put_into_field' at 'position', with the
+        top-left-corner of 'tile_to_put_into_field' being at/on 'position',
+        is possible.
 
-    def _out_of_bounds_at_launch(self, tile_to_check: np.ndarray) -> bool:
+        Returns:
+            bool: True, if putting 'tile_to_put_into_field' at 'position'
+                  is possible;
+                  False otherwise.
+        """
+
+
+
+    def _out_of_bounds_at_put(self, tile_to_put_into_field: np.ndarray, position: list[int, int]) -> bool:
         """
         Checks whether 'tile_to_check' would be out of bounds
         of the field when being put into the field.
@@ -1336,30 +1349,37 @@ class TetrisEnv:
         the field with its top-left corner being on the
         'self.launch_position'.
 
+        Args:
+            'tile_to_put_into_field' (np.ndarray): The tile which is checked to be puttable
+                                                   into the field.
+            'position' (list[int, int]): The cell/coordinate of the field, where the tile
+                                         with its top-left-corner laying on 'position',
+                                         is tried to be put into the field.
+
         Returns:
-            (bool): True, if 'tile_to_check' would be out-of-bounds when launched
-                    at 'self.launch_position' into the field;
+            (bool): True, if 'tile_to_put_into_field' would be out-of-bounds when put
+                    at 'position' into the field;
                     False otherwise.
         """
-        current_tile_number_of_rows = self._current_tile_number_of_rows()
-        current_tile_number_of_columns = self._current_tile_number_of_columns()
+        tile_to_put_into_field_number_of_rows = tile_to_put_into_field.shape[0]
+        tile_to_put_into_field_number_of_columns = tile_to_put_into_field.shape[1]
 
-        # Check for condition 1: Is any of the indices of the launch_position negative?
+        # Check for condition 1: Is any of the indices of the 'position' negative?
         negative_launch_pos_indices = (
-            self.launch_position[0] < 0 or self.launch_position[1] < 0
+            position[0] < 0 or position[1] < 0
         )
 
         # Check for condition 2: Does the tile reach out of the right hand side border of the field?
         field_rightmost_column_idx = self.field_width - 1
         out_of_bounds_right = (
-            self.launch_position[1] + (current_tile_number_of_columns - 1)
+            position[1] + (tile_to_put_into_field_number_of_columns - 1)
             > field_rightmost_column_idx
         )
 
         # Check for condition 2: Does the tile reach out of the bottom border of the field?
         field_bottommost_row_idx = self.field_height - 1
         out_of_bounds_bottom = (
-            self.launch_position[0] + (current_tile_number_of_rows - 1)
+            position[0] + (tile_to_put_into_field_number_of_rows - 1)
             > field_bottommost_row_idx
         )
 
