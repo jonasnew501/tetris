@@ -135,7 +135,7 @@ class TetrisEnv:
             - tries to put 'self.current_tile' into the field at 'self.launch_position'.
             - updates 'self.current_tile_positionInField'
             - updates 'self.game_over'
-        
+
         Raises:
             OutOfBoundsError: If 'self.current_tile' out be out of the bounds of the
                               field when it would be put into the field.
@@ -145,22 +145,25 @@ class TetrisEnv:
         # since now one tile was removed from the tiles_queue,
         # the tiles queue is populated again
         self._populate_tiles_queue()
-        
-        out_of_bounds_at_put, overlap_at_put = self._put_possible(tile_to_put_into_field=self.current_tile, position=self.launch_position)
 
+        out_of_bounds_at_put, overlap_at_put = self._put_possible(
+            tile_to_put_into_field=self.current_tile, position=self.launch_position
+        )
 
         if out_of_bounds_at_put:
-            raise OutOfBoundsError("The tile would be out-of-bounds when it would be launched at 'self.launch_position'.\n \
-                                   Check 'field_width', 'field_heigth', and 'launch_position' to contain reasonable values.")
+            raise OutOfBoundsError(
+                "The tile would be out-of-bounds when it would be launched at 'self.launch_position'.\n \
+                                   Check 'field_width', 'field_heigth', and 'launch_position' to contain reasonable values."
+            )
 
         elif not out_of_bounds_at_put and not overlap_at_put:
             self._put_tile_into_field(
-            self.current_tile[1], position=self.launch_position
+                self.current_tile[1], position=self.launch_position
             )
             self._set_current_tile_position_in_field_at_launch(self.current_tile)
 
             self.game_over = False
-        
+
         elif not out_of_bounds_at_put and overlap_at_put:
             self.game_over = True
 
@@ -1304,9 +1307,10 @@ class TetrisEnv:
             raise WrongDatatypeError
 
         return ndarray.ndim
-    
 
-    def _put_possible(self, tile_to_put_into_field: np.ndarray, position: list[int, int]) -> bool:
+    def _put_possible(
+        self, tile_to_put_into_field: np.ndarray, position: list[int, int]
+    ) -> bool:
         """
         Checks whether putting 'tile_to_put_into_field' at 'position', with the
         top-left-corner of 'tile_to_put_into_field' being at/on 'position',
@@ -1324,16 +1328,20 @@ class TetrisEnv:
         out_of_bounds_at_put = False
         overlap_at_put = False
 
-        out_of_bounds_at_put = self._out_of_bounds_at_put(tile_to_put_into_field=tile_to_put_into_field,
-                                                          position=position)
-        
+        out_of_bounds_at_put = self._out_of_bounds_at_put(
+            tile_to_put_into_field=tile_to_put_into_field, position=position
+        )
+
         if not out_of_bounds_at_put:
-            overlap_at_put = self._overlap_at_put(tile_to_put_into_field=tile_to_put_into_field, position=position)
-        
+            overlap_at_put = self._overlap_at_put(
+                tile_to_put_into_field=tile_to_put_into_field, position=position
+            )
+
         return (out_of_bounds_at_put, overlap_at_put)
 
-
-    def _out_of_bounds_at_put(self, tile_to_put_into_field: np.ndarray, position: list[int, int]) -> bool:
+    def _out_of_bounds_at_put(
+        self, tile_to_put_into_field: np.ndarray, position: list[int, int]
+    ) -> bool:
         """
         Checks whether 'tile_to_check' would be out of bounds
         of the field when being put into the field.
@@ -1358,9 +1366,7 @@ class TetrisEnv:
         tile_to_put_into_field_number_of_columns = tile_to_put_into_field.shape[1]
 
         # Check for condition 1: Is any of the indices of the 'position' negative?
-        negative_launch_pos_indices = (
-            position[0] < 0 or position[1] < 0
-        )
+        negative_launch_pos_indices = position[0] < 0 or position[1] < 0
 
         # Check for condition 2: Does the tile reach out of the right hand side border of the field?
         field_rightmost_column_idx = self.field_width - 1
@@ -1381,7 +1387,9 @@ class TetrisEnv:
         else:
             return False
 
-    def _overlap_at_put(self, tile_to_put_into_field: np.ndarray, position: list[int, int]) -> bool:
+    def _overlap_at_put(
+        self, tile_to_put_into_field: np.ndarray, position: list[int, int]
+    ) -> bool:
         """
         Checks whether 'tile_to_put_into_field' does not overlap/collide with
         the field when put into the field at 'position'.
@@ -1416,14 +1424,14 @@ class TetrisEnv:
         tile_to_put_into_field_number_of_columns = tile_to_put_into_field.shape[1]
 
         field_section = self.field[
-            position[0] : position[0]
-            + tile_to_put_into_field_number_of_rows,
-            position[1] : position[1]
-            + tile_to_put_into_field_number_of_columns,
+            position[0] : position[0] + tile_to_put_into_field_number_of_rows,
+            position[1] : position[1] + tile_to_put_into_field_number_of_columns,
         ]
 
         # Checking if there would be an overlap with the field in any cell
         overlap = np.any(field_section & tile_to_put_into_field)
 
         return overlap
+
+
 # ----------------------------------------------------------------------------------
