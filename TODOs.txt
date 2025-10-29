@@ -2,4 +2,4 @@
 "tetris.tetris_env.py" and "tetris.main.py":
 
     - "remove_full_rows" is not called anywhere yet. --> Incorporate
-    - 
+    - "_check_rotation_possible" is not called anywhere yet. --> Incorporate
