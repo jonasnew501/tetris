@@ -106,20 +106,20 @@ class TetrisEnv:
             [],
         ]
 
-    #-----ENUMs------------------------------------------------------------------------
+    # -----ENUMs------------------------------------------------------------------------
     class PossibleActions(Enum):
-            """
-            Possible actions that can be taken in the game.
-            """
+        """
+        Possible actions that can be taken in the game.
+        """
 
-            do_nothing = 0
-            move_left = 1
-            move_right = 2
-            rotate = 3
-    
-    #----------------------------------------------------------------------------------
+        do_nothing = 0
+        move_left = 1
+        move_right = 2
+        rotate = 3
 
-    #-----central functions------------------------------------------------------------
+    # ----------------------------------------------------------------------------------
+
+    # -----central functions------------------------------------------------------------
     def launch_tile(self) -> bool:
         """
         Launches the next tile to come from 'self.tiles_queue' into the field.
@@ -205,7 +205,7 @@ class TetrisEnv:
             )
             + current_tile_number_of_columns,
         ] = np.int8(0)
-    
+
     def remove_full_rows(self, full_rows_indices: Union[list, np.ndarray]) -> int:
         """
         Removes all rows given by 'full_rows_indices' from the field.
@@ -238,7 +238,7 @@ class TetrisEnv:
         )
 
         return len(full_rows_indices)
-    
+
     def handle_action(self, action: PossibleActions):
         """
         Handles all possible actions that can be taken in the game.
@@ -263,7 +263,7 @@ class TetrisEnv:
             raise ValueError("Unknown action: {action}")
 
         self._set_current_action(action=action)
-    
+
     def move(self, direction: PossibleActions):
         """
         Moves the current tile in the field either to the left or to the right
@@ -376,7 +376,7 @@ class TetrisEnv:
             current_tile_positionInField_before_rotation=current_tile_positionInField_before_rotation,
             current_tile_positionInField_after_rotation=self.current_tile_positionInField.copy(),
         )
-    
+
     def reset(self):
         """
         Resets the environment to an initial state.
@@ -411,10 +411,10 @@ class TetrisEnv:
 
         # TODO:
         # Set game-points achieved to zero.
-    
-    #----------------------------------------------------------------------------------
 
-    #-----Helper-functions-------------------------------------------------------------
+    # ----------------------------------------------------------------------------------
+
+    # -----Helper-functions-------------------------------------------------------------
     def _tiles_queue_pop_left(self) -> list[str, np.ndarray, int]:
         """
         Pops the first resp. leftmost element of 'self.tiles_queue'
@@ -433,7 +433,7 @@ class TetrisEnv:
             raise EmptyContainerError
 
         return self.tiles_queue.popleft()
-    
+
     def _populate_tiles_queue(self):
         """
         Populates 'self.tiles_queue' with tiles randomly selected
@@ -444,7 +444,7 @@ class TetrisEnv:
         """
         while len(self.tiles_queue) < self.len_tiles_queue:
             self.tiles_queue.append([*random.choice(list(self.tiles.items())), 0])
-    
+
     def _put_tile_into_field(
         self, tile_to_put_into_field: np.ndarray, position: list[int, int]
     ):
@@ -522,8 +522,6 @@ class TetrisEnv:
         column_indices += self.launch_position[1]
 
         self.current_tile_positionInField = [list(row_indices), list(column_indices)]
-
-
 
     def _drop_possible(self) -> bool:
         """
@@ -772,9 +770,98 @@ class TetrisEnv:
 
             return all(sum_of_both_columns in [0, 1])
 
-    
+    def _get_current_tile_positionInField_after_rotation(
+        self,
+    ) -> list[list[int], list[int]]:
+        """
+        Creates a variable of the same principle as 'self.current_tile_positionInField'
+        holding the row and column indices it would have after a rotation of
+        'self.current_tile' by 90 degrees clockwise would have been done.
 
-    
+        I.e. an actual rotation, i.e. update of 'self.field' or
+        'self.current_tile_positionInField' or of other attributes
+        is not done, but only this variable described above is created and returned.
+
+        Returns:
+            list[list[int], list[int]]: The variable of the form/principle of 'self.current_tile_positionInField'
+                                        after a simulated rotation by 90 degrees clockwise.
+        """
+        current_tile_positionInField_copy = self.current_tile_positionInField.copy()
+
+        current_tile_shape_after_rotation = (
+            self._get_shape_of_current_tile_after_rotation()
+        )
+
+        diff_in_rows, diff_in_columns = (
+            self._get_diff_in_rows_and_columns_of_current_tile_after_rotation()
+        )
+
+        # calculation of new row and column indices
+        # rows
+        if diff_in_rows < 0:
+            new_row_indices_unique = list(set(current_tile_positionInField_copy[0]))[
+                :diff_in_rows
+            ]
+        elif diff_in_rows > 0:
+            new_row_indices_unique = range(
+                min(current_tile_positionInField_copy[0]),
+                max(current_tile_positionInField_copy[0]) + diff_in_rows + 1,
+                1,
+            )
+
+        # columns
+        if diff_in_columns < 0:
+            new_column_indices_unique = list(set(current_tile_positionInField_copy[1]))[
+                :diff_in_columns
+            ]
+        elif diff_in_rows > 0:
+            new_column_indices_unique = range(
+                min(current_tile_positionInField_copy[1]),
+                max(current_tile_positionInField_copy[1]) + diff_in_columns + 1,
+                1,
+            )
+
+        # creating the lists of row and column indices as held in 'self.current_tile_positionInField' in principle
+        new_row_indices = list(
+            np.repeat(
+                new_row_indices_unique, repeats=current_tile_shape_after_rotation[1]
+            )
+        )
+        new_column_indices = list(
+            np.tile(
+                new_column_indices_unique, reps=current_tile_shape_after_rotation[0]
+            )
+        )
+
+        return list(new_row_indices, new_column_indices)
+
+    def _update_rotation_value(self) -> int:
+        """
+        Updates the rotation-value held in
+        'self.current_tile[2]' by one rotation
+        by 90 degrees clockwise.
+
+        'self.current_tile[2]' is not altered
+        by this function.
+
+        Returns:
+            new_rotation_value (int): The updated rotation value.
+        """
+        current_rotation_value = self.current_tile[2]
+        new_rotation_value = (
+            (current_rotation_value + 1) if (current_rotation_value + 1) < 4 else 0
+        )  # because a rotation of "4" would just mean it is at rotation 0 (i.e. initial position) again
+
+        return new_rotation_value
+
+    def _rotate_tile(self, tile_to_rotate: np.ndarray) -> np.ndarray:
+        """
+        Rotates 'tile_to_rotate' by 90 degrees clockwise.
+
+        Returns:
+            rotated_tile (np.ndarray): The rotated tile.
+        """
+        return np.rot90(tile_to_rotate, k=1, axes=(1, 0))
 
     def _clear_unoccupied_cells_in_field_after_rotation(
         self,
@@ -818,34 +905,6 @@ class TetrisEnv:
             min(rows_unoccupied_cells) : max(rows_unoccupied_cells) + 1,
             min(columns_unoccupied_cells) : max(columns_unoccupied_cells) + 1,
         ] = np.int(8)
-
-    def _update_rotation_value(self) -> int:
-        """
-        Updates the rotation-value held in
-        'self.current_tile[2]' by one rotation
-        by 90 degrees clockwise.
-
-        'self.current_tile[2]' is not altered
-        by this function.
-
-        Returns:
-            new_rotation_value (int): The updated rotation value.
-        """
-        current_rotation_value = self.current_tile[2]
-        new_rotation_value = (
-            (current_rotation_value + 1) if (current_rotation_value + 1) < 4 else 0
-        )  # because a rotation of "4" would just mean it is at rotation 0 (i.e. initial position) again
-
-        return new_rotation_value
-
-    def _rotate_tile(self, tile_to_rotate: np.ndarray) -> np.ndarray:
-        """
-        Rotates 'tile_to_rotate' by 90 degrees clockwise.
-
-        Returns:
-            rotated_tile (np.ndarray): The rotated tile.
-        """
-        return np.rot90(tile_to_rotate, k=1, axes=(1, 0))
 
     def _check_rotation_possible(self) -> bool:
         """
@@ -979,6 +1038,69 @@ class TetrisEnv:
 
         return not all(sum_of_both_slices in [0, 1])
 
+    def _get_shape_of_current_tile(self) -> tuple:
+        """
+        From 'self.current_tile_positionInField', computes and returns
+        the shape of the current tile (incorporating resp. considering
+        it's current degree of rotation).
+
+        Returns:
+        Shape of the current tile (as a tuple)
+        """
+        n_rows = len(set(self.current_tile_positionInField[0].copy()))
+        n_columns = len(set(self.current_tile_positionInField[1].copy()))
+
+        return (n_rows, n_columns)
+
+    def _get_slice_of_field_from_coords(self, coords: list[tuple]) -> np.ndarray:
+        """
+        Slices out the area defined by 'coords' from 'self.field'
+        and returns that slice.
+
+        'self.field' is not altered by this function.
+
+        It is required that the coords are adjacent to each other, either
+        horizontally or vertically (not diagonally). That means there
+        must be no gap between one section in the field defined
+        by the coordinates and another section in the field defined
+        by the coordinates.
+
+        Args:
+            coords (list[tulple[int, int]]): A list of one or multiple tuples of the form
+                                             (row-index, column-index).
+                                             Every tuple defines a coordinate in 'self.field'
+
+        Returns:
+            field_slice (np.ndarray): The slice of 'self.field' defined by 'coords'.
+
+        Raises:
+            GamewiseLogicalError: If either the rows and/or the columns were identified as not
+                                  being adjacent to each other, i.e. they have gaps in between.
+        """
+        # splitting the coordinates into rows and columns
+        rows = [row for row, _ in coords]
+        columns = [column for _, column in coords]
+
+        # Checking for adjacency of both rows and columns
+        adjacent_rows = list(range(min(rows), max(rows) + 1, 1))
+        adjacent_columns = list(range(min(columns), max(columns) + 1, 1))
+
+        check_adjacent_rows = sorted(rows) == adjacent_rows
+        check_adjacent_columns = sorted(columns) == adjacent_columns
+
+        if (not check_adjacent_rows) or (not check_adjacent_columns):
+            raise GamewiseLogicalError(
+                f"The rows and/or columns from the coords were identified as not being adjacent.\n \
+                                       However, this is required by the logic of this function.\n \
+                                       rows: {rows}, columns: {columns}."
+            )
+
+        field_slice = self.field[
+            min(rows) : max(rows) + 1, min(columns) : max(columns) + 1
+        ]
+
+        return field_slice
+
     def _get_slice_of_current_tile_at_new_cells_occupied_after_rotation(
         self,
     ) -> np.ndarray:
@@ -1055,154 +1177,6 @@ class TetrisEnv:
 
         return current_tile_rotated_new_cells_slice
 
-    def _get_slice_of_field_from_coords(self, coords: list[tuple]) -> np.ndarray:
-        """
-        Slices out the area defined by 'coords' from 'self.field'
-        and returns that slice.
-
-        'self.field' is not altered by this function.
-
-        It is required that the coords are adjacent to each other, either
-        horizontally or vertically (not diagonally). That means there
-        must be no gap between one section in the field defined
-        by the coordinates and another section in the field defined
-        by the coordinates.
-
-        Args:
-            coords (list[tulple[int, int]]): A list of one or multiple tuples of the form
-                                             (row-index, column-index).
-                                             Every tuple defines a coordinate in 'self.field'
-
-        Returns:
-            field_slice (np.ndarray): The slice of 'self.field' defined by 'coords'.
-
-        Raises:
-            GamewiseLogicalError: If either the rows and/or the columns were identified as not
-                                  being adjacent to each other, i.e. they have gaps in between.
-        """
-        # splitting the coordinates into rows and columns
-        rows = [row for row, _ in coords]
-        columns = [column for _, column in coords]
-
-        # Checking for adjacency of both rows and columns
-        adjacent_rows = list(range(min(rows), max(rows) + 1, 1))
-        adjacent_columns = list(range(min(columns), max(columns) + 1, 1))
-
-        check_adjacent_rows = sorted(rows) == adjacent_rows
-        check_adjacent_columns = sorted(columns) == adjacent_columns
-
-        if (not check_adjacent_rows) or (not check_adjacent_columns):
-            raise GamewiseLogicalError(
-                f"The rows and/or columns from the coords were identified as not being adjacent.\n \
-                                       However, this is required by the logic of this function.\n \
-                                       rows: {rows}, columns: {columns}."
-            )
-
-        field_slice = self.field[
-            min(rows) : max(rows) + 1, min(columns) : max(columns) + 1
-        ]
-
-        return field_slice
-
-    def _get_current_tile_positionInField_after_rotation(
-        self,
-    ) -> list[list[int], list[int]]:
-        """
-        Creates a variable of the same principle as 'self.current_tile_positionInField'
-        holding the row and column indices it would have after a rotation of
-        'self.current_tile' by 90 degrees clockwise would have been done.
-
-        I.e. an actual rotation, i.e. update of 'self.field' or
-        'self.current_tile_positionInField' or of other attributes
-        is not done, but only this variable described above is created and returned.
-
-        Returns:
-            list[list[int], list[int]]: The variable of the form/principle of 'self.current_tile_positionInField'
-                                        after a simulated rotation by 90 degrees clockwise.
-        """
-        current_tile_positionInField_copy = self.current_tile_positionInField.copy()
-
-        current_tile_shape_after_rotation = (
-            self._get_shape_of_current_tile_after_rotation()
-        )
-
-        diff_in_rows, diff_in_columns = (
-            self._get_diff_in_rows_and_columns_of_current_tile_after_rotation()
-        )
-
-        # calculation of new row and column indices
-        # rows
-        if diff_in_rows < 0:
-            new_row_indices_unique = list(set(current_tile_positionInField_copy[0]))[
-                :diff_in_rows
-            ]
-        elif diff_in_rows > 0:
-            new_row_indices_unique = range(
-                min(current_tile_positionInField_copy[0]),
-                max(current_tile_positionInField_copy[0]) + diff_in_rows + 1,
-                1,
-            )
-
-        # columns
-        if diff_in_columns < 0:
-            new_column_indices_unique = list(set(current_tile_positionInField_copy[1]))[
-                :diff_in_columns
-            ]
-        elif diff_in_rows > 0:
-            new_column_indices_unique = range(
-                min(current_tile_positionInField_copy[1]),
-                max(current_tile_positionInField_copy[1]) + diff_in_columns + 1,
-                1,
-            )
-
-        # creating the lists of row and column indices as held in 'self.current_tile_positionInField' in principle
-        new_row_indices = list(
-            np.repeat(
-                new_row_indices_unique, repeats=current_tile_shape_after_rotation[1]
-            )
-        )
-        new_column_indices = list(
-            np.tile(
-                new_column_indices_unique, reps=current_tile_shape_after_rotation[0]
-            )
-        )
-
-        return list(new_row_indices, new_column_indices)
-
-    def _get_shape_of_current_tile_after_rotation(self) -> tuple[int, int]:
-        """
-        Calculates and returns the shape 'self.current_tile' would have
-        after a rotation by 90 degrees clockwise would have been
-        conducted.
-
-        An actual rotation, i.e. an update of 'self.field' or
-        'self.current_tile_positionInField' or of other attributes
-        is not done, but only the variable described above is
-        created and returned.
-        """
-
-        current_tile_shape = self._get_shape_of_current_tile()
-
-        # First getting/computing the shape after a rotation would have been done
-        # (i.e. just flipping rows and columns)
-        current_tile_shape_after_rotation = tuple(reversed(current_tile_shape))
-
-        return current_tile_shape_after_rotation
-
-    def _get_shape_of_current_tile(self) -> tuple:
-        """
-        From 'self.current_tile_positionInField', computes and returns
-        the shape of the current tile (incorporating resp. considering
-        it's current degree of rotation).
-
-        Returns:
-        Shape of the current tile (as a tuple)
-        """
-        n_rows = len(set(self.current_tile_positionInField[0].copy()))
-        n_columns = len(set(self.current_tile_positionInField[1].copy()))
-
-        return (n_rows, n_columns)
-
     def _get_diff_in_rows_and_columns_of_current_tile_after_rotation(
         self,
     ) -> tuple[int, int]:
@@ -1241,15 +1215,25 @@ class TetrisEnv:
 
         return (diff_in_rows, diff_in_columns)
 
-    def visualize_field(self):
-        # TODO: Finish with constantly updating plot
-        plt.figure(figsize=(10, 10))
+    def _get_shape_of_current_tile_after_rotation(self) -> tuple[int, int]:
+        """
+        Calculates and returns the shape 'self.current_tile' would have
+        after a rotation by 90 degrees clockwise would have been
+        conducted.
 
-        plt.scatter(x=self.field, color="red")
+        An actual rotation, i.e. an update of 'self.field' or
+        'self.current_tile_positionInField' or of other attributes
+        is not done, but only the variable described above is
+        created and returned.
+        """
 
-        plt.show(block=True)
+        current_tile_shape = self._get_shape_of_current_tile()
 
-    
+        # First getting/computing the shape after a rotation would have been done
+        # (i.e. just flipping rows and columns)
+        current_tile_shape_after_rotation = tuple(reversed(current_tile_shape))
+
+        return current_tile_shape_after_rotation
 
     def _create_empty_field(self, field_height: int, field_width: int) -> np.ndarray:
         """
@@ -1268,9 +1252,13 @@ class TetrisEnv:
 
         return np.zeros(shape=(field_height, field_width), dtype=np.int8)
 
-    
+    def visualize_field(self):
+        # TODO: Finish with constantly updating plot
+        plt.figure(figsize=(10, 10))
 
-    
+        plt.scatter(x=self.field, color="red")
+
+        plt.show(block=True)
 
     def _empty_list(self, list_to_empty: list) -> list:
         """
@@ -1289,40 +1277,6 @@ class TetrisEnv:
             raise WrongDatatypeError
 
         return list_to_empty.clear()
-
-    def _put_tile_into_field_at_launch_position(
-        self, tile_to_put_into_field: np.ndarray
-    ) -> bool:
-        """
-        Puts 'tile_to_put_into_field' into the field at 'self.launch_position'.
-
-        Returns:
-            (bool): True, if 'tile_to_put_into_field' could successfully be put
-                    into the field,
-                    False, if the 'tile_to_put_into_field' collides with other
-                    tiles in the field at 'self.launch_position'.
-
-        Raises:
-            OutOfBoundsError: When 'tile_to_put_into_field' would reach out of
-                              one or more borders of the field.
-                              This problem is caused by the tiles' composition
-                              in combination with 'self.launch_position'.
-        """
-
-        if self._out_of_bounds_at_launch(tile_to_check=tile_to_put_into_field):
-            raise OutOfBoundsError
-
-        if self._overlap_at_launch(tile_to_put_into_field=tile_to_put_into_field):
-            return False
-        else:
-            self._put_tile_into_field(
-                tile_to_put_into_field=tile_to_put_into_field,
-                position=self.launch_position,
-            )
-
-            return True
-
-    
 
     def _get_dimensionality_of_ndarray(self, ndarray: np.ndarray) -> int:
         """
