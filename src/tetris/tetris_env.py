@@ -1337,7 +1337,9 @@ class TetrisEnv:
                   is possible;
                   False otherwise.
         """
-
+        out_of_bounds_at_put = self._out_of_bounds_at_put(tile_to_put_into_field=tile_to_put_into_field,
+                                                          position=position)
+        # overlap_at_put = 
 
 
     def _out_of_bounds_at_put(self, tile_to_put_into_field: np.ndarray, position: list[int, int]) -> bool:
@@ -1346,8 +1348,8 @@ class TetrisEnv:
         of the field when being put into the field.
 
         The core assumption is that the tile is always put into
-        the field with its top-left corner being on the
-        'self.launch_position'.
+        the field with its top-left corner being on
+        'position'.
 
         Args:
             'tile_to_put_into_field' (np.ndarray): The tile which is checked to be puttable
@@ -1388,28 +1390,45 @@ class TetrisEnv:
         else:
             return False
 
-    def _overlap_at_launch(self, tile_to_put_into_field: np.ndarray) -> bool:
+    def _overlap_at_put(self, tile_to_put_into_field: np.ndarray, position: list[int, int]) -> bool:
         """
         Checks whether 'tile_to_put_into_field' does not overlap/collide with
-        the field when put into the field at self.launch_position.
+        the field when put into the field at 'position'.
         An overlap happens if at a specific coordinate, both the field
         and the tile (when put into the field) hold a "1".
 
+        The core assumption is that the tile is always put into
+        the field with its top-left corner being on
+        'position'.
+
+        Important:
+        This function internally assumes that there will be no out-of-bounds
+        problem when 'tile_to_put_into_field' is checked to puttable into
+        the field with this function at hand.
+        That means an out-of-bounds check is recommended to do before
+        calling this function.
+
+        Args:
+            'tile_to_put_into_field' (np.ndarray): The tile which is checked to be puttable
+                                                   into the field.
+            'position' (list[int, int]): The cell/coordinate of the field, where the tile
+                                         with its top-left-corner laying on 'position',
+                                         is tried to be put into the field.
+
         Returns:
             (bool): True, if 'tile_to_put_into_field' could successfully be put
-                    into the field,
-                    False, if the 'tile_to_put_into_field' collides with other
-                    tiles in the field at 'self.launch_position'.
+                    into the field without an overlap;
+                    False otherwise.
         """
         # Getting the section of the field where the tile would go
-        current_tile_number_of_rows = self._current_tile_number_of_rows()
-        current_tile_number_of_columns = self._current_tile_number_of_columns()
+        tile_to_put_into_field_number_of_rows = tile_to_put_into_field.shape[0]
+        tile_to_put_into_field_number_of_columns = tile_to_put_into_field.shape[1]
 
         field_section = self.field[
-            self.launch_position[0] : self.launch_position[0]
-            + current_tile_number_of_rows,
-            self.launch_position[1] : self.launch_position[1]
-            + current_tile_number_of_columns,
+            position[0] : position[0]
+            + tile_to_put_into_field_number_of_rows,
+            position[1] : position[1]
+            + tile_to_put_into_field_number_of_columns,
         ]
 
         # Checking if there would be an overlap with the field in any cell
