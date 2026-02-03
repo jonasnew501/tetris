@@ -23,7 +23,6 @@ class TetrisEnv:
     """
     This class implements the whole Tetris environment.
 
-    This class implements the whole Tetris environment.
     It's purpose is to implement the Tetris field/-grid, and all related functionalities.
     Amongst those are the launching of new Tetrominos, the drop of Tetrominos, clearing
     full rows, rotation of tetrominos etc.
@@ -134,7 +133,7 @@ class TetrisEnv:
             - updates 'self.game_over'
 
         Raises:
-            OutOfBoundsError: If 'self.current_tile' out be out of the bounds of the
+            OutOfBoundsError: If 'self.current_tile' would be out of the bounds of the
                               field when it would be put into the field.
         """
         self.current_tile = self._tiles_queue_pop_left()
