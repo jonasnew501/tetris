@@ -42,6 +42,19 @@ class TestTetrisEnv:
     def env_setup_empty_field() -> TetrisEnv:
         env = TetrisEnv(field_height=7, field_width=10, len_tiles_queue=3)
         return env
+
+    @staticmethod
+    @pytest.fixture
+    def env_setup_occupied_field() -> TetrisEnv:
+        env = TetrisEnv(field_height=7, field_width=10, len_tiles_queue=3)
+        env.field = np.array([[0,0,0,0,0,0,0,0,0,0],
+                              [0,0,1,1,0,0,0,0,0,0],
+                              [0,0,1,1,1,0,1,0,0,0],
+                              [0,0,1,1,1,0,1,0,0,0],
+                              [0,0,0,1,1,1,1,0,0,0],
+                              [0,0,0,0,1,0,0,0,0,0],
+                              [0,0,0,0,0,0,0,0,0,0]]),
+        return env
     
     @staticmethod
     @pytest.mark.parametrize("tiles_queue, expected_field_after_put, current_tile_positionInField, game_over",
@@ -74,6 +87,39 @@ class TestTetrisEnv:
         assert env_setup_empty_field.current_tile_positionInField == current_tile_positionInField
 
         assert env_setup_empty_field.game_over == game_over
+    
+
+    @staticmethod
+    @pytest.mark.parametrize("tiles_queue, expected_field_after_put, current_tile_positionInField, game_over",
+                             [
+                                 (deque([["I", np.ones((4, 1)), 0]]),
+                                  np.array([[0,0,0,0,0,1,0,0,0,0],
+                                            [0,0,1,1,0,1,0,0,0,0],
+                                            [0,0,1,1,1,1,1,0,0,0],
+                                            [0,0,1,1,1,1,1,0,0,0],
+                                            [0,0,0,1,1,1,1,0,0,0],
+                                            [0,0,0,0,1,0,0,0,0,0],
+                                            [0,0,0,0,0,0,0,0,0,0]]),
+                                 [[0,1,2,3], [5,5,5,5]],
+                                 False),
+                             ],
+                             )
+    def test_launch_tile_occupied_field_happy_path(env_setup_occupied_field: TetrisEnv, tiles_queue, expected_field_after_put, current_tile_positionInField, game_over):
+        assert len(env_setup_occupied_field.tiles_queue) == 3
+
+        #overwriting the tiles_queue
+        env_setup_occupied_field.tiles_queue = tiles_queue
+
+        assert len(env_setup_occupied_field.tiles_queue) == 1
+
+        env_setup_occupied_field.launch_tile()
+
+        #asserting field-correctness
+        np.testing.assert_array_equal(env_setup_occupied_field.field, expected_field_after_put)
+
+        assert env_setup_occupied_field.current_tile_positionInField == current_tile_positionInField
+
+        assert env_setup_occupied_field.game_over == game_over
 
 
 
