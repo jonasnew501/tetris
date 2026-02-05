@@ -36,7 +36,6 @@ class TestTetrisEnv:
     - reset
     '''
 
-    # -----unittests for the happy-path-------------------------------------------------
     @staticmethod
     @pytest.fixture
     def env_setup_empty_field() -> TetrisEnv:
@@ -53,8 +52,10 @@ class TestTetrisEnv:
                               [0,0,1,1,1,0,1,0,0,0],
                               [0,0,0,1,1,1,1,0,0,0],
                               [0,0,0,0,1,0,0,0,0,0],
-                              [0,0,0,0,0,0,0,0,0,0]]),
+                              [0,0,0,0,0,0,0,0,0,0]], dtype=np.int8)
         return env
+
+    # -----unittests for the happy-path-------------------------------------------------
     
     @staticmethod
     @pytest.mark.parametrize("tiles_queue, expected_field_after_put, current_tile_positionInField, game_over",
@@ -66,7 +67,7 @@ class TestTetrisEnv:
                                             [0,0,0,0,0,0,0,0,0,0],
                                             [0,0,0,0,0,0,0,0,0,0],
                                             [0,0,0,0,0,0,0,0,0,0],
-                                            [0,0,0,0,0,0,0,0,0,0]]),
+                                            [0,0,0,0,0,0,0,0,0,0]], dtype=np.int8),
                                  [[0,0,1,1,2,2], [5,6,5,6,5,6]],
                                  False),
                              ],
@@ -99,7 +100,7 @@ class TestTetrisEnv:
                                             [0,0,1,1,1,1,1,0,0,0],
                                             [0,0,0,1,1,1,1,0,0,0],
                                             [0,0,0,0,1,0,0,0,0,0],
-                                            [0,0,0,0,0,0,0,0,0,0]]),
+                                            [0,0,0,0,0,0,0,0,0,0]], dtype=np.int8),
                                  [[0,1,2,3], [5,5,5,5]],
                                  False),
                              ],
@@ -122,22 +123,67 @@ class TestTetrisEnv:
         assert env_setup_occupied_field.game_over == game_over
 
 
-
-        # self.tiles = {
-        #     "I": np.ones((4, 1)),
-        #     "O": np.ones((2, 2)),
-        #     "S": np.array([[0, 1], [1, 1], [1, 0]]),
-        #     "S_inv": np.array([[1, 0], [1, 1], [0, 1]]),
-        #     "L": np.array([[1, 0], [1, 0], [1, 1]]),
-        #     "L_inv": np.array([[0, 1], [0, 1], [1, 1]]),
-        #     "T": np.array([[0, 1, 0], [1, 1, 1]]),
-        # }
-
-
-
     # ----------------------------------------------------------------------------------
 
 
-     # -----unittests for the unhappy-paths---------------------------------------------
+    # -----unittests for the unhappy-paths---------------------------------------------
+    
+    @staticmethod
+    @pytest.mark.parametrize("tiles_queue, expected_field, game_over",
+                             [
+                                 (deque([["I", np.ones((4, 1)), 0]]),
+                                  np.array([[0,0,0,0,0,0,0,0,0,0],
+                                            [0,0,1,1,0,0,0,0,0,0],
+                                            [0,0,1,1,1,0,1,0,0,0],
+                                            [0,0,1,1,1,0,1,0,0,0],
+                                            [0,0,0,1,1,1,1,0,0,0],
+                                            [0,0,0,0,1,0,0,0,0,0],
+                                            [0,0,0,0,0,0,0,0,0,0]], dtype=np.int8),
+                                 True),
+                             ],
+                             )
+    def test_launch_tile_occupied_field_unhappy_path_overlap(env_setup_occupied_field: TetrisEnv, tiles_queue, expected_field, game_over):
+        env_setup_occupied_field.launch_position = [0, 4]
+
+        assert len(env_setup_occupied_field.tiles_queue) == 3
+
+        #overwriting the tiles_queue
+        env_setup_occupied_field.tiles_queue = tiles_queue
+
+        assert len(env_setup_occupied_field.tiles_queue) == 1
+
+        env_setup_occupied_field.launch_tile()
+
+        #The field is expected to be exactly the same as the initial field of 'env_setup_occupied_field'
+        #set in the fixture, because a put must not happen when an overlap is detected.
+        #asserting field-correctness
+        np.testing.assert_array_equal(env_setup_occupied_field.field, expected_field)
+
+        assert env_setup_occupied_field.game_over == game_over
+
+
+    @staticmethod
+    @pytest.mark.parametrize("tiles_queue, exception",
+                             [
+                                 (deque([["I", np.ones((4, 1)), 0]]),
+                                 OutOfBoundsError),
+                             ],
+                             )
+    def test_launch_tile_occupied_field_unhappy_path_out_of_bounds(env_setup_occupied_field: TetrisEnv, tiles_queue, exception):
+        env_setup_occupied_field.launch_position = [0, env_setup_occupied_field.field_width]
+
+        assert len(env_setup_occupied_field.tiles_queue) == 3
+
+        #overwriting the tiles_queue
+        env_setup_occupied_field.tiles_queue = tiles_queue
+
+        assert len(env_setup_occupied_field.tiles_queue) == 1
+
+        with pytest.raises(expected_exception=exception):
+            env_setup_occupied_field.launch_tile()
+
+
+
+
 
      # ---------------------------------------------------------------------------------

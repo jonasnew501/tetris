@@ -1430,10 +1430,8 @@ class TetrisEnv:
         tile_to_put_into_field_number_of_rows = tile_to_put_into_field.shape[0]
         tile_to_put_into_field_number_of_columns = tile_to_put_into_field.shape[1]
 
-        field_section = self.field[
-            position[0] : position[0] + tile_to_put_into_field_number_of_rows,
-            position[1] : position[1] + tile_to_put_into_field_number_of_columns,
-        ]
+        field_section = self.field[position[0] : position[0] + tile_to_put_into_field_number_of_rows,
+                                   position[1] : position[1] + tile_to_put_into_field_number_of_columns]
 
         # Checking if there would be an overlap with the field in any cell
         overlap = np.any((field_section == 1) & (tile_to_put_into_field == 1))
