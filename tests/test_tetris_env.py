@@ -16,26 +16,24 @@ from tetris.tetris_env_domain_specific_exceptions import (
 )
 
 
-
-class TestTetrisEnv:
-    
-    # -----unittests for helper-functions-----------------------------------------------
-
-    # ----------------------------------------------------------------------------------
-
-
-
-    '''
+'''
     Central functions:
-    - launch_tile
+    - launch_tile --> finished (potentially add some test-function for corner-cases)
     - drop_current_tile
     - remove_full_rows
     - handle_action
     - move
     - rotate
     - reset
-    '''
 
+    Helper functions:
+    -drop_possible
+'''
+
+
+class TestTetrisEnv:
+    
+    # -----fixtures---------------------------------------------------------------------
     @staticmethod
     @pytest.fixture
     def env_setup_empty_field() -> TetrisEnv:
@@ -54,6 +52,66 @@ class TestTetrisEnv:
                               [0,0,0,0,1,0,0,0,0,0],
                               [0,0,0,0,0,0,0,0,0,0]], dtype=np.int8)
         return env
+    
+    # ----------------------------------------------------------------------------------
+
+
+    # -----unittests for helper-functions-----------------------------------------------
+    @staticmethod
+    @pytest.mark.parametrize("tiles_queue, field, current_tile_positionInField, expected_return_value",
+                             [
+                                 (deque([["L", np.array([[1, 0], [1, 0], [1, 1]]), 0]]),
+                                 np.array([[0,0,0,0,0,0,0,0,0,0],
+                                            [0,0,1,1,0,0,0,0,0,0],
+                                            [0,0,1,1,1,0,1,0,0,0],
+                                            [0,0,1,1,1,0,1,0,0,0],
+                                            [1,0,0,1,1,1,1,0,0,0],
+                                            [1,0,0,0,1,0,0,0,0,0],
+                                            [1,1,0,0,0,0,0,0,0,0]], dtype=np.int8),
+                                 [[4,4,5,5,6,6],[0,1,0,1,0,1]],
+                                 False),
+
+                                 (deque([["L", np.array([[1, 0], [1, 0], [1, 1]]), 0]]),
+                                  np.array([[0,0,0,0,0,0,0,0,0,0],
+                                            [0,0,1,1,0,0,0,1,0,0],
+                                            [0,0,1,1,1,0,1,1,0,0],
+                                            [0,0,1,1,1,0,1,1,1,0],
+                                            [0,0,0,1,1,1,1,0,0,0],
+                                            [0,0,0,0,1,0,0,0,0,0],
+                                            [0,0,0,0,0,0,0,0,0,0]], dtype=np.int8),
+                                 [[1,1,2,2,3,3],[7,8,7,8,7,8]],
+                                 True),
+
+                                 (deque([["L", np.array([[1, 0], [1, 0], [1, 1]]), 2]]),
+                                  np.array([[0,0,0,0,0,0,0,0,0,0],
+                                            [0,0,0,0,0,0,0,0,0,0],
+                                            [0,0,0,0,0,0,0,0,0,0],
+                                            [0,0,0,0,0,0,1,1,1,0],
+                                            [0,0,0,0,0,0,1,0,1,0],
+                                            [0,0,0,0,0,0,1,1,1,0],
+                                            [0,0,0,0,0,0,1,1,0,0]], dtype=np.int8),
+                                    [[3,3,4,4,5,5],[7,8,7,8,7,8]],
+                                    True),
+
+                             ])
+    def test__drop_possible_occupied_field_happy_path_drop_not_possible(env_setup_occupied_field: TetrisEnv, tiles_queue: deque, field: np.array | None, current_tile_positionInField: list[list[int], list[int]], expected_return_value: bool):
+        if field is not None:
+            env_setup_occupied_field.field = field
+        
+        env_setup_occupied_field.tiles_queue = tiles_queue
+        env_setup_occupied_field.current_tile_positionInField = current_tile_positionInField
+
+        assert env_setup_occupied_field._drop_possible() == expected_return_value
+
+
+
+
+
+
+
+
+
+    
 
     # -----unittests for the happy-path-------------------------------------------------
     
@@ -72,7 +130,7 @@ class TestTetrisEnv:
                                  False),
                              ],
                              )
-    def test_lauch_tile_empty_field_happy_path(env_setup_empty_field: TetrisEnv, tiles_queue, expected_field_after_put, current_tile_positionInField, game_over):
+    def test_lauch_tile_empty_field_happy_path(env_setup_empty_field: TetrisEnv, tiles_queue: deque, expected_field_after_put, current_tile_positionInField, game_over):
         assert len(env_setup_empty_field.tiles_queue) == 3
 
         #overwriting the tiles_queue
@@ -105,7 +163,7 @@ class TestTetrisEnv:
                                  False),
                              ],
                              )
-    def test_launch_tile_occupied_field_happy_path(env_setup_occupied_field: TetrisEnv, tiles_queue, expected_field_after_put, current_tile_positionInField, game_over):
+    def test_launch_tile_occupied_field_happy_path(env_setup_occupied_field: TetrisEnv, tiles_queue: deque, expected_field_after_put, current_tile_positionInField, game_over):
         assert len(env_setup_occupied_field.tiles_queue) == 3
 
         #overwriting the tiles_queue
@@ -121,13 +179,8 @@ class TestTetrisEnv:
         assert env_setup_occupied_field.current_tile_positionInField == current_tile_positionInField
 
         assert env_setup_occupied_field.game_over == game_over
-
-
-    # ----------------------------------------------------------------------------------
-
-
-    # -----unittests for the unhappy-paths---------------------------------------------
     
+
     @staticmethod
     @pytest.mark.parametrize("tiles_queue, expected_field, game_over",
                              [
@@ -142,7 +195,7 @@ class TestTetrisEnv:
                                  True),
                              ],
                              )
-    def test_launch_tile_occupied_field_unhappy_path_overlap(env_setup_occupied_field: TetrisEnv, tiles_queue, expected_field, game_over):
+    def test_launch_tile_occupied_field_happy_path_overlap(env_setup_occupied_field: TetrisEnv, tiles_queue: deque, expected_field, game_over):
         env_setup_occupied_field.launch_position = [0, 4]
 
         assert len(env_setup_occupied_field.tiles_queue) == 3
@@ -162,6 +215,11 @@ class TestTetrisEnv:
         assert env_setup_occupied_field.game_over == game_over
 
 
+    # ----------------------------------------------------------------------------------
+
+
+    # -----unittests for the unhappy-paths---------------------------------------------
+    
     @staticmethod
     @pytest.mark.parametrize("tiles_queue, exception",
                              [
@@ -169,7 +227,7 @@ class TestTetrisEnv:
                                  OutOfBoundsError),
                              ],
                              )
-    def test_launch_tile_occupied_field_unhappy_path_out_of_bounds(env_setup_occupied_field: TetrisEnv, tiles_queue, exception):
+    def test_launch_tile_occupied_field_unhappy_path_out_of_bounds(env_setup_occupied_field: TetrisEnv, tiles_queue: deque, exception):
         env_setup_occupied_field.launch_position = [0, env_setup_occupied_field.field_width]
 
         assert len(env_setup_occupied_field.tiles_queue) == 3
