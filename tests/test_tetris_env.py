@@ -60,48 +60,81 @@ class TestTetrisEnv:
     @staticmethod
     @pytest.mark.parametrize("tiles_queue, field, current_tile_positionInField, expected_return_value",
                              [
-                                 (deque([["L", np.array([[1, 0], [1, 0], [1, 1]]), 0]]),
-                                 np.array([[0,0,0,0,0,0,0,0,0,0],
-                                            [0,0,1,1,0,0,0,0,0,0],
-                                            [0,0,1,1,1,0,1,0,0,0],
-                                            [0,0,1,1,1,0,1,0,0,0],
-                                            [1,0,0,1,1,1,1,0,0,0],
-                                            [1,0,0,0,1,0,0,0,0,0],
-                                            [1,1,0,0,0,0,0,0,0,0]], dtype=np.int8),
-                                 [[4,4,5,5,6,6],[0,1,0,1,0,1]],
-                                 False),
+                                (deque([["L", np.array([[1, 0], [1, 0], [1, 1]]), 0]]),
+                                np.array([[0,0,0,0,0,0,0,0,0,0],
+                                        [0,0,1,1,0,0,0,0,0,0],
+                                        [0,0,1,1,1,0,1,0,0,0],
+                                        [0,0,1,1,1,0,1,0,0,0],
+                                        [1,0,0,1,1,1,1,0,0,0],
+                                        [1,0,0,0,1,0,0,0,0,0],
+                                        [1,1,0,0,0,0,0,0,0,0]], dtype=np.int8),
+                                [[4,4,5,5,6,6],[0,1,0,1,0,1]],
+                                False),
 
-                                 (deque([["L", np.array([[1, 0], [1, 0], [1, 1]]), 0]]),
-                                  np.array([[0,0,0,0,0,0,0,0,0,0],
-                                            [0,0,1,1,0,0,0,1,0,0],
-                                            [0,0,1,1,1,0,1,1,0,0],
-                                            [0,0,1,1,1,0,1,1,1,0],
-                                            [0,0,0,1,1,1,1,0,0,0],
-                                            [0,0,0,0,1,0,0,0,0,0],
-                                            [0,0,0,0,0,0,0,0,0,0]], dtype=np.int8),
-                                 [[1,1,2,2,3,3],[7,8,7,8,7,8]],
-                                 True),
+                                (deque([["L", np.array([[1, 0], [1, 0], [1, 1]]), 0]]),
+                                np.array([[0,0,0,0,0,0,0,0,0,0],
+                                        [0,0,1,1,0,0,0,1,0,0],
+                                        [0,0,1,1,1,0,1,1,0,0],
+                                        [0,0,1,1,1,0,1,1,1,0],
+                                        [0,0,0,1,1,1,1,0,0,0],
+                                        [0,0,0,0,1,0,0,0,0,0],
+                                        [0,0,0,0,0,0,0,0,0,0]], dtype=np.int8),
+                                [[1,1,2,2,3,3],[7,8,7,8,7,8]],
+                                True),
 
-                                 (deque([["L", np.array([[1, 0], [1, 0], [1, 1]]), 2]]),
-                                  np.array([[0,0,0,0,0,0,0,0,0,0],
-                                            [0,0,0,0,0,0,0,0,0,0],
-                                            [0,0,0,0,0,0,0,0,0,0],
-                                            [0,0,0,0,0,0,1,1,1,0],
-                                            [0,0,0,0,0,0,1,0,1,0],
-                                            [0,0,0,0,0,0,1,1,1,0],
-                                            [0,0,0,0,0,0,1,1,0,0]], dtype=np.int8),
-                                    [[3,3,4,4,5,5],[7,8,7,8,7,8]],
-                                    True),
+                                (deque([["L", np.array([[1, 0], [1, 0], [1, 1]]), 2]]),
+                                np.array([[0,0,0,0,0,0,0,0,0,0],
+                                          [0,0,0,0,0,0,0,0,0,0],
+                                          [0,0,0,0,0,0,0,0,0,0],
+                                          [0,0,0,0,0,0,1,1,1,0],
+                                          [0,0,0,0,0,0,1,0,1,0],
+                                          [0,0,0,0,0,0,1,1,1,0],
+                                          [0,0,0,0,0,0,1,1,0,0]], dtype=np.int8),
+                                [[3,3,4,4,5,5],[7,8,7,8,7,8]],
+                                True),
+                                
+                                (deque([["L", np.array([[1, 0], [1, 0], [1, 1]]), 2]]),
+                                np.array([[0,0,0,0,0,0,0,0,0,0],
+                                        [0,0,0,0,0,0,0,0,0,0],
+                                        [0,0,0,0,0,0,0,0,0,0],
+                                        [0,0,0,0,0,0,1,1,1,0],
+                                        [0,0,0,0,0,0,1,0,1,0],
+                                        [0,0,0,0,0,0,1,1,1,0],
+                                        [0,0,0,0,0,0,1,1,1,0]], dtype=np.int8),
+                                [[3,3,4,4,5,5],[7,8,7,8,7,8]],
+                                False),
+                            
+                                (deque([["L", np.array([[1, 0], [1, 0], [1, 1]]), 2]]),
+                                np.array([[0,0,0,0,0,0,0,0,0,0],
+                                        [0,0,0,0,0,0,0,0,0,0],
+                                        [0,0,0,0,0,0,0,0,0,0],
+                                        [0,0,0,0,0,0,1,1,1,0],
+                                        [0,0,0,0,0,0,1,1,1,0],
+                                        [0,0,0,0,0,0,1,1,1,0],
+                                        [0,0,0,0,0,0,1,1,0,0]], dtype=np.int8),
+                                [[3,3,4,4,5,5],[7,8,7,8,7,8]],
+                                False),
+                            
+                                (deque([["I", np.ones((4, 1)), 0]]),
+                                np.array([[0,0,0,0,0,0,0,0,0,1],
+                                        [0,0,0,0,0,0,0,0,0,1],
+                                        [0,0,0,0,0,0,0,0,0,1],
+                                        [0,0,0,0,0,0,0,0,1,1],
+                                        [0,0,0,0,0,0,0,0,1,0],
+                                        [0,0,0,0,0,0,0,0,1,1],
+                                        [0,0,0,0,0,0,0,0,1,1]], dtype=np.int8),
+                                [[0,1,2,3],[9,9,9,9]],
+                                True),
 
                              ])
-    def test__drop_possible_occupied_field_happy_path_drop_not_possible(env_setup_occupied_field: TetrisEnv, tiles_queue: deque, field: np.array | None, current_tile_positionInField: list[list[int], list[int]], expected_return_value: bool):
+    def test__drop_possible_empty_field_happy_path_drop_not_possible(env_setup_empty_field: TetrisEnv, tiles_queue: deque, field: np.ndarray | None, current_tile_positionInField: list[list[int], list[int]], expected_return_value: bool):
         if field is not None:
-            env_setup_occupied_field.field = field
+            env_setup_empty_field.field = field
         
-        env_setup_occupied_field.tiles_queue = tiles_queue
-        env_setup_occupied_field.current_tile_positionInField = current_tile_positionInField
+        env_setup_empty_field.tiles_queue = tiles_queue
+        env_setup_empty_field.current_tile_positionInField = current_tile_positionInField
 
-        assert env_setup_occupied_field._drop_possible() == expected_return_value
+        assert env_setup_empty_field._drop_possible() == expected_return_value
 
 
 
