@@ -394,7 +394,7 @@ class TetrisEnv:
         )
     
 
-    def _get_current_tile_occupied_cells_in_field(self) -> List[list[int], list[int]]:
+    def _get_current_tile_occupied_cells_in_field(self) -> List[List[int]]:
         """
         Determines and returns the coordinates (split in rows and columns) in the field,
         which are occupied by the current tile.
@@ -402,7 +402,7 @@ class TetrisEnv:
         which only contain 1s, i.e. excluding the zeros.
 
         Returns:
-            [field_occupied_rows, field_occupied_columns] (List[list[int], list[int]]):
+            [field_occupied_rows, field_occupied_columns] (List[List[int], List[int]]):
                 The occupied cells of the current tile in the field.
         """
         local_occupied_rows, local_occupied_columns = self._get_current_tile_occupied_cells_local()
@@ -416,13 +416,13 @@ class TetrisEnv:
         return [list(field_occupied_rows), list(field_occupied_columns)]
 
 
-    def _get_current_tile_occupied_cells_local(self) -> List[np.ndarray[int], np.ndarray[int]]:
+    def _get_current_tile_occupied_cells_local(self) -> List[np.ndarray[int]]:
         """
         Determines are returns the local coordinates (split in rows and columns) of the current tile,
         which contain a 1.
 
         Returns:
-            [local_occupied_rows, local_occupied_columns] (List[list[int], list[int]]):
+            [local_occupied_rows, local_occupied_columns] (List[np.ndarray[int], np.ndarray[int]]):
                 The locally occupied cells of the current tile.
         """
         current_tile = self.current_tile[1]
@@ -431,7 +431,7 @@ class TetrisEnv:
 
         return [local_occupied_rows, local_occupied_columns]
     
-    def _get_top_left_corner_of_current_tile_in_field(self) -> List[int, int]:
+    def _get_top_left_corner_of_current_tile_in_field(self) -> Tuple[int, int]:
         """
         Determines and returns the top-left-corner of the current tile's
         bounding box in the field.
@@ -600,20 +600,86 @@ class TetrisEnv:
 
         self.current_tile_positionInField = [list(row_indices), list(column_indices)]
 
+    # def _drop_possible(self) -> bool:
+    #     """
+    #     Checks whether a drop of the current tile is possible.
+
+    #     Information about the function logic/implementation:
+    #     A drop is only possible if the sum of the individual cells in the current lowest
+    #     row of the tile in all columns and the respective cells in the field one row
+    #     below that row is at most 1.
+    #     Explanation: If the sum was 2, that would mean that both in a cell of the current
+    #                  lowest row and the cell below that (i.e. the cell in the field) are
+    #                  both 1s, i.e. both those cells are occupied already. Thus a drop
+    #                  is not possible. However, if the sum of both cells is 0 or 1,
+    #                  that means that either none of the cells is occupied, or only one
+    #                  of them, which means that a drop is possible.
+
+    #     Returns:
+    #         (bool): True, if a drop is possible;
+    #                 False otherwise.
+    #     """
+    #     if self._check_tile_at_edge(
+    #         edge="bottom", tile_positionInField=self.current_tile_positionInField
+    #     ):
+    #         return False
+    #     else:
+    #         # loop-based approach
+    #         # return all(self.field[max(self.current_tile_positionInField_old[0]), column]
+    #         #     + self.field[max(self.current_tile_positionInField_old[0]) + 1, column]
+    #         #     in [0, 1]
+    #         #     for column in range(
+    #         #         min(self.current_tile_positionInField_old[1]),
+    #         #         max(self.current_tile_positionInField_old[1]) + 1,
+    #         #         1,
+    #         #     )
+    #         # )
+
+    #         # vectorized approach
+    #         current_tile_occupied_cells_in_field_zipped = list(zip(self.current_tile_occupied_cells_in_field[0], self.current_tile_occupied_cells_in_field[1]))
+
+    #         #To determine, whether a drop of the current tile is possible,
+    #         #only those columns of the current tile are watched/checked for,
+    #         #in which, in the lowest row of the current tile, there is an/are
+    #         #occupied cell(s).
+    #         #Example:
+    #         #If the lowest row of the current tile looked like "[0, 1]",
+    #         #only the second column would be checked for in the functionality
+    #         #below, because only the second-column contains a 1, i.e. an
+    #         #occupied cell.
+    #         columns_of_current_tile_to_check_for = [tup[1] for tup in current_tile_occupied_cells_in_field_zipped if tup[0] == max(self.current_tile_occupied_cells_in_field[0])]
+
+    #         lowest_row_current_tile = self.field[
+    #             max(self.current_tile_positionInField[0]), columns_of_current_tile_to_check_for
+    #         ]
+    #         row_below_lowest_row_current_tile = self.field[
+    #             max(self.current_tile_positionInField[0]) + 1, columns_of_current_tile_to_check_for
+    #         ]
+
+    #         sum_of_both_rows = (
+    #             lowest_row_current_tile + row_below_lowest_row_current_tile
+    #         )
+
+    #         return np.all(np.isin(sum_of_both_rows, [0, 1]))
+    
+
+
     def _drop_possible(self) -> bool:
         """
-        Checks whether a drop of the current tile is possible.
+        Checks whether a drop of the current tile by one row is possible.
 
-        Information about the function logic/implementation:
-        A drop is only possible if the sum of the individual cells in the current lowest
-        row of the tile in all columns and the respective cells in the field one row
-        below that row is at most 1.
-        Explanation: If the sum was 2, that would mean that both in a cell of the current
-                     lowest row and the cell below that (i.e. the cell in the field) are
-                     both 1s, i.e. both those cells are occupied already. Thus a drop
-                     is not possible. However, if the sum of both cells is 0 or 1,
-                     that means that either none of the cells is occupied, or only one
-                     of them, which means that a drop is possible.
+        The check for whether a drop is possible is done in the following way:
+            - For every column of the current tile's occupied cells (incorporating it's current rotation),
+                the lowest row is considered.
+            - The sum of those cells and the cells one row below those cells are calculated.
+            - If all those sums are 1, a drop is possible, else, a drop is not possible.
+        Explanation: If the sum was 2, that would mean that both in a cell of the current tile
+                        (occupied fields) and in the cell below that (i.e. the cell in the field) are
+                        both 1s, i.e. both those cells are occupied already. Thus a drop
+                        is not possible. However, if the sum of both cells is 1,
+                        that means that only the cell of the current tile is occupied
+                        (we already know that), and the cell below that cell is not occupied,
+                        which means that a drop is possible.
 
         Returns:
             (bool): True, if a drop is possible;
@@ -624,43 +690,37 @@ class TetrisEnv:
         ):
             return False
         else:
-            # loop-based approach
-            # return all(self.field[max(self.current_tile_positionInField_old[0]), column]
-            #     + self.field[max(self.current_tile_positionInField_old[0]) + 1, column]
-            #     in [0, 1]
-            #     for column in range(
-            #         min(self.current_tile_positionInField_old[1]),
-            #         max(self.current_tile_positionInField_old[1]) + 1,
-            #         1,
-            #     )
-            # )
+            #from all occupied cells of the current tile, getting those cells,
+            #which are in the lowest row per column
 
-            # vectorized approach
-            current_tile_occupied_cells_in_field_zipped = list(zip(self.current_tile_occupied_cells_in_field[0], self.current_tile_occupied_cells_in_field[1]))
+            individual_columns = list(set(self.current_tile_occupied_cells_in_field[1]))
 
-            #To determine, whether a drop of the current tile is possible,
-            #only those columns of the current tile are watched/checked for,
-            #in which, in the lowest row of the current tile, there is an/are
-            #occupied cell(s).
-            #Example:
-            #If the lowest row of the current tile looked like "[0, 1]",
-            #only the second column would be checked for in the functionality
-            #below, because only the second-column contains a 1, i.e. an
-            #occupied cell.
-            columns_of_current_tile_to_check_for = [tup[1] for tup in current_tile_occupied_cells_in_field_zipped if tup[0] == max(self.current_tile_occupied_cells_in_field[0])]
+            zipped = list(zip(*self.current_tile_occupied_cells_in_field))
 
-            lowest_row_current_tile = self.field[
-                max(self.current_tile_positionInField[0]), columns_of_current_tile_to_check_for
-            ]
-            row_below_lowest_row_current_tile = self.field[
-                max(self.current_tile_positionInField[0]) + 1, columns_of_current_tile_to_check_for
-            ]
+            lowest_occupied_cells = []
+            for individual_col in individual_columns:
+                cells_of_individual_col = [tup for tup in zipped if tup[1] == individual_col]
 
-            sum_of_both_rows = (
-                lowest_row_current_tile + row_below_lowest_row_current_tile
-            )
+                lowest_cell_of_individual_col = max(cells_of_individual_col, key=lambda tup: tup[0])
+                lowest_occupied_cells.append(lowest_cell_of_individual_col)
+            
+            cells_one_row_below_lowest_occupied_cells = [(tup[0]+1, tup[1]) for tup in lowest_occupied_cells]
 
-            return np.all(np.isin(sum_of_both_rows, [0, 1]))
+            values_lowest_occupied_cells = [self.field[tup] for tup in lowest_occupied_cells]
+            assert np.all(np.isin(values_lowest_occupied_cells, [1])) #Asserting that all values of the lowest
+                                                                      #occupied cells of the current tile
+                                                                      #are actually 1
+            
+            values_cells_one_row_below_lowest_occupied_cells = [self.field[tup] for tup in cells_one_row_below_lowest_occupied_cells]
+
+            assert len(values_lowest_occupied_cells) == len(values_cells_one_row_below_lowest_occupied_cells)
+            sums_of_both_rows = np.sum(a=(values_lowest_occupied_cells, values_cells_one_row_below_lowest_occupied_cells), axis=0)
+
+            return np.all(np.isin(sums_of_both_rows, [1]))
+
+
+
+
 
     def _check_tile_at_edge(
         self,
