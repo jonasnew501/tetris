@@ -5,7 +5,7 @@ import random
 from collections import deque
 from itertools import product
 from enum import Enum
-from typing import Union, Literal
+from typing import Union, Literal, Tuple, List
 
 from tetris.tetris_env_domain_specific_exceptions import (
     EmptyContainerError,
@@ -104,6 +104,9 @@ class TetrisEnv:
         self.current_tile = None
 
         self.current_tile_positionInField = [[], []]
+        self.top_left_corner_current_tile_in_field = ()
+
+        self.current_tile_occupied_cells_in_field = [[], []]
 
         self.game_over = False
 
@@ -376,20 +379,77 @@ class TetrisEnv:
 
         current_tile_rotated = self._rotate_tile(tile_to_rotate=self.current_tile[1])
 
-        top_left_corner_of_current_tile_rotated_in_field = sorted(
-            list(zip(*self.current_tile_positionInField.copy())),
-            key=lambda tup: sum(tup),
-        )[0]
+        self.current_tile[1] = current_tile_rotated
+
+        self.top_left_corner_current_tile_in_field = self._get_top_left_corner_of_current_tile_in_field()
 
         self._put_tile_into_field(
             tile_to_put_into_field=current_tile_rotated,
-            position=list(top_left_corner_of_current_tile_rotated_in_field),
+            position=self.top_left_corner_current_tile_in_field,
         )
 
         self._clear_unoccupied_cells_in_field_after_rotation(
             current_tile_positionInField_before_rotation=current_tile_positionInField_before_rotation,
             current_tile_positionInField_after_rotation=self.current_tile_positionInField.copy(),
         )
+    
+    def _get_current_tile_occupied_cells_in_field(self) -> List[list[int], list[int]]:
+        """
+        Determines and returns the coordinates (split in rows and columns) in the field,
+        which are occupied by the current tile.
+        Those occupied cells are the ones of the current tile's array,
+        which only contain 1s, i.e. excluding the zeros.
+
+        Returns:
+            [field_occupied_rows, field_occupied_columns] (List[list[int], list[int]]):
+                The occupied cells of the current tile in the field.
+        """
+        local_occupied_rows, local_occupied_columns = self._get_current_tile_occupied_cells_local()
+
+        top_left_row_in_field = self.top_left_corner_current_tile_in_field[0]
+        top_left_column_in_field = self.top_left_corner_current_tile_in_field[1]
+
+        field_occupied_rows = top_left_row_in_field + local_occupied_rows
+        field_occupied_columns = top_left_column_in_field + local_occupied_columns
+
+        return [field_occupied_rows, field_occupied_columns]
+
+
+
+
+    def _get_current_tile_occupied_cells_local(self) -> List[list[int], list[int]]:
+        """
+        Determines are returns the local coordinates (split in rows and columns) of the current tile,
+        which contain a 1.
+
+        Returns:
+            [local_occupied_rows, local_occupied_columns] (List[list[int], list[int]]):
+                The locally occupied cells of the current tile.
+        """
+        current_tile = self.current_tile[1]
+
+        local_occupied_rows, local_occupied_columns = np.nonzero(current_tile)
+
+        return [local_occupied_rows, local_occupied_columns]
+    
+    def _get_top_left_corner_of_current_tile_in_field(self) -> List[int, int]:
+        """
+        Determines and returns the top-left-corner of the current tile's
+        bounding box in the field.
+
+        Returns:
+            (row, col) (Tuple[int, int]): The row- and column-indices of the top-left
+                                          corner of the current tile's bounding box
+                                          in the field.
+        """
+        top_left_corner_of_current_tile_rotated_in_field = sorted(
+            list(zip(*self.current_tile_positionInField.copy())),
+            key=lambda tup: sum(tup),
+        )[0]
+
+        return top_left_corner_of_current_tile_rotated_in_field
+
+
 
     def reset(self):
         """
