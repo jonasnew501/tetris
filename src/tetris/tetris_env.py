@@ -393,6 +393,7 @@ class TetrisEnv:
             current_tile_positionInField_after_rotation=self.current_tile_positionInField.copy(),
         )
     
+
     def _get_current_tile_occupied_cells_in_field(self) -> List[list[int], list[int]]:
         """
         Determines and returns the coordinates (split in rows and columns) in the field,
@@ -412,12 +413,10 @@ class TetrisEnv:
         field_occupied_rows = top_left_row_in_field + local_occupied_rows
         field_occupied_columns = top_left_column_in_field + local_occupied_columns
 
-        return [field_occupied_rows, field_occupied_columns]
+        return [list(field_occupied_rows), list(field_occupied_columns)]
 
 
-
-
-    def _get_current_tile_occupied_cells_local(self) -> List[list[int], list[int]]:
+    def _get_current_tile_occupied_cells_local(self) -> List[np.ndarray[int], np.ndarray[int]]:
         """
         Determines are returns the local coordinates (split in rows and columns) of the current tile,
         which contain a 1.
@@ -637,13 +636,24 @@ class TetrisEnv:
             # )
 
             # vectorized approach
-            columns_of_current_tile = list(set(self.current_tile_positionInField[1]))
+            current_tile_occupied_cells_in_field_zipped = list(zip(self.current_tile_occupied_cells_in_field[0], self.current_tile_occupied_cells_in_field[1]))
+
+            #To determine, whether a drop of the current tile is possible,
+            #only those columns of the current tile are watched/checked for,
+            #in which, in the lowest row of the current tile, there is an/are
+            #occupied cell(s).
+            #Example:
+            #If the lowest row of the current tile looked like "[0, 1]",
+            #only the second column would be checked for in the functionality
+            #below, because only the second-column contains a 1, i.e. an
+            #occupied cell.
+            columns_of_current_tile_to_check_for = [tup[1] for tup in current_tile_occupied_cells_in_field_zipped if tup[0] == max(self.current_tile_occupied_cells_in_field[0])]
 
             lowest_row_current_tile = self.field[
-                max(self.current_tile_positionInField[0]), columns_of_current_tile
+                max(self.current_tile_positionInField[0]), columns_of_current_tile_to_check_for
             ]
             row_below_lowest_row_current_tile = self.field[
-                max(self.current_tile_positionInField[0]) + 1, columns_of_current_tile
+                max(self.current_tile_positionInField[0]) + 1, columns_of_current_tile_to_check_for
             ]
 
             sum_of_both_rows = (
