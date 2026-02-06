@@ -127,7 +127,7 @@ class TestTetrisEnv:
                                 True),
 
                              ])
-    def test__drop_possible_empty_field_happy_path_drop_not_possible(env_setup_empty_field: TetrisEnv, tiles_queue: deque, field: np.ndarray | None, current_tile_positionInField: list[list[int], list[int]], expected_return_value: bool):
+    def test__drop_possible_empty_field_happy_path(env_setup_empty_field: TetrisEnv, tiles_queue: deque, field: np.ndarray | None, current_tile_positionInField: list[list[int], list[int]], expected_return_value: bool):
         if field is not None:
             env_setup_empty_field.field = field
         
