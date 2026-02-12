@@ -2,9 +2,9 @@ name: Unittests
 
 on:
   push:
-    branches: [main, Env, Refactor]
+    branches: [main, Env, Refactor, Unittests]
   pull_request:
-    branches: [main, Env, Refactor]
+    branches: [main, Env, Refactor, Unittests]
 
 jobs:
   run_unittests:
