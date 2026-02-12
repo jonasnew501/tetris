@@ -25,7 +25,7 @@ from tetris.tetris_env_domain_specific_exceptions import (
     - reset
 
     Helper functions:
-    -drop_possible
+    - drop_possible --> finished
 """
 
 
@@ -218,7 +218,7 @@ class TestTetrisEnv:
             ),
         ],
     )
-    def test_lauch_tile_empty_field_happy_path(
+    def test_launch_tile_empty_field_happy_path(
         env_setup_empty_field: TetrisEnv,
         tiles_queue: deque,
         expected_field_after_put,

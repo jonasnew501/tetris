@@ -600,67 +600,6 @@ class TetrisEnv:
 
         self.current_tile_positionInField = [list(row_indices), list(column_indices)]
 
-    # def _drop_possible(self) -> bool:
-    #     """
-    #     Checks whether a drop of the current tile is possible.
-
-    #     Information about the function logic/implementation:
-    #     A drop is only possible if the sum of the individual cells in the current lowest
-    #     row of the tile in all columns and the respective cells in the field one row
-    #     below that row is at most 1.
-    #     Explanation: If the sum was 2, that would mean that both in a cell of the current
-    #                  lowest row and the cell below that (i.e. the cell in the field) are
-    #                  both 1s, i.e. both those cells are occupied already. Thus a drop
-    #                  is not possible. However, if the sum of both cells is 0 or 1,
-    #                  that means that either none of the cells is occupied, or only one
-    #                  of them, which means that a drop is possible.
-
-    #     Returns:
-    #         (bool): True, if a drop is possible;
-    #                 False otherwise.
-    #     """
-    #     if self._check_tile_at_edge(
-    #         edge="bottom", tile_positionInField=self.current_tile_positionInField
-    #     ):
-    #         return False
-    #     else:
-    #         # loop-based approach
-    #         # return all(self.field[max(self.current_tile_positionInField_old[0]), column]
-    #         #     + self.field[max(self.current_tile_positionInField_old[0]) + 1, column]
-    #         #     in [0, 1]
-    #         #     for column in range(
-    #         #         min(self.current_tile_positionInField_old[1]),
-    #         #         max(self.current_tile_positionInField_old[1]) + 1,
-    #         #         1,
-    #         #     )
-    #         # )
-
-    #         # vectorized approach
-    #         current_tile_occupied_cells_in_field_zipped = list(zip(self.current_tile_occupied_cells_in_field[0], self.current_tile_occupied_cells_in_field[1]))
-
-    #         #To determine, whether a drop of the current tile is possible,
-    #         #only those columns of the current tile are watched/checked for,
-    #         #in which, in the lowest row of the current tile, there is an/are
-    #         #occupied cell(s).
-    #         #Example:
-    #         #If the lowest row of the current tile looked like "[0, 1]",
-    #         #only the second column would be checked for in the functionality
-    #         #below, because only the second-column contains a 1, i.e. an
-    #         #occupied cell.
-    #         columns_of_current_tile_to_check_for = [tup[1] for tup in current_tile_occupied_cells_in_field_zipped if tup[0] == max(self.current_tile_occupied_cells_in_field[0])]
-
-    #         lowest_row_current_tile = self.field[
-    #             max(self.current_tile_positionInField[0]), columns_of_current_tile_to_check_for
-    #         ]
-    #         row_below_lowest_row_current_tile = self.field[
-    #             max(self.current_tile_positionInField[0]) + 1, columns_of_current_tile_to_check_for
-    #         ]
-
-    #         sum_of_both_rows = (
-    #             lowest_row_current_tile + row_below_lowest_row_current_tile
-    #         )
-
-    #         return np.all(np.isin(sum_of_both_rows, [0, 1]))
 
     def _drop_possible(self) -> bool:
         """
