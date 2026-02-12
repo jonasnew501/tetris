@@ -166,22 +166,18 @@ class TetrisEnv:
         elif not out_of_bounds_at_put and overlap_at_put:
             self.game_over = True
 
-    def drop_current_tile(self, drop_possible: bool):
+    def drop_current_tile(self):
         """
         Drops the current tile in the field by one row.
 
         Expects a drop of the current tile to be possible in the current
         state of the field.
 
-        Args:
-            drop_possible (bool): Indicating whether a drop of the current
-                                  tile is currently possible or not.
-
         Raises:
             GamewiseLogicalError: If 'drop_possible' is False
         """
-        if drop_possible is False:
-            raise GamewiseLogicalError
+        if not self._drop_possible():
+            raise GamewiseLogicalError("'drop_possible' must always be True at this point.")
 
         current_tile_number_of_rows = self._current_tile_number_of_rows()
         current_tile_number_of_columns = self._current_tile_number_of_columns()
@@ -630,6 +626,7 @@ class TetrisEnv:
             # from all occupied cells of the current tile, getting those cells,
             # which are in the lowest row per column
 
+            #TODO: Refactor this section into multiple functions
             individual_columns = list(set(self.current_tile_occupied_cells_in_field[1]))
 
             zipped = list(zip(*self.current_tile_occupied_cells_in_field))

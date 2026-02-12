@@ -372,4 +372,44 @@ class TestTetrisEnv:
         with pytest.raises(expected_exception=exception):
             env_setup_occupied_field.launch_tile()
 
+    
+    @staticmethod
+    @pytest.mark.parametrize(
+        "tiles_queue, exception, match",
+        [
+            (
+                deque([["O", np.ones((2, 2)), 0]]),
+                GamewiseLogicalError,
+                "'drop_possible' must always be True at this point."
+                ),
+        ],
+    )
+    def test_drop_current_tile_drop_not_possible(env_setup_occupied_field: TetrisEnv, tiles_queue: deque, exception: Exception, match: str):
+        assert len(env_setup_occupied_field.tiles_queue) == 3
+        env_setup_occupied_field.tiles_queue = tiles_queue
+        assert len(env_setup_occupied_field.tiles_queue) == 1
+
+        env_setup_occupied_field.launch_tile()
+
+        # env_setup_occupied_field.current_tile_positionInField = [[0,0,1,1], [5,6,5,6]]
+        env_setup_occupied_field.top_left_corner_current_tile_in_field = (0, 5)
+        env_setup_occupied_field.current_tile_occupied_cells_in_field = [[0,0,1,1], [5,6,5,6]]
+
+        expected_field = np.array(
+            [
+                [0, 0, 0, 0, 0, 1, 1, 0, 0, 0],
+                [0, 0, 1, 1, 0, 1, 1, 0, 0, 0],
+                [0, 0, 1, 1, 1, 0, 1, 0, 0, 0],
+                [0, 0, 1, 1, 1, 0, 1, 0, 0, 0],
+                [0, 0, 0, 1, 1, 1, 1, 0, 0, 0],
+                [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            ],
+            dtype=np.int8)
+        
+        np.testing.assert_array_equal(env_setup_occupied_field.field, expected_field)
+
+        with pytest.raises(exception, match=match):
+            env_setup_occupied_field.drop_current_tile()
+
     # ---------------------------------------------------------------------------------
