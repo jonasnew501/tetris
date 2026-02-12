@@ -172,56 +172,6 @@ class TetrisEnv:
         elif not out_of_bounds_at_put and overlap_at_put:
             self.game_over = True
 
-    # def drop_current_tile(self):
-    #     """
-    #     Drops the current tile in the field by one row.
-
-    #     Expects a drop of the current tile to be possible in the current
-    #     state of the field.
-
-    #     Raises:
-    #         GamewiseLogicalError: If 'drop_possible' is False
-    #     """
-    #     if not self._drop_possible():
-    #         raise GamewiseLogicalError("'drop_possible' must always be True at this point.")
-
-    #     current_tile_number_of_rows = self._current_tile_number_of_rows()
-    #     current_tile_number_of_columns = self._current_tile_number_of_columns()
-
-    #     # retaining the old 'current_tile_positionInField'-variable before it is updated below
-    #     current_tile_positionInField_old = self.current_tile_positionInField.copy()
-
-    #     # Increasing all row-numbers by one (i.e. the tile moves downward by one row)
-    #     self.current_tile_positionInField[0] += np.ones(
-    #         shape=(len(self.current_tile_positionInField[0]),), dtype=np.int8
-    #     )
-    #     self.current_tile_positionInField[0] = self.current_tile_positionInField[0].tolist()
-
-    #     # Updating the tile in the field (i.e. doing the actual dropping)
-    #     # dropping the current tile by merging it with the new place of the tile after the
-    #     # drop by bitwise OR
-    #     current_tile = self.current_tile[1].copy()
-
-    #     self.field[
-    #         min(self.current_tile_positionInField[0]) : min(
-    #             self.current_tile_positionInField[0]
-    #         )
-    #         + current_tile_number_of_rows,
-    #         min(self.current_tile_positionInField[1]) : min(
-    #             self.current_tile_positionInField[1]
-    #         )
-    #         + current_tile_number_of_columns,
-    #     ] |= current_tile
-
-    #     # clearing the topmost-row of the former current_tile_positionInField because the tile now
-    #     # moved down by one row
-    #     self.field[
-    #         min(current_tile_positionInField_old[0]),
-    #         min(self.current_tile_positionInField[1]) : min(
-    #             self.current_tile_positionInField[1]
-    #         )
-    #         + current_tile_number_of_columns,
-    #     ] = np.int8(0)
 
     def drop_current_tile(self):
         """
