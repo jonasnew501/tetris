@@ -1,7 +1,7 @@
 import pytest
 from collections import deque
 import numpy as np
-from typing import List
+from typing import List, Tuple
 
 
 from tetris.tetris_env import TetrisEnv
@@ -343,41 +343,66 @@ class TestTetrisEnv:
         np.testing.assert_array_equal(env_setup_occupied_field.field, expected_field)
 
         assert env_setup_occupied_field.game_over == game_over
-    
+
     @staticmethod
     @pytest.mark.parametrize(
-        "tiles_queue, launch_position, expected_current_tile_positionInField_after_drop, expected_field_after_drop",
+        "tiles_queue, launch_position, current_tile_positionInField_after_drop, current_tile_occupied_cells_in_field_after_drop, top_left_corner_current_tile_in_field_after_drop, expected_field_after_drop",
         [
             (
                 deque([["L", np.array([[1, 0], [1, 0], [1, 1]]), 0]]),
                 [0, 7],
-                [[1,1,2,2,3,3], [7,8,7,8,7,8]],
+                [[1, 1, 2, 2, 3, 3], [7, 8, 7, 8, 7, 8]],
+                [[1, 2, 3, 3], [7, 7, 7, 8]],
+                (1, 7),
                 np.array(
-                [
-                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                    [0, 0, 1, 1, 0, 0, 0, 1, 0, 0],
-                    [0, 0, 1, 1, 1, 0, 1, 1, 0, 0],
-                    [0, 0, 1, 1, 1, 0, 1, 1, 1, 0],
-                    [0, 0, 0, 1, 1, 1, 1, 0, 0, 0],
-                    [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
-                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-                ],
-                dtype=np.int8
-                )
+                    [
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 1, 1, 0, 0, 0, 1, 0, 0],
+                        [0, 0, 1, 1, 1, 0, 1, 1, 0, 0],
+                        [0, 0, 1, 1, 1, 0, 1, 1, 1, 0],
+                        [0, 0, 0, 1, 1, 1, 1, 0, 0, 0],
+                        [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    ],
+                    dtype=np.int8,
+                ),
             )
-        ]
+        ],
     )
-    def test_drop_current_tile_drop_in_empty_place(env_setup_occupied_field: TetrisEnv, tiles_queue: deque, launch_position: List[int], expected_current_tile_positionInField_after_drop: List[List[int]], expected_field_after_drop: np.ndarray):
+    def test_drop_current_tile_drop_in_empty_place(
+        env_setup_occupied_field: TetrisEnv,
+        tiles_queue: deque,
+        launch_position: List[int],
+        current_tile_positionInField_after_drop: List[List[int]],
+        current_tile_occupied_cells_in_field_after_drop: List[List[int]],
+        top_left_corner_current_tile_in_field_after_drop: Tuple[int, int],
+        expected_field_after_drop: np.ndarray,
+    ):
         env_setup_occupied_field.tiles_queue = tiles_queue
         env_setup_occupied_field.launch_position = launch_position
-        
+
         env_setup_occupied_field.launch_tile()
         env_setup_occupied_field.drop_current_tile()
 
-        assert isinstance(env_setup_occupied_field.current_tile_positionInField[0], list)
+        assert isinstance(
+            env_setup_occupied_field.current_tile_positionInField[0], list
+        )
 
-        assert env_setup_occupied_field.current_tile_positionInField == expected_current_tile_positionInField_after_drop
-        np.testing.assert_array_equal(env_setup_occupied_field.field, expected_field_after_drop)
+        assert (
+            env_setup_occupied_field.current_tile_positionInField
+            == current_tile_positionInField_after_drop
+        )
+        assert (
+            env_setup_occupied_field.current_tile_occupied_cells_in_field
+            == current_tile_occupied_cells_in_field_after_drop
+        )
+        assert (
+            env_setup_occupied_field.top_left_corner_current_tile_in_field
+            == top_left_corner_current_tile_in_field_after_drop
+        )
+        np.testing.assert_array_equal(
+            env_setup_occupied_field.field, expected_field_after_drop
+        )
 
     # ----------------------------------------------------------------------------------
 
@@ -408,7 +433,6 @@ class TestTetrisEnv:
         with pytest.raises(expected_exception=exception):
             env_setup_occupied_field.launch_tile()
 
-    
     @staticmethod
     @pytest.mark.parametrize(
         "tiles_queue, exception, match",
@@ -416,11 +440,16 @@ class TestTetrisEnv:
             (
                 deque([["O", np.ones((2, 2)), 0]]),
                 GamewiseLogicalError,
-                "'drop_possible' must always be True at this point."
-                ),
+                "'drop_possible' must always be True at this point.",
+            ),
         ],
     )
-    def test_drop_current_tile_drop_not_possible(env_setup_occupied_field: TetrisEnv, tiles_queue: deque, exception: Exception, match: str):
+    def test_drop_current_tile_drop_not_possible(
+        env_setup_occupied_field: TetrisEnv,
+        tiles_queue: deque,
+        exception: Exception,
+        match: str,
+    ):
         assert len(env_setup_occupied_field.tiles_queue) == 3
         env_setup_occupied_field.tiles_queue = tiles_queue
         assert len(env_setup_occupied_field.tiles_queue) == 1
@@ -429,7 +458,10 @@ class TestTetrisEnv:
 
         # env_setup_occupied_field.current_tile_positionInField = [[0,0,1,1], [5,6,5,6]]
         env_setup_occupied_field.top_left_corner_current_tile_in_field = (0, 5)
-        env_setup_occupied_field.current_tile_occupied_cells_in_field = [[0,0,1,1], [5,6,5,6]]
+        env_setup_occupied_field.current_tile_occupied_cells_in_field = [
+            [0, 0, 1, 1],
+            [5, 6, 5, 6],
+        ]
 
         expected_field = np.array(
             [
@@ -441,8 +473,9 @@ class TestTetrisEnv:
                 [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
                 [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
             ],
-            dtype=np.int8)
-        
+            dtype=np.int8,
+        )
+
         np.testing.assert_array_equal(env_setup_occupied_field.field, expected_field)
 
         with pytest.raises(exception, match=match):

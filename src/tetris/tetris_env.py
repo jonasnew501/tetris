@@ -160,13 +160,68 @@ class TetrisEnv:
                 self.current_tile[1], position=self.launch_position
             )
             self._set_current_tile_position_in_field_at_launch(self.current_tile[1])
-            self.top_left_corner_current_tile_in_field = self._get_top_left_corner_of_current_tile_in_field()
-            self.current_tile_occupied_cells_in_field = self._get_current_tile_occupied_cells_in_field()
-            
+            self.top_left_corner_current_tile_in_field = (
+                self._get_top_left_corner_of_current_tile_in_field()
+            )
+            self.current_tile_occupied_cells_in_field = (
+                self._get_current_tile_occupied_cells_in_field()
+            )
+
             self.game_over = False
 
         elif not out_of_bounds_at_put and overlap_at_put:
             self.game_over = True
+
+    # def drop_current_tile(self):
+    #     """
+    #     Drops the current tile in the field by one row.
+
+    #     Expects a drop of the current tile to be possible in the current
+    #     state of the field.
+
+    #     Raises:
+    #         GamewiseLogicalError: If 'drop_possible' is False
+    #     """
+    #     if not self._drop_possible():
+    #         raise GamewiseLogicalError("'drop_possible' must always be True at this point.")
+
+    #     current_tile_number_of_rows = self._current_tile_number_of_rows()
+    #     current_tile_number_of_columns = self._current_tile_number_of_columns()
+
+    #     # retaining the old 'current_tile_positionInField'-variable before it is updated below
+    #     current_tile_positionInField_old = self.current_tile_positionInField.copy()
+
+    #     # Increasing all row-numbers by one (i.e. the tile moves downward by one row)
+    #     self.current_tile_positionInField[0] += np.ones(
+    #         shape=(len(self.current_tile_positionInField[0]),), dtype=np.int8
+    #     )
+    #     self.current_tile_positionInField[0] = self.current_tile_positionInField[0].tolist()
+
+    #     # Updating the tile in the field (i.e. doing the actual dropping)
+    #     # dropping the current tile by merging it with the new place of the tile after the
+    #     # drop by bitwise OR
+    #     current_tile = self.current_tile[1].copy()
+
+    #     self.field[
+    #         min(self.current_tile_positionInField[0]) : min(
+    #             self.current_tile_positionInField[0]
+    #         )
+    #         + current_tile_number_of_rows,
+    #         min(self.current_tile_positionInField[1]) : min(
+    #             self.current_tile_positionInField[1]
+    #         )
+    #         + current_tile_number_of_columns,
+    #     ] |= current_tile
+
+    #     # clearing the topmost-row of the former current_tile_positionInField because the tile now
+    #     # moved down by one row
+    #     self.field[
+    #         min(current_tile_positionInField_old[0]),
+    #         min(self.current_tile_positionInField[1]) : min(
+    #             self.current_tile_positionInField[1]
+    #         )
+    #         + current_tile_number_of_columns,
+    #     ] = np.int8(0)
 
     def drop_current_tile(self):
         """
@@ -179,45 +234,42 @@ class TetrisEnv:
             GamewiseLogicalError: If 'drop_possible' is False
         """
         if not self._drop_possible():
-            raise GamewiseLogicalError("'drop_possible' must always be True at this point.")
+            raise GamewiseLogicalError(
+                "'drop_possible' must always be True at this point."
+            )
 
-        current_tile_number_of_rows = self._current_tile_number_of_rows()
-        current_tile_number_of_columns = self._current_tile_number_of_columns()
-
-        # retaining the old 'current_tile_positionInField'-variable before it is updated below
-        current_tile_positionInField_old = self.current_tile_positionInField.copy()
+        # retaining the old 'current_tile_occupied_cells_in_field'-variable before it is updated below
+        current_tile_occupied_cells_in_field_old = (
+            self.current_tile_occupied_cells_in_field.copy()
+        )
 
         # Increasing all row-numbers by one (i.e. the tile moves downward by one row)
+        self.current_tile_occupied_cells_in_field[0] += np.ones(
+            shape=(len(self.current_tile_occupied_cells_in_field[0]),), dtype=np.int8
+        )
+
+        # revert element at index 0 from np.array to list
+        self.current_tile_occupied_cells_in_field[0] = (
+            self.current_tile_occupied_cells_in_field[0].tolist()
+        )
+
+        # clearing the old occupied cells
+        self.field[*current_tile_occupied_cells_in_field_old] = np.int8(0)
+
+        # setting the new occpupied cells
+        self.field[*self.current_tile_occupied_cells_in_field] = np.int8(1)
+
+        # ---updating other related variables---
         self.current_tile_positionInField[0] += np.ones(
             shape=(len(self.current_tile_positionInField[0]),), dtype=np.int8
         )
-        self.current_tile_positionInField[0] = self.current_tile_positionInField[0].tolist()
+        self.current_tile_positionInField[0] = self.current_tile_positionInField[
+            0
+        ].tolist()
 
-        # Updating the tile in the field (i.e. doing the actual dropping)
-        # dropping the current tile by merging it with the new place of the tile after the
-        # drop by bitwise OR
-        current_tile = self.current_tile[1].copy()
-
-        self.field[
-            min(self.current_tile_positionInField[0]) : min(
-                self.current_tile_positionInField[0]
-            )
-            + current_tile_number_of_rows,
-            min(self.current_tile_positionInField[1]) : min(
-                self.current_tile_positionInField[1]
-            )
-            + current_tile_number_of_columns,
-        ] |= current_tile
-
-        # clearing the topmost-row of the former current_tile_positionInField because the tile now
-        # moved down by one row
-        self.field[
-            min(current_tile_positionInField_old[0]),
-            min(self.current_tile_positionInField[1]) : min(
-                self.current_tile_positionInField[1]
-            )
-            + current_tile_number_of_columns,
-        ] = np.int8(0)
+        self.top_left_corner_current_tile_in_field = (
+            self._get_top_left_corner_of_current_tile_in_field()
+        )
 
     def remove_full_rows(self, full_rows_indices: Union[list, np.ndarray]) -> int:
         """
@@ -598,7 +650,6 @@ class TetrisEnv:
 
         self.current_tile_positionInField = [list(row_indices), list(column_indices)]
 
-
     def _drop_possible(self) -> bool:
         """
         Checks whether a drop of the current tile by one row is possible.
@@ -628,7 +679,7 @@ class TetrisEnv:
             # from all occupied cells of the current tile, getting those cells,
             # which are in the lowest row per column
 
-            #TODO: Refactor this section into multiple functions
+            # TODO: Refactor this section into multiple functions
             individual_columns = list(set(self.current_tile_occupied_cells_in_field[1]))
 
             zipped = list(zip(*self.current_tile_occupied_cells_in_field))
