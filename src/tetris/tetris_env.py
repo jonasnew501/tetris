@@ -381,7 +381,9 @@ class TetrisEnv:
 
         self.current_tile[1] = current_tile_rotated
 
-        self.top_left_corner_current_tile_in_field = self._get_top_left_corner_of_current_tile_in_field()
+        self.top_left_corner_current_tile_in_field = (
+            self._get_top_left_corner_of_current_tile_in_field()
+        )
 
         self._put_tile_into_field(
             tile_to_put_into_field=current_tile_rotated,
@@ -392,7 +394,6 @@ class TetrisEnv:
             current_tile_positionInField_before_rotation=current_tile_positionInField_before_rotation,
             current_tile_positionInField_after_rotation=self.current_tile_positionInField.copy(),
         )
-    
 
     def _get_current_tile_occupied_cells_in_field(self) -> List[List[int]]:
         """
@@ -405,7 +406,9 @@ class TetrisEnv:
             [field_occupied_rows, field_occupied_columns] (List[List[int], List[int]]):
                 The occupied cells of the current tile in the field.
         """
-        local_occupied_rows, local_occupied_columns = self._get_current_tile_occupied_cells_local()
+        local_occupied_rows, local_occupied_columns = (
+            self._get_current_tile_occupied_cells_local()
+        )
 
         top_left_row_in_field = self.top_left_corner_current_tile_in_field[0]
         top_left_column_in_field = self.top_left_corner_current_tile_in_field[1]
@@ -414,7 +417,6 @@ class TetrisEnv:
         field_occupied_columns = top_left_column_in_field + local_occupied_columns
 
         return [list(field_occupied_rows), list(field_occupied_columns)]
-
 
     def _get_current_tile_occupied_cells_local(self) -> List[np.ndarray[int]]:
         """
@@ -430,7 +432,7 @@ class TetrisEnv:
         local_occupied_rows, local_occupied_columns = np.nonzero(current_tile)
 
         return [local_occupied_rows, local_occupied_columns]
-    
+
     def _get_top_left_corner_of_current_tile_in_field(self) -> Tuple[int, int]:
         """
         Determines and returns the top-left-corner of the current tile's
@@ -447,8 +449,6 @@ class TetrisEnv:
         )[0]
 
         return top_left_corner_of_current_tile_rotated_in_field
-
-
 
     def reset(self):
         """
@@ -661,8 +661,6 @@ class TetrisEnv:
     #         )
 
     #         return np.all(np.isin(sum_of_both_rows, [0, 1]))
-    
-
 
     def _drop_possible(self) -> bool:
         """
@@ -690,8 +688,8 @@ class TetrisEnv:
         ):
             return False
         else:
-            #from all occupied cells of the current tile, getting those cells,
-            #which are in the lowest row per column
+            # from all occupied cells of the current tile, getting those cells,
+            # which are in the lowest row per column
 
             individual_columns = list(set(self.current_tile_occupied_cells_in_field[1]))
 
@@ -699,28 +697,44 @@ class TetrisEnv:
 
             lowest_occupied_cells = []
             for individual_col in individual_columns:
-                cells_of_individual_col = [tup for tup in zipped if tup[1] == individual_col]
+                cells_of_individual_col = [
+                    tup for tup in zipped if tup[1] == individual_col
+                ]
 
-                lowest_cell_of_individual_col = max(cells_of_individual_col, key=lambda tup: tup[0])
+                lowest_cell_of_individual_col = max(
+                    cells_of_individual_col, key=lambda tup: tup[0]
+                )
                 lowest_occupied_cells.append(lowest_cell_of_individual_col)
-            
-            cells_one_row_below_lowest_occupied_cells = [(tup[0]+1, tup[1]) for tup in lowest_occupied_cells]
 
-            values_lowest_occupied_cells = [self.field[tup] for tup in lowest_occupied_cells]
-            assert np.all(np.isin(values_lowest_occupied_cells, [1])) #Asserting that all values of the lowest
-                                                                      #occupied cells of the current tile
-                                                                      #are actually 1
-            
-            values_cells_one_row_below_lowest_occupied_cells = [self.field[tup] for tup in cells_one_row_below_lowest_occupied_cells]
+            cells_one_row_below_lowest_occupied_cells = [
+                (tup[0] + 1, tup[1]) for tup in lowest_occupied_cells
+            ]
 
-            assert len(values_lowest_occupied_cells) == len(values_cells_one_row_below_lowest_occupied_cells)
-            sums_of_both_rows = np.sum(a=(values_lowest_occupied_cells, values_cells_one_row_below_lowest_occupied_cells), axis=0)
+            values_lowest_occupied_cells = [
+                self.field[tup] for tup in lowest_occupied_cells
+            ]
+            assert np.all(
+                np.isin(values_lowest_occupied_cells, [1])
+            )  # Asserting that all values of the lowest
+            # occupied cells of the current tile
+            # are actually 1
+
+            values_cells_one_row_below_lowest_occupied_cells = [
+                self.field[tup] for tup in cells_one_row_below_lowest_occupied_cells
+            ]
+
+            assert len(values_lowest_occupied_cells) == len(
+                values_cells_one_row_below_lowest_occupied_cells
+            )
+            sums_of_both_rows = np.sum(
+                a=(
+                    values_lowest_occupied_cells,
+                    values_cells_one_row_below_lowest_occupied_cells,
+                ),
+                axis=0,
+            )
 
             return np.all(np.isin(sums_of_both_rows, [1]))
-
-
-
-
 
     def _check_tile_at_edge(
         self,
@@ -1560,8 +1574,10 @@ class TetrisEnv:
         tile_to_put_into_field_number_of_rows = tile_to_put_into_field.shape[0]
         tile_to_put_into_field_number_of_columns = tile_to_put_into_field.shape[1]
 
-        field_section = self.field[position[0] : position[0] + tile_to_put_into_field_number_of_rows,
-                                   position[1] : position[1] + tile_to_put_into_field_number_of_columns]
+        field_section = self.field[
+            position[0] : position[0] + tile_to_put_into_field_number_of_rows,
+            position[1] : position[1] + tile_to_put_into_field_number_of_columns,
+        ]
 
         # Checking if there would be an overlap with the field in any cell
         overlap = np.any((field_section == 1) & (tile_to_put_into_field == 1))
