@@ -1,6 +1,7 @@
 import pytest
 from collections import deque
 import numpy as np
+from typing import List
 
 
 from tetris.tetris_env import TetrisEnv
@@ -342,6 +343,41 @@ class TestTetrisEnv:
         np.testing.assert_array_equal(env_setup_occupied_field.field, expected_field)
 
         assert env_setup_occupied_field.game_over == game_over
+    
+    @staticmethod
+    @pytest.mark.parametrize(
+        "tiles_queue, launch_position, expected_current_tile_positionInField_after_drop, expected_field_after_drop",
+        [
+            (
+                deque([["L", np.array([[1, 0], [1, 0], [1, 1]]), 0]]),
+                [0, 7],
+                [[1,1,2,2,3,3], [7,8,7,8,7,8]],
+                np.array(
+                [
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 1, 1, 0, 0, 0, 1, 0, 0],
+                    [0, 0, 1, 1, 1, 0, 1, 1, 0, 0],
+                    [0, 0, 1, 1, 1, 0, 1, 1, 1, 0],
+                    [0, 0, 0, 1, 1, 1, 1, 0, 0, 0],
+                    [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+                ],
+                dtype=np.int8
+                )
+            )
+        ]
+    )
+    def test_drop_current_tile_drop_in_empty_place(env_setup_occupied_field: TetrisEnv, tiles_queue: deque, launch_position: List[int], expected_current_tile_positionInField_after_drop: List[List[int]], expected_field_after_drop: np.ndarray):
+        env_setup_occupied_field.tiles_queue = tiles_queue
+        env_setup_occupied_field.launch_position = launch_position
+        
+        env_setup_occupied_field.launch_tile()
+        env_setup_occupied_field.drop_current_tile()
+
+        assert isinstance(env_setup_occupied_field.current_tile_positionInField[0], list)
+
+        assert env_setup_occupied_field.current_tile_positionInField == expected_current_tile_positionInField_after_drop
+        np.testing.assert_array_equal(env_setup_occupied_field.field, expected_field_after_drop)
 
     # ----------------------------------------------------------------------------------
 

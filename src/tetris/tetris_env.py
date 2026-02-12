@@ -160,7 +160,9 @@ class TetrisEnv:
                 self.current_tile[1], position=self.launch_position
             )
             self._set_current_tile_position_in_field_at_launch(self.current_tile[1])
-
+            self.top_left_corner_current_tile_in_field = self._get_top_left_corner_of_current_tile_in_field()
+            self.current_tile_occupied_cells_in_field = self._get_current_tile_occupied_cells_in_field()
+            
             self.game_over = False
 
         elif not out_of_bounds_at_put and overlap_at_put:
@@ -189,12 +191,12 @@ class TetrisEnv:
         self.current_tile_positionInField[0] += np.ones(
             shape=(len(self.current_tile_positionInField[0]),), dtype=np.int8
         )
-        self.current_tile_positionInField[0].tolist()
+        self.current_tile_positionInField[0] = self.current_tile_positionInField[0].tolist()
 
         # Updating the tile in the field (i.e. doing the actual dropping)
         # dropping the current tile by merging it with the new place of the tile after the
         # drop by bitwise OR
-        current_tile = self.current_tile[1]
+        current_tile = self.current_tile[1].copy()
 
         self.field[
             min(self.current_tile_positionInField[0]) : min(
@@ -207,7 +209,7 @@ class TetrisEnv:
             + current_tile_number_of_columns,
         ] |= current_tile
 
-        # clearning the topmost-row of the former current_tile_positionInField because the tile now
+        # clearing the topmost-row of the former current_tile_positionInField because the tile now
         # moved down by one row
         self.field[
             min(current_tile_positionInField_old[0]),

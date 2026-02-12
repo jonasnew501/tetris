@@ -45,7 +45,7 @@ def main():
                         sys.exit()
 
             # print("------------------------------")
-            if not drop_conducted:
+            if not env._drop_possible():
                 env.launch_tile()
 
             if env.game_over:
@@ -53,11 +53,7 @@ def main():
                 env.launch_tile()
 
             # dropping the current tile by one row
-            if drop_possible := env._drop_possible():
-                env.drop_current_tile(drop_possible=drop_possible)
-                drop_conducted = True
-            else:
-                drop_conducted = False
+            env.drop_current_tile()
 
             print(env.field)
             print()
