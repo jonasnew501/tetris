@@ -198,7 +198,7 @@ class TestTetrisEnv:
 
     @staticmethod
     @pytest.mark.parametrize(
-        "tiles_queue, expected_field_after_put, current_tile_positionInField, game_over",
+        "tiles_queue, expected_field_after_put, current_tile_positionInField, top_left_corner_current_tile_in_field, current_tile_occupied_cells_in_field, game_over",
         [
             (
                 deque([["L", np.array([[1, 0], [1, 0], [1, 1]]), 0]]),
@@ -215,6 +215,8 @@ class TestTetrisEnv:
                     dtype=np.int8,
                 ),
                 [[0, 0, 1, 1, 2, 2], [5, 6, 5, 6, 5, 6]],
+                (0, 5),
+                [[0,1,2,2], [5,5,5,6]],
                 False,
             ),
         ],
@@ -224,6 +226,8 @@ class TestTetrisEnv:
         tiles_queue: deque,
         expected_field_after_put,
         current_tile_positionInField,
+        top_left_corner_current_tile_in_field,
+        current_tile_occupied_cells_in_field,
         game_over,
     ):
         assert len(env_setup_empty_field.tiles_queue) == 3
@@ -244,12 +248,14 @@ class TestTetrisEnv:
             env_setup_empty_field.current_tile_positionInField
             == current_tile_positionInField
         )
+        assert env_setup_empty_field.top_left_corner_current_tile_in_field == top_left_corner_current_tile_in_field
+        assert env_setup_empty_field.current_tile_occupied_cells_in_field == current_tile_occupied_cells_in_field
 
         assert env_setup_empty_field.game_over == game_over
 
     @staticmethod
     @pytest.mark.parametrize(
-        "tiles_queue, expected_field_after_put, current_tile_positionInField, game_over",
+        "tiles_queue, expected_field_after_put, current_tile_positionInField, top_left_corner_current_tile_in_field, current_tile_occupied_cells_in_field, game_over",
         [
             (
                 deque([["I", np.ones((4, 1)), 0]]),
@@ -266,6 +272,8 @@ class TestTetrisEnv:
                     dtype=np.int8,
                 ),
                 [[0, 1, 2, 3], [5, 5, 5, 5]],
+                (0, 5),
+                [[0,1,2,3], [5,5,5,5]],
                 False,
             ),
         ],
@@ -275,6 +283,8 @@ class TestTetrisEnv:
         tiles_queue: deque,
         expected_field_after_put,
         current_tile_positionInField,
+        top_left_corner_current_tile_in_field,
+        current_tile_occupied_cells_in_field,
         game_over,
     ):
         assert len(env_setup_occupied_field.tiles_queue) == 3
@@ -295,15 +305,18 @@ class TestTetrisEnv:
             env_setup_occupied_field.current_tile_positionInField
             == current_tile_positionInField
         )
+        assert env_setup_occupied_field.top_left_corner_current_tile_in_field == top_left_corner_current_tile_in_field
+        assert env_setup_occupied_field.current_tile_occupied_cells_in_field == current_tile_occupied_cells_in_field
 
         assert env_setup_occupied_field.game_over == game_over
 
     @staticmethod
     @pytest.mark.parametrize(
-        "tiles_queue, expected_field, game_over",
+        "tiles_queue, launch_position, expected_field, game_over",
         [
             (
                 deque([["I", np.ones((4, 1)), 0]]),
+                [0, 4],
                 np.array(
                     [
                         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -323,10 +336,11 @@ class TestTetrisEnv:
     def test_launch_tile_occupied_field_happy_path_overlap(
         env_setup_occupied_field: TetrisEnv,
         tiles_queue: deque,
+        launch_position: List,
         expected_field,
         game_over,
     ):
-        env_setup_occupied_field.launch_position = [0, 4]
+        env_setup_occupied_field.launch_position = launch_position
 
         assert len(env_setup_occupied_field.tiles_queue) == 3
 
@@ -341,6 +355,10 @@ class TestTetrisEnv:
         # set in the fixture, because a put must not happen when an overlap is detected.
         # asserting field-correctness
         np.testing.assert_array_equal(env_setup_occupied_field.field, expected_field)
+
+        assert env_setup_occupied_field.current_tile_positionInField == [[], []]
+        assert env_setup_occupied_field.top_left_corner_current_tile_in_field == ()
+        assert env_setup_occupied_field.current_tile_occupied_cells_in_field == [[], []]
 
         assert env_setup_occupied_field.game_over == game_over
 
@@ -429,6 +447,10 @@ class TestTetrisEnv:
         env_setup_occupied_field.tiles_queue = tiles_queue
 
         assert len(env_setup_occupied_field.tiles_queue) == 1
+
+        assert env_setup_occupied_field.current_tile_positionInField == [[], []]
+        assert env_setup_occupied_field.top_left_corner_current_tile_in_field == ()
+        assert env_setup_occupied_field.current_tile_occupied_cells_in_field == [[], []]
 
         with pytest.raises(expected_exception=exception):
             env_setup_occupied_field.launch_tile()
