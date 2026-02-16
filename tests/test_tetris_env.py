@@ -457,10 +457,13 @@ class TestTetrisEnv:
 
     @staticmethod
     @pytest.mark.parametrize(
-        "tiles_queue, exception, match",
+        "tiles_queue, current_tile_positionInField, top_left_corner_current_tile_in_field, current_tile_occupied_cells_in_field, exception, match",
         [
             (
                 deque([["O", np.ones((2, 2)), 0]]),
+                [[0,0,1,1], [5,6,5,6]],
+                (0, 5),
+                [[0, 0, 1, 1],[5, 6, 5, 6]],
                 GamewiseLogicalError,
                 "'drop_possible' must always be True at this point.",
             ),
@@ -469,6 +472,9 @@ class TestTetrisEnv:
     def test_drop_current_tile_drop_not_possible(
         env_setup_occupied_field: TetrisEnv,
         tiles_queue: deque,
+        current_tile_positionInField,
+        top_left_corner_current_tile_in_field,
+        current_tile_occupied_cells_in_field,
         exception: Exception,
         match: str,
     ):
@@ -478,12 +484,9 @@ class TestTetrisEnv:
 
         env_setup_occupied_field.launch_tile()
 
-        # env_setup_occupied_field.current_tile_positionInField = [[0,0,1,1], [5,6,5,6]]
-        env_setup_occupied_field.top_left_corner_current_tile_in_field = (0, 5)
-        env_setup_occupied_field.current_tile_occupied_cells_in_field = [
-            [0, 0, 1, 1],
-            [5, 6, 5, 6],
-        ]
+        assert env_setup_occupied_field.current_tile_positionInField == current_tile_positionInField
+        assert env_setup_occupied_field.top_left_corner_current_tile_in_field == top_left_corner_current_tile_in_field
+        assert env_setup_occupied_field.current_tile_occupied_cells_in_field == current_tile_occupied_cells_in_field
 
         expected_field = np.array(
             [

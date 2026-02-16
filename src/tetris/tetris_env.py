@@ -206,7 +206,7 @@ class TetrisEnv:
         # clearing the old occupied cells
         self.field[*current_tile_occupied_cells_in_field_old] = np.int8(0)
 
-        # setting the new occpupied cells
+        # setting the new occupied cells
         self.field[*self.current_tile_occupied_cells_in_field] = np.int8(1)
 
         # ---updating other related variables---
