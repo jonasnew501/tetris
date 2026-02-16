@@ -172,7 +172,6 @@ class TetrisEnv:
         elif not out_of_bounds_at_put and overlap_at_put:
             self.game_over = True
 
-
     def drop_current_tile(self):
         """
         Drops the current tile in the field by one row.

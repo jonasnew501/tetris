@@ -216,7 +216,7 @@ class TestTetrisEnv:
                 ),
                 [[0, 0, 1, 1, 2, 2], [5, 6, 5, 6, 5, 6]],
                 (0, 5),
-                [[0,1,2,2], [5,5,5,6]],
+                [[0, 1, 2, 2], [5, 5, 5, 6]],
                 False,
             ),
         ],
@@ -248,8 +248,14 @@ class TestTetrisEnv:
             env_setup_empty_field.current_tile_positionInField
             == current_tile_positionInField
         )
-        assert env_setup_empty_field.top_left_corner_current_tile_in_field == top_left_corner_current_tile_in_field
-        assert env_setup_empty_field.current_tile_occupied_cells_in_field == current_tile_occupied_cells_in_field
+        assert (
+            env_setup_empty_field.top_left_corner_current_tile_in_field
+            == top_left_corner_current_tile_in_field
+        )
+        assert (
+            env_setup_empty_field.current_tile_occupied_cells_in_field
+            == current_tile_occupied_cells_in_field
+        )
 
         assert env_setup_empty_field.game_over == game_over
 
@@ -273,7 +279,7 @@ class TestTetrisEnv:
                 ),
                 [[0, 1, 2, 3], [5, 5, 5, 5]],
                 (0, 5),
-                [[0,1,2,3], [5,5,5,5]],
+                [[0, 1, 2, 3], [5, 5, 5, 5]],
                 False,
             ),
         ],
@@ -305,8 +311,14 @@ class TestTetrisEnv:
             env_setup_occupied_field.current_tile_positionInField
             == current_tile_positionInField
         )
-        assert env_setup_occupied_field.top_left_corner_current_tile_in_field == top_left_corner_current_tile_in_field
-        assert env_setup_occupied_field.current_tile_occupied_cells_in_field == current_tile_occupied_cells_in_field
+        assert (
+            env_setup_occupied_field.top_left_corner_current_tile_in_field
+            == top_left_corner_current_tile_in_field
+        )
+        assert (
+            env_setup_occupied_field.current_tile_occupied_cells_in_field
+            == current_tile_occupied_cells_in_field
+        )
 
         assert env_setup_occupied_field.game_over == game_over
 
@@ -461,9 +473,9 @@ class TestTetrisEnv:
         [
             (
                 deque([["O", np.ones((2, 2)), 0]]),
-                [[0,0,1,1], [5,6,5,6]],
+                [[0, 0, 1, 1], [5, 6, 5, 6]],
                 (0, 5),
-                [[0, 0, 1, 1],[5, 6, 5, 6]],
+                [[0, 0, 1, 1], [5, 6, 5, 6]],
                 GamewiseLogicalError,
                 "'drop_possible' must always be True at this point.",
             ),
@@ -484,9 +496,18 @@ class TestTetrisEnv:
 
         env_setup_occupied_field.launch_tile()
 
-        assert env_setup_occupied_field.current_tile_positionInField == current_tile_positionInField
-        assert env_setup_occupied_field.top_left_corner_current_tile_in_field == top_left_corner_current_tile_in_field
-        assert env_setup_occupied_field.current_tile_occupied_cells_in_field == current_tile_occupied_cells_in_field
+        assert (
+            env_setup_occupied_field.current_tile_positionInField
+            == current_tile_positionInField
+        )
+        assert (
+            env_setup_occupied_field.top_left_corner_current_tile_in_field
+            == top_left_corner_current_tile_in_field
+        )
+        assert (
+            env_setup_occupied_field.current_tile_occupied_cells_in_field
+            == current_tile_occupied_cells_in_field
+        )
 
         expected_field = np.array(
             [
