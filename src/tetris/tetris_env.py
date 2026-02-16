@@ -458,6 +458,8 @@ class TetrisEnv:
             - The field is emptied.
             - 'self.current_tile' is set to None
             - 'self.current_tile_positionInField' is emptied
+            - 'self.current_tile_occupied_cells_in_field' is emptied
+            - 'self.top_left_corner_current_tile_in_field' is emptied
             - 'self.current_action' is set to None
             - 'self.tiles_queue' is emptied and freshly populated
             - 'self.game_over' is set to False
@@ -470,12 +472,9 @@ class TetrisEnv:
 
         self.current_tile = None
 
-        self.current_tile_positionInField[0] = self._empty_list(
-            list_to_empty=self.current_tile_positionInField[0]
-        )
-        self.current_tile_positionInField[1] = self._empty_list(
-            list_to_empty=self.current_tile_positionInField[1]
-        )
+        self.current_tile_positionInField.clear()
+        self.current_tile_occupied_cells_in_field.clear()
+        self.top_left_corner_current_tile_in_field = ()
 
         self.current_action = None
 
