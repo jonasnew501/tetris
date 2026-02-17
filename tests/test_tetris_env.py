@@ -683,7 +683,7 @@ class TestTetrisEnv:
                 ),
                 3
             ),
-             #drop not possible, full rows at indices 3, 5 (i.e. full nows are not adjacent to each other, lowest row is not a full row)
+            #drop not possible, full rows at indices 3, 5 (i.e. full nows are not adjacent to each other, lowest row is not a full row)
             (
                 deque([["L", np.array([[1, 0], [1, 0], [1, 1]]), 0]]),
                 [0, 1],
@@ -713,6 +713,36 @@ class TestTetrisEnv:
                 ),
                 2
             ),
+            #drop not possible, no full rows, but one full column
+            (
+                deque([["L", np.array([[1, 0], [1, 0], [1, 1]]), 0]]),
+                [1, 1],
+                np.array(
+                [
+                    [0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
+                    [1, 0, 0, 1, 0, 0, 1, 1, 1, 1],
+                    [1, 1, 0, 1, 1, 1, 1, 1, 1, 1],
+                    [1, 1, 1, 0, 0, 1, 1, 1, 1, 1],
+                    [1, 1, 1, 0, 1, 0, 1, 1, 1, 1],
+                ],
+                dtype=np.int8
+                ),
+                np.array(
+                [
+                    [0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
+                    [0, 1, 0, 0, 0, 0, 1, 0, 0, 0],
+                    [0, 1, 0, 0, 0, 0, 1, 0, 0, 0],
+                    [1, 1, 1, 1, 0, 0, 1, 1, 1, 1],
+                    [1, 1, 0, 1, 1, 1, 1, 1, 1, 1],
+                    [1, 1, 1, 0, 0, 1, 1, 1, 1, 1],
+                    [1, 1, 1, 0, 1, 0, 1, 1, 1, 1],
+                ],
+                dtype=np.int8
+                ),
+                0
+            )
         ]
     )
     def test_remove_full_rows_happy_path(env_setup_empty_field: TetrisEnv, tiles_queue: deque, launch_position: List[int], field_before_launch_of_current_tile: np.ndarray, field_after_launch_of_current_tile_and_call_of_remove_full_rows: np.ndarray, rows_removed: int):
