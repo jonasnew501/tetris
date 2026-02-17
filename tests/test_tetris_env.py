@@ -303,6 +303,45 @@ class TestTetrisEnv:
         env_setup_empty_field.launch_tile()
 
         np.testing.assert_array_equal(env_setup_empty_field._check_for_full_rows(), full_rows_indices)
+    
+
+    @staticmethod
+    @pytest.mark.parametrize(
+        "tiles_queue, launch_position, field_before_launch_of_current_tile, exception, match",
+        [
+            #Drop is possible, full rows at row-indices 4 and 6
+            (
+                deque([["L", np.array([[1, 0], [1, 0], [1, 1]]), 0]]),
+                [0, 1],
+                np.array(
+                [
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+                    [0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
+                    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+                ],
+                dtype=np.int8
+                ),
+                GamewiseLogicalError,
+                "The call of '_check_for_full_rows' must only happen when a drop of the current tile is not possible anymore, however, a drop was detected to still be possible in the current state of the game."
+            )
+        ]
+    )
+    def test__check_for_full_rows_unhappy_path(env_setup_empty_field: TetrisEnv, tiles_queue: deque, launch_position: List[int], field_before_launch_of_current_tile: np.ndarray, exception: Exception, match: str):
+        env_setup_empty_field.tiles_queue = tiles_queue
+        assert len(env_setup_empty_field.tiles_queue) == 1
+
+        env_setup_empty_field.field = field_before_launch_of_current_tile
+
+        env_setup_empty_field.launch_position = launch_position
+
+        env_setup_empty_field.launch_tile()
+
+        with pytest.raises(expected_exception=exception, match=match):
+            env_setup_empty_field._check_for_full_rows()
 
 
 
