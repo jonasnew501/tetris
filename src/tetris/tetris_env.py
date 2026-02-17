@@ -781,7 +781,7 @@ class TetrisEnv:
                                   Reason: See description above.
         """
         if self._drop_possible():
-            raise GamewiseLogicalError
+            raise GamewiseLogicalError("The call of '_check_for_full_rows' must only happen when a drop of the current tile is not possible anymore, however, a drop was detected to still be possible in the current state of the game.")
 
         full_rows_bool = np.all(self.field == 1, axis=1)
         full_rows_indices = np.where(full_rows_bool)[0]
