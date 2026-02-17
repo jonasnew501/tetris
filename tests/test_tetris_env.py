@@ -906,7 +906,7 @@ class TestTetrisEnv:
 
     @staticmethod
     @pytest.mark.parametrize(
-        "tiles_queue, launch_position, field_before_launch_of_current_tile, field_after_launch_of_current_tile_and_call_of_remove_full_rows, exception, match",
+        "tiles_queue, launch_position, field_before_launch_of_current_tile, field_after_launch_of_current_tile_and_call_of_remove_full_rows, current_tile_positionInField_after_removal_of_full_rows, current_tile_occupied_cells_in_field_after_removal_of_full_rows, top_left_corner_current_tile_in_field_after_removal_of_full_rows, exception, match",
         [
             # Drop is possible, full rows at row-indices 4 and 6
             (
@@ -936,6 +936,9 @@ class TestTetrisEnv:
                     ],
                     dtype=np.int8,
                 ),
+                [[0,0,1,1,2,2], [1,2,1,2,1,2]],
+                [[0,1,2,2], [1,1,1,2]],
+                (0,1),
                 GamewiseLogicalError,
                 "The call of '_check_for_full_rows' must only happen when a drop of the current tile is not possible anymore, however, a drop was detected to still be possible in the current state of the game.",
             )
@@ -947,6 +950,9 @@ class TestTetrisEnv:
         launch_position: List[int],
         field_before_launch_of_current_tile: np.ndarray,
         field_after_launch_of_current_tile_and_call_of_remove_full_rows: np.ndarray,
+        current_tile_positionInField_after_removal_of_full_rows: List[List[int]],
+        current_tile_occupied_cells_in_field_after_removal_of_full_rows: List[List[int]],
+        top_left_corner_current_tile_in_field_after_removal_of_full_rows: Tuple[int, int],
         exception: Exception,
         match: str,
     ):
@@ -963,6 +969,19 @@ class TestTetrisEnv:
             env_setup_empty_field.remove_full_rows(
                 full_rows_indices=env_setup_empty_field._check_for_full_rows()
             )
+        
+        assert (
+            env_setup_empty_field.current_tile_positionInField
+            == current_tile_positionInField_after_removal_of_full_rows
+        )
+        assert (
+            env_setup_empty_field.current_tile_occupied_cells_in_field
+            == current_tile_occupied_cells_in_field_after_removal_of_full_rows
+        )
+        assert (
+            env_setup_empty_field.top_left_corner_current_tile_in_field
+            == top_left_corner_current_tile_in_field_after_removal_of_full_rows
+        )
 
         np.testing.assert_array_equal(
             env_setup_empty_field.field,
