@@ -251,7 +251,19 @@ class TetrisEnv:
             )
         )
 
-        return len(full_rows_indices)
+        full_rows_n = len(full_rows_indices)
+
+        # ---updating other related variables---
+        self.current_tile_positionInField[0] = [row + full_rows_n for row in self.current_tile_positionInField[0]]
+
+        self.top_left_corner_current_tile_in_field = (
+            self._get_top_left_corner_of_current_tile_in_field()
+        )
+
+        self.current_tile_occupied_cells_in_field[0] = [row + full_rows_n for row in self.current_tile_occupied_cells_in_field[0]]
+
+
+        return full_rows_n
 
     def handle_action(self, action: PossibleActions):
         """
