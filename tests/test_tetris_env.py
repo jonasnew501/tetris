@@ -27,7 +27,7 @@ from tetris.tetris_env_domain_specific_exceptions import (
 
     Helper functions:
     - _drop_possible --> finished
-    - _check_for_full_rows
+    - _check_for_full_rows --> finished
 """
 
 
@@ -586,6 +586,59 @@ class TestTetrisEnv:
         np.testing.assert_array_equal(
             env_setup_occupied_field.field, expected_field_after_drop
         )
+    
+
+
+    @staticmethod
+    @pytest.mark.parametrize(
+        "tiles_queue, launch_position, field_before_launch_of_current_tile, field_after_launch_of_current_tile_and_call_of_remove_full_rows, rows_removed",
+        [
+            #Drop not possible, no full rows
+            (
+                deque([["L", np.array([[1, 0], [1, 0], [1, 1]]), 0]]),
+                [1, 1],
+                np.array(
+                [
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 1, 0, 0, 0, 0, 1, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
+                    [1, 1, 1, 0, 1, 0, 0, 1, 0, 0],
+                ],
+                dtype=np.int8
+                ),
+                np.array(
+                [
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 1, 1, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 1, 0, 0, 0, 0, 1, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
+                    [1, 1, 1, 0, 1, 0, 0, 1, 0, 0],
+                ],
+                dtype=np.int8
+                ),
+                0
+            ),
+        ]
+    )
+    def test_remove_full_rows_happy_path(env_setup_empty_field: TetrisEnv, tiles_queue: deque, launch_position: List[int], field_before_launch_of_current_tile: np.ndarray, field_after_launch_of_current_tile_and_call_of_remove_full_rows: np.ndarray, rows_removed: int):
+        env_setup_empty_field.tiles_queue = tiles_queue
+        assert len(env_setup_empty_field.tiles_queue) == 1
+
+        env_setup_empty_field.field = field_before_launch_of_current_tile
+
+        env_setup_empty_field.launch_position = launch_position
+
+        env_setup_empty_field.launch_tile()
+
+        removed = env_setup_empty_field.remove_full_rows(full_rows_indices=env_setup_empty_field._check_for_full_rows())
+
+        assert removed == rows_removed
+        np.testing.assert_array_equal(env_setup_empty_field.field, field_after_launch_of_current_tile_and_call_of_remove_full_rows)
 
     # ----------------------------------------------------------------------------------
 
