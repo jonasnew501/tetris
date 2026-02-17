@@ -758,10 +758,10 @@ class TetrisEnv:
 
         return self.current_tile[1].shape[1]
 
-    def _check_for_full_rows(self, drop_possible: bool) -> np.ndarray:
+    def _check_for_full_rows(self) -> np.ndarray:
         """
         Returns a np.ndarray containing the indices of rows
-        in the field, that contain full rows.
+        in the field, that contain full rows (in ascending order).
 
         A full row is a row which only contains occupied cells.
 
@@ -770,10 +770,6 @@ class TetrisEnv:
         possible anymore. However a new tile must also not
         already be launched yet.
 
-        Args:
-            drop_possible (bool): Indicating whether a drop of the current_tile
-                                  is currently possible or not.
-
         Returns:
             Indices of full rows (np.ndarray): The indices of the rows
                                                that contain full rows.
@@ -781,10 +777,10 @@ class TetrisEnv:
                                                there are no full rows.
 
         Raises:
-            GamewiseLogicalError: When 'drop_possible' is True.
+            GamewiseLogicalError: When '_drop_possible()' returns True.
                                   Reason: See description above.
         """
-        if drop_possible:
+        if self._drop_possible():
             raise GamewiseLogicalError
 
         full_rows_bool = np.all(self.field == 1, axis=1)
