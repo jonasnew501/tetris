@@ -19,7 +19,7 @@ from tetris.tetris_env_domain_specific_exceptions import (
     Central functions:
     - launch_tile --> finished (potentially add some test-function for corner-cases)
     - drop_current_tile --> finished
-    - remove_full_rows
+    - remove_full_rows --> finished
     - handle_action
     - move
     - rotate
@@ -194,105 +194,110 @@ class TestTetrisEnv:
         )
 
         assert env_setup_empty_field._drop_possible() == expected_return_value
-    
 
     @staticmethod
     @pytest.mark.parametrize(
         "tiles_queue, launch_position, field_before_launch_of_current_tile, full_rows_indices",
         [
-            #Drop not possible, no full rows
+            # Drop not possible, no full rows
             (
                 deque([["L", np.array([[1, 0], [1, 0], [1, 1]]), 0]]),
                 [1, 1],
                 np.array(
-                [
-                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                    [0, 0, 1, 0, 0, 0, 0, 1, 0, 0],
-                    [0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
-                    [1, 1, 1, 0, 1, 0, 0, 1, 0, 0],
-                ],
-                dtype=np.int8
+                    [
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 1, 0, 0, 0, 0, 1, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
+                        [1, 1, 1, 0, 1, 0, 0, 1, 0, 0],
+                    ],
+                    dtype=np.int8,
                 ),
-                np.array([])
+                np.array([]),
             ),
-            #drop not possible, one full row at index 6
+            # drop not possible, one full row at index 6
             (
                 deque([["L", np.array([[1, 0], [1, 0], [1, 1]]), 0]]),
                 [1, 1],
                 np.array(
-                [
-                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                    [0, 0, 1, 0, 0, 0, 0, 1, 0, 0],
-                    [0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
-                    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-                ],
-                dtype=np.int8
+                    [
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 1, 0, 0, 0, 0, 1, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
+                        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+                    ],
+                    dtype=np.int8,
                 ),
-                np.array([6])
+                np.array([6]),
             ),
-            #drop not possible, full rows at indices 4,5,6
+            # drop not possible, full rows at indices 4,5,6
             (
                 deque([["L", np.array([[1, 0], [1, 0], [1, 1]]), 0]]),
                 [1, 1],
                 np.array(
-                [
-                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-                    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-                    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-                ],
-                dtype=np.int8
+                    [
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+                        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+                        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+                    ],
+                    dtype=np.int8,
                 ),
-                np.array([4,5,6])
+                np.array([4, 5, 6]),
             ),
-            #drop not possible, full rows at indices 3, 5 (i.e. full nows are not adjacent to each other, lowest row is not a full row)
+            # drop not possible, full rows at indices 3, 5 (i.e. full nows are not adjacent to each other, lowest row is not a full row)
             (
                 deque([["L", np.array([[1, 0], [1, 0], [1, 1]]), 0]]),
                 [0, 1],
                 np.array(
-                [
-                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-                    [1, 1, 0, 1, 1, 1, 1, 1, 1, 1],
-                    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-                    [1, 1, 1, 0, 1, 0, 0, 1, 1, 1],
-                ],
-                dtype=np.int8
+                    [
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+                        [1, 1, 0, 1, 1, 1, 1, 1, 1, 1],
+                        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+                        [1, 1, 1, 0, 1, 0, 0, 1, 1, 1],
+                    ],
+                    dtype=np.int8,
                 ),
-                np.array([3,5])
+                np.array([3, 5]),
             ),
-            #drop not possible, no full rows, but one full column
+            # drop not possible, no full rows, but one full column
             (
                 deque([["L", np.array([[1, 0], [1, 0], [1, 1]]), 0]]),
                 [1, 1],
                 np.array(
-                [
-                    [0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
-                    [0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
-                    [0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
-                    [1, 0, 0, 1, 0, 0, 1, 1, 1, 1],
-                    [1, 1, 0, 1, 1, 1, 1, 1, 1, 1],
-                    [1, 1, 1, 0, 0, 1, 1, 1, 1, 1],
-                    [1, 1, 1, 0, 1, 0, 1, 1, 1, 1],
-                ],
-                dtype=np.int8
+                    [
+                        [0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
+                        [1, 0, 0, 1, 0, 0, 1, 1, 1, 1],
+                        [1, 1, 0, 1, 1, 1, 1, 1, 1, 1],
+                        [1, 1, 1, 0, 0, 1, 1, 1, 1, 1],
+                        [1, 1, 1, 0, 1, 0, 1, 1, 1, 1],
+                    ],
+                    dtype=np.int8,
                 ),
-                np.array([])
-            )
-        ]
+                np.array([]),
+            ),
+        ],
     )
-    def test__check_for_full_rows_happy_path(env_setup_empty_field: TetrisEnv, tiles_queue: deque, launch_position: List[int], field_before_launch_of_current_tile: np.ndarray, full_rows_indices: np.ndarray):
+    def test__check_for_full_rows_happy_path(
+        env_setup_empty_field: TetrisEnv,
+        tiles_queue: deque,
+        launch_position: List[int],
+        field_before_launch_of_current_tile: np.ndarray,
+        full_rows_indices: np.ndarray,
+    ):
         env_setup_empty_field.tiles_queue = tiles_queue
         assert len(env_setup_empty_field.tiles_queue) == 1
 
@@ -302,35 +307,43 @@ class TestTetrisEnv:
 
         env_setup_empty_field.launch_tile()
 
-        np.testing.assert_array_equal(env_setup_empty_field._check_for_full_rows(), full_rows_indices)
-    
+        np.testing.assert_array_equal(
+            env_setup_empty_field._check_for_full_rows(), full_rows_indices
+        )
 
     @staticmethod
     @pytest.mark.parametrize(
         "tiles_queue, launch_position, field_before_launch_of_current_tile, exception, match",
         [
-            #Drop is possible, full rows at row-indices 4 and 6
+            # Drop is possible, full rows at row-indices 4 and 6
             (
                 deque([["L", np.array([[1, 0], [1, 0], [1, 1]]), 0]]),
                 [0, 1],
                 np.array(
-                [
-                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-                    [0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
-                    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-                ],
-                dtype=np.int8
+                    [
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+                        [0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
+                        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+                    ],
+                    dtype=np.int8,
                 ),
                 GamewiseLogicalError,
-                "The call of '_check_for_full_rows' must only happen when a drop of the current tile is not possible anymore, however, a drop was detected to still be possible in the current state of the game."
+                "The call of '_check_for_full_rows' must only happen when a drop of the current tile is not possible anymore, however, a drop was detected to still be possible in the current state of the game.",
             )
-        ]
+        ],
     )
-    def test__check_for_full_rows_unhappy_path(env_setup_empty_field: TetrisEnv, tiles_queue: deque, launch_position: List[int], field_before_launch_of_current_tile: np.ndarray, exception: Exception, match: str):
+    def test__check_for_full_rows_unhappy_path(
+        env_setup_empty_field: TetrisEnv,
+        tiles_queue: deque,
+        launch_position: List[int],
+        field_before_launch_of_current_tile: np.ndarray,
+        exception: Exception,
+        match: str,
+    ):
         env_setup_empty_field.tiles_queue = tiles_queue
         assert len(env_setup_empty_field.tiles_queue) == 1
 
@@ -342,10 +355,6 @@ class TestTetrisEnv:
 
         with pytest.raises(expected_exception=exception, match=match):
             env_setup_empty_field._check_for_full_rows()
-
-
-
-        
 
     # -----unittests for the happy-path-------------------------------------------------
 
@@ -586,166 +595,171 @@ class TestTetrisEnv:
         np.testing.assert_array_equal(
             env_setup_occupied_field.field, expected_field_after_drop
         )
-    
-
 
     @staticmethod
     @pytest.mark.parametrize(
         "tiles_queue, launch_position, field_before_launch_of_current_tile, field_after_launch_of_current_tile_and_call_of_remove_full_rows, rows_removed",
         [
-            #Drop not possible, no full rows
+            # Drop not possible, no full rows
             (
                 deque([["L", np.array([[1, 0], [1, 0], [1, 1]]), 0]]),
                 [1, 1],
                 np.array(
-                [
-                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                    [0, 0, 1, 0, 0, 0, 0, 1, 0, 0],
-                    [0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
-                    [1, 1, 1, 0, 1, 0, 0, 1, 0, 0],
-                ],
-                dtype=np.int8
+                    [
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 1, 0, 0, 0, 0, 1, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
+                        [1, 1, 1, 0, 1, 0, 0, 1, 0, 0],
+                    ],
+                    dtype=np.int8,
                 ),
                 np.array(
-                [
-                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                    [0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
-                    [0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
-                    [0, 1, 1, 0, 0, 0, 0, 0, 0, 0],
-                    [0, 0, 1, 0, 0, 0, 0, 1, 0, 0],
-                    [0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
-                    [1, 1, 1, 0, 1, 0, 0, 1, 0, 0],
-                ],
-                dtype=np.int8
+                    [
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 1, 1, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 1, 0, 0, 0, 0, 1, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
+                        [1, 1, 1, 0, 1, 0, 0, 1, 0, 0],
+                    ],
+                    dtype=np.int8,
                 ),
-                0
+                0,
             ),
-            #drop not possible, one full row at index 6
+            # drop not possible, one full row at index 6
             (
                 deque([["L", np.array([[1, 0], [1, 0], [1, 1]]), 0]]),
                 [1, 1],
                 np.array(
-                [
-                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                    [0, 0, 1, 0, 0, 0, 0, 1, 0, 0],
-                    [0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
-                    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-                ],
-                dtype=np.int8
+                    [
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 1, 0, 0, 0, 0, 1, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
+                        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+                    ],
+                    dtype=np.int8,
                 ),
                 np.array(
-                [
-                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                    [0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
-                    [0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
-                    [0, 1, 1, 0, 0, 0, 0, 0, 0, 0],
-                    [0, 0, 1, 0, 0, 0, 0, 1, 0, 0],
-                    [0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
-                ],
-                dtype=np.int8
+                    [
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 1, 1, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 1, 0, 0, 0, 0, 1, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
+                    ],
+                    dtype=np.int8,
                 ),
-                1
+                1,
             ),
-            #drop not possible, full rows at indices 4,5,6
+            # drop not possible, full rows at indices 4,5,6
             (
                 deque([["L", np.array([[1, 0], [1, 0], [1, 1]]), 0]]),
                 [1, 1],
                 np.array(
-                [
-                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-                    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-                    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-                ],
-                dtype=np.int8
+                    [
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+                        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+                        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+                    ],
+                    dtype=np.int8,
                 ),
                 np.array(
-                [
-                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                    [0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
-                    [0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
-                    [0, 1, 1, 0, 0, 0, 0, 0, 0, 0],
-                ],
-                dtype=np.int8
+                    [
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 1, 1, 0, 0, 0, 0, 0, 0, 0],
+                    ],
+                    dtype=np.int8,
                 ),
-                3
+                3,
             ),
-            #drop not possible, full rows at indices 3, 5 (i.e. full nows are not adjacent to each other, lowest row is not a full row)
+            # drop not possible, full rows at indices 3, 5 (i.e. full nows are not adjacent to each other, lowest row is not a full row)
             (
                 deque([["L", np.array([[1, 0], [1, 0], [1, 1]]), 0]]),
                 [0, 1],
                 np.array(
-                [
-                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-                    [1, 1, 0, 1, 1, 1, 1, 1, 1, 1],
-                    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-                    [1, 1, 1, 0, 1, 0, 0, 1, 1, 1],
-                ],
-                dtype=np.int8
+                    [
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+                        [1, 1, 0, 1, 1, 1, 1, 1, 1, 1],
+                        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+                        [1, 1, 1, 0, 1, 0, 0, 1, 1, 1],
+                    ],
+                    dtype=np.int8,
                 ),
                 np.array(
-                [
-                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                    [0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
-                    [0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
-                    [0, 1, 1, 0, 0, 0, 0, 0, 0, 0],
-                    [1, 1, 0, 1, 1, 1, 1, 1, 1, 1],
-                    [1, 1, 1, 0, 1, 0, 0, 1, 1, 1],
-                ],
-                dtype=np.int8
+                    [
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 1, 1, 0, 0, 0, 0, 0, 0, 0],
+                        [1, 1, 0, 1, 1, 1, 1, 1, 1, 1],
+                        [1, 1, 1, 0, 1, 0, 0, 1, 1, 1],
+                    ],
+                    dtype=np.int8,
                 ),
-                2
+                2,
             ),
-            #drop not possible, no full rows, but one full column
+            # drop not possible, no full rows, but one full column
             (
                 deque([["L", np.array([[1, 0], [1, 0], [1, 1]]), 0]]),
                 [1, 1],
                 np.array(
-                [
-                    [0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
-                    [0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
-                    [0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
-                    [1, 0, 0, 1, 0, 0, 1, 1, 1, 1],
-                    [1, 1, 0, 1, 1, 1, 1, 1, 1, 1],
-                    [1, 1, 1, 0, 0, 1, 1, 1, 1, 1],
-                    [1, 1, 1, 0, 1, 0, 1, 1, 1, 1],
-                ],
-                dtype=np.int8
+                    [
+                        [0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
+                        [1, 0, 0, 1, 0, 0, 1, 1, 1, 1],
+                        [1, 1, 0, 1, 1, 1, 1, 1, 1, 1],
+                        [1, 1, 1, 0, 0, 1, 1, 1, 1, 1],
+                        [1, 1, 1, 0, 1, 0, 1, 1, 1, 1],
+                    ],
+                    dtype=np.int8,
                 ),
                 np.array(
-                [
-                    [0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
-                    [0, 1, 0, 0, 0, 0, 1, 0, 0, 0],
-                    [0, 1, 0, 0, 0, 0, 1, 0, 0, 0],
-                    [1, 1, 1, 1, 0, 0, 1, 1, 1, 1],
-                    [1, 1, 0, 1, 1, 1, 1, 1, 1, 1],
-                    [1, 1, 1, 0, 0, 1, 1, 1, 1, 1],
-                    [1, 1, 1, 0, 1, 0, 1, 1, 1, 1],
-                ],
-                dtype=np.int8
+                    [
+                        [0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
+                        [0, 1, 0, 0, 0, 0, 1, 0, 0, 0],
+                        [0, 1, 0, 0, 0, 0, 1, 0, 0, 0],
+                        [1, 1, 1, 1, 0, 0, 1, 1, 1, 1],
+                        [1, 1, 0, 1, 1, 1, 1, 1, 1, 1],
+                        [1, 1, 1, 0, 0, 1, 1, 1, 1, 1],
+                        [1, 1, 1, 0, 1, 0, 1, 1, 1, 1],
+                    ],
+                    dtype=np.int8,
                 ),
-                0
-            )
-        ]
+                0,
+            ),
+        ],
     )
-    def test_remove_full_rows_happy_path(env_setup_empty_field: TetrisEnv, tiles_queue: deque, launch_position: List[int], field_before_launch_of_current_tile: np.ndarray, field_after_launch_of_current_tile_and_call_of_remove_full_rows: np.ndarray, rows_removed: int):
+    def test_remove_full_rows_happy_path(
+        env_setup_empty_field: TetrisEnv,
+        tiles_queue: deque,
+        launch_position: List[int],
+        field_before_launch_of_current_tile: np.ndarray,
+        field_after_launch_of_current_tile_and_call_of_remove_full_rows: np.ndarray,
+        rows_removed: int,
+    ):
         env_setup_empty_field.tiles_queue = tiles_queue
         assert len(env_setup_empty_field.tiles_queue) == 1
 
@@ -755,10 +769,15 @@ class TestTetrisEnv:
 
         env_setup_empty_field.launch_tile()
 
-        removed = env_setup_empty_field.remove_full_rows(full_rows_indices=env_setup_empty_field._check_for_full_rows())
+        removed = env_setup_empty_field.remove_full_rows(
+            full_rows_indices=env_setup_empty_field._check_for_full_rows()
+        )
 
         assert removed == rows_removed
-        np.testing.assert_array_equal(env_setup_empty_field.field, field_after_launch_of_current_tile_and_call_of_remove_full_rows)
+        np.testing.assert_array_equal(
+            env_setup_empty_field.field,
+            field_after_launch_of_current_tile_and_call_of_remove_full_rows,
+        )
 
     # ----------------------------------------------------------------------------------
 
@@ -852,5 +871,70 @@ class TestTetrisEnv:
 
         with pytest.raises(exception, match=match):
             env_setup_occupied_field.drop_current_tile()
+
+    @staticmethod
+    @pytest.mark.parametrize(
+        "tiles_queue, launch_position, field_before_launch_of_current_tile, field_after_launch_of_current_tile_and_call_of_remove_full_rows, exception, match",
+        [
+            # Drop is possible, full rows at row-indices 4 and 6
+            (
+                deque([["L", np.array([[1, 0], [1, 0], [1, 1]]), 0]]),
+                [0, 1],
+                np.array(
+                    [
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+                        [0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
+                        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+                    ],
+                    dtype=np.int8,
+                ),
+                np.array(
+                    [
+                        [0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 1, 1, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+                        [0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
+                        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+                    ],
+                    dtype=np.int8,
+                ),
+                GamewiseLogicalError,
+                "The call of '_check_for_full_rows' must only happen when a drop of the current tile is not possible anymore, however, a drop was detected to still be possible in the current state of the game.",
+            )
+        ],
+    )
+    def test_remove_full_rows_unhappy_path(
+        env_setup_empty_field: TetrisEnv,
+        tiles_queue: deque,
+        launch_position: List[int],
+        field_before_launch_of_current_tile: np.ndarray,
+        field_after_launch_of_current_tile_and_call_of_remove_full_rows: np.ndarray,
+        exception: Exception,
+        match: str,
+    ):
+        env_setup_empty_field.tiles_queue = tiles_queue
+        assert len(env_setup_empty_field.tiles_queue) == 1
+
+        env_setup_empty_field.field = field_before_launch_of_current_tile
+
+        env_setup_empty_field.launch_position = launch_position
+
+        env_setup_empty_field.launch_tile()
+
+        with pytest.raises(expected_exception=exception, match=match):
+            env_setup_empty_field.remove_full_rows(
+                full_rows_indices=env_setup_empty_field._check_for_full_rows()
+            )
+
+        np.testing.assert_array_equal(
+            env_setup_empty_field.field,
+            field_after_launch_of_current_tile_and_call_of_remove_full_rows,
+        )
 
     # ---------------------------------------------------------------------------------
