@@ -235,7 +235,7 @@ class TetrisEnv:
         Returns:
             Rows removed (int): The number of rows which were full and were thus removed.
         """
-        if not full_rows_indices:
+        if full_rows_indices.size == 0:
             return 0
 
         # removing the full rows from the field
