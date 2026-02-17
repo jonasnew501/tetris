@@ -596,9 +596,10 @@ class TestTetrisEnv:
             env_setup_occupied_field.field, expected_field_after_drop
         )
 
+
     @staticmethod
     @pytest.mark.parametrize(
-        "tiles_queue, launch_position, field_before_launch_of_current_tile, field_after_launch_of_current_tile_and_call_of_remove_full_rows, rows_removed",
+        "tiles_queue, launch_position, field_before_launch_of_current_tile, field_after_launch_of_current_tile_and_call_of_remove_full_rows, current_tile_positionInField_after_removal_of_full_rows, current_tile_occupied_cells_in_field_after_removal_of_full_rows, top_left_corner_current_tile_in_field_after_removal_of_full_rows, rows_removed",
         [
             # Drop not possible, no full rows
             (
@@ -628,6 +629,9 @@ class TestTetrisEnv:
                     ],
                     dtype=np.int8,
                 ),
+                [[1,1,2,2,3,3],[1,2,1,2,1,2]],
+                [[1,2,3,3],[1,1,1,2]],
+                (1,1),
                 0,
             ),
             # drop not possible, one full row at index 6
@@ -658,6 +662,9 @@ class TestTetrisEnv:
                     ],
                     dtype=np.int8,
                 ),
+                [[2,2,3,3,4,4],[1,2,1,2,1,2]],
+                [[2,3,4,4],[1,1,1,2]],
+                (2,1),
                 1,
             ),
             # drop not possible, full rows at indices 4,5,6
@@ -688,6 +695,9 @@ class TestTetrisEnv:
                     ],
                     dtype=np.int8,
                 ),
+                [[4,4,5,5,6,6],[1,2,1,2,1,2]],
+                [[4,5,6,6],[1,1,1,2]],
+                (4,1),
                 3,
             ),
             # drop not possible, full rows at indices 3, 5 (i.e. full nows are not adjacent to each other, lowest row is not a full row)
@@ -718,6 +728,9 @@ class TestTetrisEnv:
                     ],
                     dtype=np.int8,
                 ),
+                [[2,2,3,3,4,4],[1,2,1,2,1,2]],
+                [[2,3,4,4],[1,1,1,2]],
+                (2,1),
                 2,
             ),
             # drop not possible, no full rows, but one full column
@@ -748,6 +761,9 @@ class TestTetrisEnv:
                     ],
                     dtype=np.int8,
                 ),
+                [[1,1,2,2,3,3],[1,2,1,2,1,2]],
+                [[1,2,3,3],[1,1,1,2]],
+                (1,1),
                 0,
             ),
         ],
@@ -758,6 +774,9 @@ class TestTetrisEnv:
         launch_position: List[int],
         field_before_launch_of_current_tile: np.ndarray,
         field_after_launch_of_current_tile_and_call_of_remove_full_rows: np.ndarray,
+        current_tile_positionInField_after_removal_of_full_rows: List[List[int]],
+        current_tile_occupied_cells_in_field_after_removal_of_full_rows: List[List[int]],
+        top_left_corner_current_tile_in_field_after_removal_of_full_rows: Tuple[int, int],
         rows_removed: int,
     ):
         env_setup_empty_field.tiles_queue = tiles_queue
@@ -771,6 +790,19 @@ class TestTetrisEnv:
 
         removed = env_setup_empty_field.remove_full_rows(
             full_rows_indices=env_setup_empty_field._check_for_full_rows()
+        )
+
+        assert (
+            env_setup_empty_field.current_tile_positionInField
+            == current_tile_positionInField_after_removal_of_full_rows
+        )
+        assert (
+            env_setup_empty_field.current_tile_occupied_cells_in_field
+            == current_tile_occupied_cells_in_field_after_removal_of_full_rows
+        )
+        assert (
+            env_setup_empty_field.top_left_corner_current_tile_in_field
+            == top_left_corner_current_tile_in_field_after_removal_of_full_rows
         )
 
         assert removed == rows_removed
