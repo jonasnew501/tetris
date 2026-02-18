@@ -115,7 +115,6 @@ class TetrisEnv:
         """
         Possible actions that can be taken in the game.
         """
-
         do_nothing = 0
         move_left = 1
         move_right = 2

@@ -380,7 +380,7 @@ class TestTetrisEnv:
                 (1, 2),
                 [[1, 2, 2, 2], [3, 2, 3, 4]],
                 TetrisEnv.PossibleActions.move_left,
-                True,
+                True
             ),
             #move_to_the_left, move into partially occupied cells, move possible
             (
@@ -401,7 +401,7 @@ class TestTetrisEnv:
                 (1, 2),
                 [[1, 2, 2, 2], [3, 2, 3, 4]],
                 TetrisEnv.PossibleActions.move_left,
-                True,
+                True
             ),
             #move_to_the_left, move into occupied cells, move not possible
             (
@@ -422,7 +422,7 @@ class TestTetrisEnv:
                 (1, 2),
                 [[1, 2, 2, 2], [3, 2, 3, 4]],
                 TetrisEnv.PossibleActions.move_left,
-                False,
+                False
             ),
             #move_to_the_left, move into the wall, move not possible
             (
@@ -443,11 +443,11 @@ class TestTetrisEnv:
                 (1, 2),
                 [[1, 2, 2, 2], [1, 0, 1, 2]],
                 TetrisEnv.PossibleActions.move_left,
-                False,
+                False
             ),
             #move_to_the_right, move into occupied cells, move possible
             (
-                deque([["L_inv", np.array([[0, 1], [0, 1], [1, 1]]), 1]]),
+                deque([["L_inv", np.array([[1, 0, 0], [1, 1, 1]]), 1]]),
                 np.array(
                     [
                         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -464,11 +464,11 @@ class TestTetrisEnv:
                 (1, 6),
                 [[1, 2, 2, 2], [6, 6, 7, 8]],
                 TetrisEnv.PossibleActions.move_right,
-                True,
+                True
             ),
             #move_to_the_right, move into occupied cells and move into the wall, move not possible
             (
-                deque([["L_inv", np.array([[0, 1], [0, 1], [1, 1]]), 1]]),
+                deque([["L_inv", np.array([[1, 0, 0], [1, 1, 1]]), 1]]),
                 np.array(
                     [
                         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -485,11 +485,11 @@ class TestTetrisEnv:
                 (1, 7),
                 [[1, 2, 2, 2], [7, 7, 8, 9]],
                 TetrisEnv.PossibleActions.move_right,
-                False,
-            ),
-        ],
+                False
+            )
+        ]
     )
-    def test__move_possible_happy_path(env_setup_empty_field: TetrisEnv, tiles_queue: deque, field: np.ndarray, current_tile_positionInField: List[int], top_left_corner_current_tile_in_field: Tuple[int, int], current_tile_occupied_cells_in_field: List[int], direction_to_move_in: TetrisEnv.PossibleActions,move_possible: bool):
+    def test__move_possible_happy_path(env_setup_empty_field: TetrisEnv, tiles_queue: deque, field: np.ndarray, current_tile_positionInField: List[int], top_left_corner_current_tile_in_field: Tuple[int, int], current_tile_occupied_cells_in_field: List[int], direction_to_move_in: TetrisEnv.PossibleActions, move_possible: bool):
         env_setup_empty_field.tiles_queue = tiles_queue
         assert len(env_setup_empty_field.tiles_queue) == 1
 
