@@ -160,8 +160,6 @@ Learned:
     -->A defaultdict is a subclass of the standard Python dict.
     -->imported via "from collections import defaultdict"
     -->The idea is that a defaultdict takes a 
-                                
-
 """
 
 
