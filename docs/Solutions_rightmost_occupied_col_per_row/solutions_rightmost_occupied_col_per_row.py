@@ -74,6 +74,94 @@ Learned:
     -->https://numpy.org/doc/2.4/reference/generated/numpy.unique.html
     -->Finds the unique elements of an array (+3 optional outputs)
     -->returns a np.ndarray containing the unique values
+
+5.: Copying the content of a file to another file, which is created newly too.
+    Example: Copying the contents of file "A.py" to "B.py" (and first creating "B.py"):
+    
+    -->(On Windows): "Copy-Item path/to/A.py path/to/B.py"
+        -->If "B.py" exists already and shall be overwritten: "Copy-Item path/to/A.py path/to/B.py -Force"
+    -->(On Linux): "cp path/to/A.py path/to/B.py"
+
+6.: Deleting the complete content of a fiel, such that the file still exists, but is completely empty.
+    Example: Deleting all contents of file "A.py":
+
+    -->(On Windows): "Clear-Content path/to/A.py"
+    -->(On Linux) (there are multiple different ways to achieve the same result): "echo -n > path/to/A.py"
+
+7.: Get the absolute number of elements in an array (i.e. all axes taken together, as if the array was flattened):
+    -->"array.size"
+    -->The same as "np.prod(array.shape)"
+    -->https://numpy.org/doc/stable/reference/generated/numpy.ndarray.size.html
+
+8.: Passing multiple positional arguments to the Python builtIn-function "max":
+    -->If multiple positional arguments to the Python builtin-function "max" are passed,
+       the largest of them is returned.
+       I.e. max does not only take a container (like a list for example) are returns
+       the maximum element on that container.
+    
+    -->If two or more iterable with ordered elements are passed to "max",
+       the iterables are compared lexicographically (exactly like words in a dictionary).
+
+       That means:
+       E.g.: Two lists are compared:
+
+            >element by element
+            >from left to right
+            >the first differing element decides
+            >if all elements match so far, the longer list wins
+        
+        -->E.g.:
+            '
+            x = [1,2,3,4]
+            y = [4,4,2]
+
+            z = max(x, y)
+
+            print(z)
+            '
+        
+            -->Result: "[4,4,2]"
+                -->Why? (One could think "x" would be determined to be larger, because x is longer.):
+                    
+                    Comparison process:
+                    Position:	x:	y:	Result:
+                    index 0	    1	4	4 > 1 → y wins immediately
+
+                    Python stops here.
+                    It never looks at 2 vs 4, 3 vs 2, or list length.
+        
+        -->However, in order to compare the iterables according to another rule than lexicographically,
+           a "key" must be passed, which needs to be a callable. A callable is something that can be called like a function with one argument."
+            -->e.g.:
+                >"max(x, y, key=sum)" --> The iterable having the bigger sum is determined to be bigger.
+                >"max(x, y, key=len)" --> The iterable containing more elements is determined to be bigger.
+            
+            -->e.g.:
+                >x = [1, 2, 3, 4]
+                 y = [4, 4, 2]
+
+                 # Compare by last element in the list
+                 z = max(x, y, key=lambda lst: lst[-1])
+                 print(z)  # Output: [1, 2, 3, 4] (last element 4 > 2)
+            
+                >x = [1, 2, 3, 4]
+                 y = [4, 4, 2]
+
+                 def product(lst):
+                     result = 1
+                     for v in lst:
+                         result *= v
+                     return result
+
+                 z = max(x, y, key=product)
+                 print(z)  # Output: [1, 2, 3, 4] (product = 24 > 32)
+
+9.: "defaultdict":
+    -->A defaultdict is a subclass of the standard Python dict.
+    -->imported via "from collections import defaultdict"
+    -->The idea is that a defaultdict takes a 
+                                
+
 """
 
 
