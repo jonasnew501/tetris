@@ -165,84 +165,84 @@ Learned:
 """
 
 
+rows = [1, 2, 2, 2]
+cols = [6, 6, 7, 8]
 
-
-
-rows = [1,2,2,2]
-cols = [6,6,7,8]
-
-#Goal: Find the rightmost occupied cells per row and represent them both as NumPy-array and as tuples in a list.
+# Goal: Find the rightmost occupied cells per row and represent them both as NumPy-array and as tuples in a list.
 #      The solution is:
 #       - np.array([[1,2],[6,8]])
 #       - [(1,6), (2,8)]
 
 
-#---Solution 1: Pure Python--------------
+# ---Solution 1: Pure Python--------------
 
-#create a defaultdict to avoid KeyErrors
+# create a defaultdict to avoid KeyErrors
 d = defaultdict(int)
 
-#looping over the single elements (pairwise):
+# looping over the single elements (pairwise):
 for row, col in zip(rows, cols):
-    #grouping based on individual rows; calculating a running max of the column-indices per row/group
+    # grouping based on individual rows; calculating a running max of the column-indices per row/group
     d[row] = max(d[row], col)
 
-#obtaining the key-value-pairs from 'd' and creating a list of tuples from it
+# obtaining the key-value-pairs from 'd' and creating a list of tuples from it
 list_of_tuples_1 = list(d.items())
 
-#creating an array of the desired shape from the list of tuples
+# creating an array of the desired shape from the list of tuples
 array_1 = np.stack(list_of_tuples_1, axis=1)
-#----------------------------------------
+# ----------------------------------------
 
-#---Solution 2.1: As much NumPy as possible
-#General idea: using a mask to obtain the values per row/group from cols.
+# ---Solution 2.1: As much NumPy as possible
+# General idea: using a mask to obtain the values per row/group from cols.
 
-#Since we`re working with NumPy heavily, we first create numpy-arrays from the initial lists.
+# Since we`re working with NumPy heavily, we first create numpy-arrays from the initial lists.
 rows = np.asarray(rows)
 cols = np.asarray(cols)
 
-#Obtaining the unique values from row --> i.e. the unique groups
+# Obtaining the unique values from row --> i.e. the unique groups
 unique_rows = np.unique(rows)
 
-#looping over the individual rows
+# looping over the individual rows
 max_cols = []
 for row in unique_rows:
-    #creating a mask to get the indices of "rows" where "row" stands
+    # creating a mask to get the indices of "rows" where "row" stands
     mask = row == rows
-    #retrieving the corresponding values from cols
+    # retrieving the corresponding values from cols
     c = cols[mask]
-    #getting the maximum column-value from "c"
+    # getting the maximum column-value from "c"
     max_c = max(c)
-    #appending max_c to "max_cols"
+    # appending max_c to "max_cols"
     max_cols.append(max_c)
 
-#stacking the unique rows and the corresponding max_cols into one array along axis 0, i.e. along the rows
+# stacking the unique rows and the corresponding max_cols into one array along axis 0, i.e. along the rows
 array_2_1 = np.stack((unique_rows, max_cols), axis=0)
 
-#creating the coordinate version of the result
-list_of_tuples_2_1 = list(map(tuple, array_2_1.T)) #or 'list_of_tuples_2 = [tuple(np.int8(x)) for x in array_2.T]'
-#----------------------------------------
+# creating the coordinate version of the result
+list_of_tuples_2_1 = list(
+    map(tuple, array_2_1.T)
+)  # or 'list_of_tuples_2 = [tuple(np.int8(x)) for x in array_2.T]'
+# ----------------------------------------
 
-#---Solution 2.1: As much NumPy as possible
-#General idea: using a mask to obtain the values per row/group from cols.
+# ---Solution 2.1: As much NumPy as possible
+# General idea: using a mask to obtain the values per row/group from cols.
 
-#Since we`re working with NumPy heavily, we first create numpy-arrays from the initial lists.
+# Since we`re working with NumPy heavily, we first create numpy-arrays from the initial lists.
 rows = np.asarray(rows)
 cols = np.asarray(cols)
 
-#Obtaining the unique values from row --> i.e. the unique groups
+# Obtaining the unique values from row --> i.e. the unique groups
 unique_rows = np.unique(rows)
 
-#creating an array containing the maximum column-value per row (i.e. per group)
-#by using a mask in combination with a list-comprehension, which is directly
-#embedded into the np.array
-max_cols = np.array([cols[row==rows].max() for row in unique_rows])
+# creating an array containing the maximum column-value per row (i.e. per group)
+# by using a mask in combination with a list-comprehension, which is directly
+# embedded into the np.array
+max_cols = np.array([cols[row == rows].max() for row in unique_rows])
 
-#stacking the unique rows and the corresponding max_cols along axis 0
-array_2_2 = np.stack([unique_rows, max_cols], axis=0) #'array_2_2 = np.vstack([unique_rows, max_cols])'
+# stacking the unique rows and the corresponding max_cols along axis 0
+array_2_2 = np.stack(
+    [unique_rows, max_cols], axis=0
+)  #'array_2_2 = np.vstack([unique_rows, max_cols])'
 
-#creating the coordinate version of the result
-list_of_tuples_2_1 = list(map(tuple, array_2_1.T)) #or 'list_of_tuples_2 = [tuple(np.int8(x)) for x in array_2.T]'
-
-
-
+# creating the coordinate version of the result
+list_of_tuples_2_1 = list(
+    map(tuple, array_2_1.T)
+)  # or 'list_of_tuples_2 = [tuple(np.int8(x)) for x in array_2.T]'
