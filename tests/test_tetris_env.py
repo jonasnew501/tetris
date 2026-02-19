@@ -378,7 +378,7 @@ class TestTetrisEnv:
                 ),
                 [[1, 1, 1, 2, 2, 2], [2, 3, 4, 2, 3, 4]],
                 (1, 2),
-                [[1, 2, 2, 2], [3, 2, 3, 4]],
+                [[1, 2, 2, 2], [3, 2, 3, 4]]
                 TetrisEnv.PossibleActions.move_left,
                 True
             ),
