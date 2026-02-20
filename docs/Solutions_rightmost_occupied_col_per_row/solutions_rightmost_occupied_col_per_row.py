@@ -52,7 +52,7 @@ Learned:
                 Which is equivalent to:
                 '(f(x) for x in iterable)'
         
-        - Why can we pass tuple to map (I wondered, because "tuple" is a class, and not a function)?
+        - Why can we pass a tuple to map (I wondered, because "tuple" is a class, and not a function)?
             *Yes—tuple is a class, but more importantly:
                 >Classes are callables in Python
                 
@@ -159,7 +159,55 @@ Learned:
 9.: "defaultdict":
     -->A defaultdict is a subclass of the standard Python dict.
     -->imported via "from collections import defaultdict"
-    -->The idea is that a defaultdict takes a 
+    -->The idea is that a defaultdict takes a "default_factory", which needs to be a callable expecting no arguments (which is expected to return a value).
+       When a key is accessed, which is not present in that defaultdict, instead of raising a "KeyError" as a standard "dict", the default_factory-callable
+       is called, that key is created and the value retrned by the default_factory will is assigned as the value of that key.
+    
+
+10.: Number 9 above leads to the question: What is a "callable" in Python?
+     - object "x" is a callable when "callable(x) == True".
+        --> But when is "callable(x) True"?
+            -->More precisely:
+               Something (some object) is a callable, when this Object implements the/a "call protocol".
+               A "call protocol" can be implemented/satisfied via two different ways:
+                    1.: The Object itself implements a/the "__call__()"-method.
+                        -->E.g.:
+                           '
+                           class F:
+                              def __call__(self):
+                                 return 42
+                        
+                           f = F()
+                           f() #calls f.__call__()
+                           '
+                           (--> Here, the instance is callable. <- explained later)
+                    
+                    2.: The object is a class.
+                        -->Classes are callables "automatically", also when they themselves don't define "__call__()".
+                            -->Why?: Because classes in Python automatically inherit from the metaclass "type", which
+                                     in turn does implement "__call__()".
+
+                    
+                    -->In general:
+                       - Instances are callables if their class defines "__call__()".
+                       - Classes are callables because their metaclass("type") defines "__call__()".
+                    
+                    -->Question: Why are def-functions and lambda-functions callables?
+                        -->Because both def-functions and lambda-functions are instances of the class "function",
+                           which in turn implements the call protocol in C.
+        
+        -->Summary/Overview of what is a callable in Python:
+            An object is a callable if Python knows how to execute obj().
+
+                -->This happens if:
+
+                    Object kind	    |    Why it's callable
+
+                    Function	    |    Function type implements call protocol
+                    Lambda	        |    Same as function
+                    Class	        |    Metaclass (type) implements __call__
+                    Instance	    |    Its class defines __call__
+
 """
 
 
