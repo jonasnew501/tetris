@@ -444,7 +444,9 @@ class TetrisEnv:
         parameters 'group_by' and 'values' and with 'max' and 'min' for the parameter 'reduction_function'.
         """
 
-        
+
+
+
 
 
     def _get_current_tile_occupied_cells_in_field(self) -> List[List[int]]:
@@ -1571,6 +1573,13 @@ class TetrisEnv:
         overlap = np.any((field_section == 1) & (tile_to_put_into_field == 1))
 
         return overlap
+    
+
+    def _iterable_is_numpy_array(iterable: Iterable[Any]) -> bool:
+        """
+        Returns True, if 'iterable' is a NumPy-array, False otherwise
+        """
+        return isinstance(iterable, np.ndarray)
 
 
 # ----------------------------------------------------------------------------------
