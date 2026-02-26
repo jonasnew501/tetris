@@ -1057,7 +1057,7 @@ class TetrisEnv:
             min(columns_unoccupied_cells) : max(columns_unoccupied_cells) + 1,
         ] = np.int(8)
 
-    def _check_rotation_possible(self) -> bool:
+    def _rotation_possible(self) -> bool:
         """
         Checks whether rotating 'self.current_tile' at its current
         position in the field by 90 degrees to the right is possible.

@@ -21,7 +21,7 @@ from tetris.tetris_env_domain_specific_exceptions import (
     - drop_current_tile --> finished
     - remove_full_rows --> finished
     - handle_action
-    - move
+    - move --> finished
     - rotate
     - reset
 
@@ -517,6 +517,59 @@ class TestTetrisEnv:
             env_setup_empty_field._move_possible(direction=direction_to_move_in)
             == move_possible
         )
+
+    @staticmethod
+    @pytest.mark.parametrize(
+        "tiles_queue, field, current_tile_positionInField, top_left_corner_current_tile_in_field, current_tile_occupied_cells_in_field, is_rotation_possible",
+        [
+            (
+                deque([["L", np.array([[1, 0], [1, 0], [1, 1]]), 0]]),
+                np.array(
+                    [
+                        [0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 1, 1, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    ],
+                    dtype=np.int8,
+                ),
+                [[0, 0, 1, 1, 2, 2], [5, 6, 5, 6, 5, 6]],
+                (0, 5),
+                [[0, 1, 2, 2], [5, 5, 5, 6]],
+                True,
+            )
+        ],
+    )
+    def test__check_rotation_possible(
+        env_setup_empty_field: TetrisEnv,
+        tiles_queue: deque,
+        field: np.ndarray,
+        current_tile_positionInField: List[int],
+        top_left_corner_current_tile_in_field: Tuple[int, int],
+        current_tile_occupied_cells_in_field: List[int],
+        is_rotation_possible: bool,
+    ):
+        env_setup_empty_field.tiles_queue = tiles_queue
+        assert len(env_setup_empty_field.tiles_queue) == 1
+
+        env_setup_empty_field.launch_tile()
+
+        env_setup_empty_field.field = field
+
+        env_setup_empty_field.current_tile_positionInField = (
+            current_tile_positionInField
+        )
+        env_setup_empty_field.top_left_corner_current_tile_in_field = (
+            top_left_corner_current_tile_in_field
+        )
+        env_setup_empty_field.current_tile_occupied_cells_in_field = (
+            current_tile_occupied_cells_in_field
+        )
+
+        assert env_setup_empty_field._rotation_possible() == is_rotation_possible
 
     # -----unittests for the happy-path-------------------------------------------------
 
@@ -1530,7 +1583,7 @@ class TestTetrisEnv:
             ),
         ],
     )
-    def test_move_happy_path(
+    def test_move_unhappy_path(
         env_setup_empty_field: TetrisEnv,
         tiles_queue: deque,
         field_before_move: np.ndarray,
