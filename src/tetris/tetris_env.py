@@ -1096,8 +1096,12 @@ class TetrisEnv:
         if shape_of_current_tile[0] == shape_of_current_tile[1]:
             return False
 
-        current_tile_at_right_edge = self._check_tile_at_edge(edge="right")
-        current_tile_at_bottom_edge = self._check_tile_at_edge(edge="bottom")
+        current_tile_at_right_edge = self._check_tile_at_edge(
+            edge="right", tile_positionInField=self.current_tile_positionInField
+        )
+        current_tile_at_bottom_edge = self._check_tile_at_edge(
+            edge="bottom", tile_positionInField=self.current_tile_positionInField
+        )
 
         # if the tile has more rows than columns and the tile is located
         # at the right edge, after a rotation the tile would reach out
