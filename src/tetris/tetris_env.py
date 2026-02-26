@@ -302,73 +302,54 @@ class TetrisEnv:
         Args:
             direction (PossibleActions): Possible values are 'move_left' and 'move_right'.
         """
-        current_tile_number_of_rows = self._current_tile_number_of_rows()
-        current_tile_number_of_columns = self._current_tile_number_of_columns()
-
-        # retaining the old 'current_tile_positionInField'-variable before it is updated below
-        current_tile_positionInField_old = self.current_tile_positionInField.copy()
+        # retaining the old 'current_tile_occupied_cells_in_field'-variable before it is updated below
+        current_tile_occupied_cells_in_field_old = (
+            self.current_tile_occupied_cells_in_field.copy()
+        )
 
         # move to the left
         if direction == self.PossibleActions.move_left:
             if not self._move_possible(direction=direction):
                 return
 
-            # updating 'self.current_tile_positionInField'
-            self.current_tile_positionInField[1] -= np.ones(
-                shape=(len(self.current_tile_positionInField[1]),), dtype=np.int8
+            # updating related variables
+            self.current_tile_positionInField[1] = [
+                idx - 1 for idx in self.current_tile_positionInField[1]
+            ]
+            self.current_tile_occupied_cells_in_field[1] = [
+                idx - 1 for idx in self.current_tile_occupied_cells_in_field[1]
+            ]
+            self.top_left_corner_current_tile_in_field = (
+                self._get_top_left_corner_of_current_tile_in_field()
             )
-            self.current_tile_positionInField[1].tolist()
 
-            # Updating the tile in the field (i.e. doing the actual movement)
-            current_tile = self.current_tile[1]
+            # removing the current tile from the old position
+            self.field[*current_tile_occupied_cells_in_field_old] = np.int8(0)
 
-            self.field[
-                min(self.current_tile_positionInField[0]) : min(
-                    self.current_tile_positionInField[0]
-                )
-                + current_tile_number_of_rows,
-                min(self.current_tile_positionInField[1]) : min(
-                    self.current_tile_positionInField[1]
-                )
-                + current_tile_number_of_columns,
-            ] |= current_tile
-
-            # emptying the rightmost column of the previous position of the current tile, because that column not got empty due to the move
-            self.field[
-                list(set(self.current_tile_positionInField[0])),
-                max(current_tile_positionInField_old[1]),
-            ] = np.int8(0)
+            # setting the current tile at the new position
+            self.field[*self.current_tile_occupied_cells_in_field] = np.int8(1)
 
         # move to the right
         elif direction == self.PossibleActions.move_right:
             if not self._move_possible(direction=direction):
                 return
 
-            # Updating 'self.current_tile_positionInField
-            self.current_tile_positionInField[1] += np.ones(
-                shape=(len(self.current_tile_positionInField[1]),), dtype=np.int8
+            # updating related variables
+            self.current_tile_positionInField[1] = [
+                idx + 1 for idx in self.current_tile_positionInField[1]
+            ]
+            self.current_tile_occupied_cells_in_field[1] = [
+                idx + 1 for idx in self.current_tile_occupied_cells_in_field[1]
+            ]
+            self.top_left_corner_current_tile_in_field = (
+                self._get_top_left_corner_of_current_tile_in_field()
             )
-            self.current_tile_positionInField[1].tolist()
 
-            # Updating the tile in the field (i.e. doing the actual movement)
-            current_tile = self.current_tile[1]
+            # removing the current tile from the old position
+            self.field[*current_tile_occupied_cells_in_field_old] = np.int8(0)
 
-            self.field[
-                min(self.current_tile_positionInField[0]) : min(
-                    self.current_tile_positionInField[0]
-                )
-                + current_tile_number_of_rows,
-                min(self.current_tile_positionInField[1]) : min(
-                    self.current_tile_positionInField[1]
-                )
-                + current_tile_number_of_columns,
-            ] |= current_tile
-
-            # emptying the leftmost column of the previous position of the current tile, because that column not got empty due to the move
-            self.field[
-                list(set(self.current_tile_positionInField[0])),
-                min(current_tile_positionInField_old[1]),
-            ] = np.int8(0)
+            # setting the current tile at the new position
+            self.field[*self.current_tile_occupied_cells_in_field] = np.int8(1)
 
         else:
             raise UnsupportedParameterValue(
