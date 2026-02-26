@@ -20,7 +20,7 @@ Learned:
     -->np.stack(x, axis=1)
         -->https://numpy.org/doc/stable/reference/generated/numpy.stack.html
         -->What does np.stack do?:
-           - It takes a Series multiple array-like containers (held in one container)
+           - It takes a series of multiple array-like containers (held in one container)
              (e.g. a list containing two tuples, each containing two numbers).
              The array-like containers all need to have the same shape (the tuples
              in this example both had shape (2,)).
@@ -82,7 +82,7 @@ Learned:
         -->If "B.py" exists already and shall be overwritten: "Copy-Item path/to/A.py path/to/B.py -Force"
     -->(On Linux): "cp path/to/A.py path/to/B.py"
 
-6.: Deleting the complete content of a fiel, such that the file still exists, but is completely empty.
+6.: Deleting the complete content of a file, such that the file still exists, but is completely empty.
     Example: Deleting all contents of file "A.py":
 
     -->(On Windows): "Clear-Content path/to/A.py"
@@ -161,14 +161,14 @@ Learned:
     -->imported via "from collections import defaultdict"
     -->The idea is that a defaultdict takes a "default_factory", which needs to be a callable expecting no arguments (which is expected to return a value).
        When a key is accessed, which is not present in that defaultdict, instead of raising a "KeyError" as a standard "dict", the default_factory-callable
-       is called, that key is created and the value retrned by the default_factory will is assigned as the value of that key.
+       is called, that key is created and the value returned by the default_factory will is assigned as the value of that key.
     
 
 10.: Number 9 above leads to the question: What is a "callable" in Python?
      - object "x" is a callable when "callable(x) == True".
         --> But when is "callable(x) True"?
             -->More precisely:
-               Something (some object) is a callable, when this Object implements the/a "call protocol".
+               Something (some object) is a callable, when this object implements the/a "call protocol".
                A "call protocol" can be implemented/satisfied via two different ways:
                     1.: The Object itself implements a/the "__call__()"-method.
                         -->E.g.:

@@ -3,9 +3,10 @@ import math
 import matplotlib.pyplot as plt
 import random
 from collections import deque
+from collections.abc import Iterable, Callable
 from itertools import product
 from enum import Enum
-from typing import Union, Literal, Tuple, List
+from typing import Union, Literal, Tuple, List, Any
 
 from tetris.tetris_env_domain_specific_exceptions import (
     EmptyContainerError,
@@ -408,6 +409,43 @@ class TetrisEnv:
             current_tile_positionInField_before_rotation=current_tile_positionInField_before_rotation,
             current_tile_positionInField_after_rotation=self.current_tile_positionInField.copy(),
         )
+    
+    def _boundary_per_group(group_by: Iterable[int], values: Iterable[int], reduction_function: Callable[[Iterable], Any]) -> dict:
+        """
+        This helper-function determines the 'reduction_function' of the corresponding values of each unique member of 'group_by'.
+        The result is structured as a dict, with the groups being contained in the keys and the corresponding determined values
+        contained in the respective values of the dict.
+
+        This function is abstracted highly, but the intention in this class is that the function is used on data of the current_tile.
+
+        Example:
+        Let's assume there is the following current tile:
+        '
+        rows = [1,2,2,2]
+        cols = [6,6,7,8]
+        '
+
+        The goal is to determine the rightmost column per row of this current tile.
+        The solution would be:
+        '
+        Row 1 -> column 6
+        Row 2 -> column 8
+        '
+
+        The row would be the group here, thus for 'group_by' the list 'rows' would have to be passed.
+        The values would be the columns here, thus for 'values' the list 'cols' would have to be passed.
+        The goal is to determine the maximum value per group, i.e. the 'reduction_function' in this case would be the
+        Python-BuiltIn 'max'.
+
+        Of course for this function to produce correct results it is crucial that the indices of 'group_by' and 'values'
+        align, i.e. when those two Iterables were zipped, the correct coordinates would be obtained.
+
+        This function is intended to be called with the values of the attribute 'current_tile_occupied_cells_in_field' for the
+        parameters 'group_by' and 'values' and with 'max' and 'min' for the parameter 'reduction_function'.
+        """
+
+        
+
 
     def _get_current_tile_occupied_cells_in_field(self) -> List[List[int]]:
         """
