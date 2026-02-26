@@ -409,8 +409,13 @@ class TetrisEnv:
             current_tile_positionInField_before_rotation=current_tile_positionInField_before_rotation,
             current_tile_positionInField_after_rotation=self.current_tile_positionInField.copy(),
         )
-    
-    def _boundary_per_group(self, group_by: Iterable[int], values: Iterable[int], reduction_function: Callable[[Iterable], Any]) -> dict:
+
+    def _boundary_per_group(
+        self,
+        group_by: Iterable[int],
+        values: Iterable[int],
+        reduction_function: Callable[[Iterable], Any],
+    ) -> dict:
         """
         This helper-function determines the 'reduction_function' of the corresponding values of each unique member of 'group_by'.
         The result is structured as a dict, with the groups being contained in the keys and the corresponding determined values
@@ -447,13 +452,11 @@ class TetrisEnv:
             group_by = np.asarray(group_by)
         if not self._iterable_is_numpy_array(Iterable=values):
             values = np.asarray(values)
-        
+
         return {
-            group: reduction_function(values[group_by==group]) for group in np.unique(group_by)
+            group: reduction_function(values[group_by == group])
+            for group in np.unique(group_by)
         }
-
-
-
 
     def _get_current_tile_occupied_cells_in_field(self) -> List[List[int]]:
         """
@@ -1579,7 +1582,6 @@ class TetrisEnv:
         overlap = np.any((field_section == 1) & (tile_to_put_into_field == 1))
 
         return overlap
-    
 
     def _iterable_is_numpy_array(iterable: Iterable[Any]) -> bool:
         """
