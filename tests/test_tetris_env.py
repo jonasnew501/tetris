@@ -1419,4 +1419,162 @@ class TestTetrisEnv:
             field_after_launch_of_current_tile_and_call_of_remove_full_rows,
         )
 
+    @staticmethod
+    @pytest.mark.parametrize(
+        "tiles_queue, field_before_move, current_tile_positionInField_before_move, top_left_corner_current_tile_in_field_before_move, current_tile_occupied_cells_in_field_before_move, direction_to_move_in, field_after_move, current_tile_positionInField_after_move, top_left_corner_current_tile_in_field_after_move, current_tile_occupied_cells_in_field_after_move",
+        [
+            # action: do_nothing, move into partially occupied cells, move possible
+            (
+                deque([["T", np.array([[0, 1, 0], [1, 1, 1]]), 0]]),
+                np.array(
+                    [
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [1, 1, 0, 1, 0, 0, 0, 0, 0, 0],
+                        [1, 0, 1, 1, 1, 0, 0, 0, 0, 0],
+                        [1, 1, 1, 0, 0, 0, 0, 0, 0, 0],
+                        [1, 1, 1, 0, 0, 0, 0, 0, 0, 0],
+                        [1, 1, 1, 0, 0, 0, 0, 0, 0, 0],
+                        [1, 1, 1, 0, 0, 0, 0, 0, 0, 0],
+                    ],
+                    dtype=np.int8,
+                ),
+                [[1, 1, 1, 2, 2, 2], [2, 3, 4, 2, 3, 4]],
+                (1, 2),
+                [[1, 2, 2, 2], [3, 2, 3, 4]],
+                TetrisEnv.PossibleActions.do_nothing,
+                np.array(
+                    [
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [1, 1, 0, 1, 0, 0, 0, 0, 0, 0],
+                        [1, 0, 1, 1, 1, 0, 0, 0, 0, 0],
+                        [1, 1, 1, 0, 0, 0, 0, 0, 0, 0],
+                        [1, 1, 1, 0, 0, 0, 0, 0, 0, 0],
+                        [1, 1, 1, 0, 0, 0, 0, 0, 0, 0],
+                        [1, 1, 1, 0, 0, 0, 0, 0, 0, 0],
+                    ],
+                    dtype=np.int8,
+                ),
+                [[1, 1, 1, 2, 2, 2], [2, 3, 4, 2, 3, 4]],
+                (1, 2),
+                [[1, 2, 2, 2], [3, 2, 3, 4]],
+            ),
+            # action: rotate, move into occupied cells, move possible
+            (
+                deque([["L_inv", np.array([[1, 0, 0], [1, 1, 1]]), 1]]),
+                np.array(
+                    [
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 1, 0, 1, 1],
+                        [0, 0, 0, 0, 0, 0, 1, 1, 1, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 0, 1, 1],
+                        [0, 0, 0, 0, 0, 0, 0, 0, 1, 1],
+                        [0, 0, 0, 0, 0, 0, 0, 0, 1, 1],
+                        [0, 0, 0, 0, 0, 0, 0, 0, 1, 1],
+                    ],
+                    dtype=np.int8,
+                ),
+                [[1, 1, 1, 2, 2, 2], [6, 7, 8, 6, 7, 8]],
+                (1, 6),
+                [[1, 2, 2, 2], [6, 6, 7, 8]],
+                TetrisEnv.PossibleActions.rotate,
+                np.array(
+                    [
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 1, 0, 1, 1],
+                        [0, 0, 0, 0, 0, 0, 1, 1, 1, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 0, 1, 1],
+                        [0, 0, 0, 0, 0, 0, 0, 0, 1, 1],
+                        [0, 0, 0, 0, 0, 0, 0, 0, 1, 1],
+                        [0, 0, 0, 0, 0, 0, 0, 0, 1, 1],
+                    ],
+                    dtype=np.int8,
+                ),
+                [[1, 1, 1, 2, 2, 2], [6, 7, 8, 6, 7, 8]],
+                (1, 6),
+                [[1, 2, 2, 2], [6, 6, 7, 8]],
+            ),
+            # action: rotate, move into occupied cells and move into the wall, move not possible
+            (
+                deque([["L_inv", np.array([[1, 0, 0], [1, 1, 1]]), 1]]),
+                np.array(
+                    [
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 1, 1, 1],
+                        [0, 0, 0, 0, 0, 0, 0, 1, 1, 1],
+                        [0, 0, 0, 0, 0, 0, 0, 0, 1, 1],
+                        [0, 0, 0, 0, 0, 0, 0, 0, 1, 1],
+                        [0, 0, 0, 0, 0, 0, 0, 0, 1, 1],
+                        [0, 0, 0, 0, 0, 0, 0, 0, 1, 1],
+                    ],
+                    dtype=np.int8,
+                ),
+                [[1, 1, 1, 2, 2, 2], [7, 8, 9, 7, 8, 9]],
+                (1, 7),
+                [[1, 2, 2, 2], [7, 7, 8, 9]],
+                TetrisEnv.PossibleActions.rotate,
+                np.array(
+                    [
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 1, 1, 1],
+                        [0, 0, 0, 0, 0, 0, 0, 1, 1, 1],
+                        [0, 0, 0, 0, 0, 0, 0, 0, 1, 1],
+                        [0, 0, 0, 0, 0, 0, 0, 0, 1, 1],
+                        [0, 0, 0, 0, 0, 0, 0, 0, 1, 1],
+                        [0, 0, 0, 0, 0, 0, 0, 0, 1, 1],
+                    ],
+                    dtype=np.int8,
+                ),
+                [[1, 1, 1, 2, 2, 2], [7, 8, 9, 7, 8, 9]],
+                (1, 7),
+                [[1, 2, 2, 2], [7, 7, 8, 9]],
+            ),
+        ],
+    )
+    def test_move_happy_path(
+        env_setup_empty_field: TetrisEnv,
+        tiles_queue: deque,
+        field_before_move: np.ndarray,
+        current_tile_positionInField_before_move: List[int],
+        top_left_corner_current_tile_in_field_before_move: Tuple[int, int],
+        current_tile_occupied_cells_in_field_before_move: List[int],
+        direction_to_move_in: TetrisEnv.PossibleActions,
+        field_after_move: np.ndarray,
+        current_tile_positionInField_after_move: List[int],
+        top_left_corner_current_tile_in_field_after_move: Tuple[int, int],
+        current_tile_occupied_cells_in_field_after_move: List[int],
+    ):
+        env_setup_empty_field.tiles_queue = tiles_queue
+        assert len(env_setup_empty_field.tiles_queue) == 1
+
+        env_setup_empty_field.launch_tile()
+
+        env_setup_empty_field.field = field_before_move
+
+        env_setup_empty_field.current_tile_positionInField = (
+            current_tile_positionInField_before_move
+        )
+        env_setup_empty_field.top_left_corner_current_tile_in_field = (
+            top_left_corner_current_tile_in_field_before_move
+        )
+        env_setup_empty_field.current_tile_occupied_cells_in_field = (
+            current_tile_occupied_cells_in_field_before_move
+        )
+
+        with pytest.raises(expected_exception=UnsupportedParameterValue):
+            env_setup_empty_field.move(direction=direction_to_move_in)
+
+        np.testing.assert_array_equal(env_setup_empty_field.field, field_after_move)
+        assert (
+            env_setup_empty_field.current_tile_positionInField
+            == current_tile_positionInField_after_move
+        )
+        assert (
+            env_setup_empty_field.current_tile_occupied_cells_in_field
+            == current_tile_occupied_cells_in_field_after_move
+        )
+        assert (
+            env_setup_empty_field.top_left_corner_current_tile_in_field
+            == top_left_corner_current_tile_in_field_after_move
+        )
+
     # ---------------------------------------------------------------------------------
