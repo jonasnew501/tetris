@@ -356,12 +356,11 @@ class TestTetrisEnv:
         with pytest.raises(expected_exception=exception, match=match):
             env_setup_empty_field._check_for_full_rows()
 
-
     @staticmethod
     @pytest.mark.parametrize(
         "tiles_queue, field, current_tile_positionInField, top_left_corner_current_tile_in_field, current_tile_occupied_cells_in_field, direction_to_move_in, move_possible",
         [
-            #move_to_the_left, move into empty cells, move possible
+            # move_to_the_left, move into empty cells, move possible
             (
                 deque([["T", np.array([[0, 1, 0], [1, 1, 1]]), 0]]),
                 np.array(
@@ -378,11 +377,11 @@ class TestTetrisEnv:
                 ),
                 [[1, 1, 1, 2, 2, 2], [2, 3, 4, 2, 3, 4]],
                 (1, 2),
-                [[1, 2, 2, 2], [3, 2, 3, 4]]
+                [[1, 2, 2, 2], [3, 2, 3, 4]],
                 TetrisEnv.PossibleActions.move_left,
-                True
+                True,
             ),
-            #move_to_the_left, move into partially occupied cells, move possible
+            # move_to_the_left, move into partially occupied cells, move possible
             (
                 deque([["T", np.array([[0, 1, 0], [1, 1, 1]]), 0]]),
                 np.array(
@@ -401,9 +400,9 @@ class TestTetrisEnv:
                 (1, 2),
                 [[1, 2, 2, 2], [3, 2, 3, 4]],
                 TetrisEnv.PossibleActions.move_left,
-                True
+                True,
             ),
-            #move_to_the_left, move into occupied cells, move not possible
+            # move_to_the_left, move into occupied cells, move not possible
             (
                 deque([["T", np.array([[0, 1, 0], [1, 1, 1]]), 0]]),
                 np.array(
@@ -422,9 +421,9 @@ class TestTetrisEnv:
                 (1, 2),
                 [[1, 2, 2, 2], [3, 2, 3, 4]],
                 TetrisEnv.PossibleActions.move_left,
-                False
+                False,
             ),
-            #move_to_the_left, move into the wall, move not possible
+            # move_to_the_left, move into the wall, move not possible
             (
                 deque([["T", np.array([[0, 1, 0], [1, 1, 1]]), 0]]),
                 np.array(
@@ -443,9 +442,9 @@ class TestTetrisEnv:
                 (1, 2),
                 [[1, 2, 2, 2], [1, 0, 1, 2]],
                 TetrisEnv.PossibleActions.move_left,
-                False
+                False,
             ),
-            #move_to_the_right, move into occupied cells, move possible
+            # move_to_the_right, move into occupied cells, move possible
             (
                 deque([["L_inv", np.array([[1, 0, 0], [1, 1, 1]]), 1]]),
                 np.array(
@@ -464,9 +463,9 @@ class TestTetrisEnv:
                 (1, 6),
                 [[1, 2, 2, 2], [6, 6, 7, 8]],
                 TetrisEnv.PossibleActions.move_right,
-                True
+                True,
             ),
-            #move_to_the_right, move into occupied cells and move into the wall, move not possible
+            # move_to_the_right, move into occupied cells and move into the wall, move not possible
             (
                 deque([["L_inv", np.array([[1, 0, 0], [1, 1, 1]]), 1]]),
                 np.array(
@@ -485,23 +484,39 @@ class TestTetrisEnv:
                 (1, 7),
                 [[1, 2, 2, 2], [7, 7, 8, 9]],
                 TetrisEnv.PossibleActions.move_right,
-                False
-            )
-        ]
+                False,
+            ),
+        ],
     )
-    def test__move_possible_happy_path(env_setup_empty_field: TetrisEnv, tiles_queue: deque, field: np.ndarray, current_tile_positionInField: List[int], top_left_corner_current_tile_in_field: Tuple[int, int], current_tile_occupied_cells_in_field: List[int], direction_to_move_in: TetrisEnv.PossibleActions, move_possible: bool):
+    def test__move_possible_happy_path(
+        env_setup_empty_field: TetrisEnv,
+        tiles_queue: deque,
+        field: np.ndarray,
+        current_tile_positionInField: List[int],
+        top_left_corner_current_tile_in_field: Tuple[int, int],
+        current_tile_occupied_cells_in_field: List[int],
+        direction_to_move_in: TetrisEnv.PossibleActions,
+        move_possible: bool,
+    ):
         env_setup_empty_field.tiles_queue = tiles_queue
         assert len(env_setup_empty_field.tiles_queue) == 1
 
         env_setup_empty_field.field = field
 
-        env_setup_empty_field.current_tile_positionInField = current_tile_positionInField
-        env_setup_empty_field.top_left_corner_current_tile_in_field = top_left_corner_current_tile_in_field
-        env_setup_empty_field.current_tile_occupied_cells_in_field = current_tile_occupied_cells_in_field
+        env_setup_empty_field.current_tile_positionInField = (
+            current_tile_positionInField
+        )
+        env_setup_empty_field.top_left_corner_current_tile_in_field = (
+            top_left_corner_current_tile_in_field
+        )
+        env_setup_empty_field.current_tile_occupied_cells_in_field = (
+            current_tile_occupied_cells_in_field
+        )
 
-        assert env_setup_empty_field._move_possible(direction=direction_to_move_in) == move_possible
-
-
+        assert (
+            env_setup_empty_field._move_possible(direction=direction_to_move_in)
+            == move_possible
+        )
 
     # -----unittests for the happy-path-------------------------------------------------
 
@@ -743,7 +758,6 @@ class TestTetrisEnv:
             env_setup_occupied_field.field, expected_field_after_drop
         )
 
-
     @staticmethod
     @pytest.mark.parametrize(
         "tiles_queue, launch_position, field_before_launch_of_current_tile, field_after_launch_of_current_tile_and_call_of_remove_full_rows, current_tile_positionInField_after_removal_of_full_rows, current_tile_occupied_cells_in_field_after_removal_of_full_rows, top_left_corner_current_tile_in_field_after_removal_of_full_rows, rows_removed",
@@ -776,9 +790,9 @@ class TestTetrisEnv:
                     ],
                     dtype=np.int8,
                 ),
-                [[1,1,2,2,3,3],[1,2,1,2,1,2]],
-                [[1,2,3,3],[1,1,1,2]],
-                (1,1),
+                [[1, 1, 2, 2, 3, 3], [1, 2, 1, 2, 1, 2]],
+                [[1, 2, 3, 3], [1, 1, 1, 2]],
+                (1, 1),
                 0,
             ),
             # drop not possible, one full row at index 6
@@ -809,9 +823,9 @@ class TestTetrisEnv:
                     ],
                     dtype=np.int8,
                 ),
-                [[2,2,3,3,4,4],[1,2,1,2,1,2]],
-                [[2,3,4,4],[1,1,1,2]],
-                (2,1),
+                [[2, 2, 3, 3, 4, 4], [1, 2, 1, 2, 1, 2]],
+                [[2, 3, 4, 4], [1, 1, 1, 2]],
+                (2, 1),
                 1,
             ),
             # drop not possible, full rows at indices 4,5,6
@@ -842,9 +856,9 @@ class TestTetrisEnv:
                     ],
                     dtype=np.int8,
                 ),
-                [[4,4,5,5,6,6],[1,2,1,2,1,2]],
-                [[4,5,6,6],[1,1,1,2]],
-                (4,1),
+                [[4, 4, 5, 5, 6, 6], [1, 2, 1, 2, 1, 2]],
+                [[4, 5, 6, 6], [1, 1, 1, 2]],
+                (4, 1),
                 3,
             ),
             # drop not possible, full rows at indices 3, 5 (i.e. full nows are not adjacent to each other, lowest row is not a full row)
@@ -875,9 +889,9 @@ class TestTetrisEnv:
                     ],
                     dtype=np.int8,
                 ),
-                [[2,2,3,3,4,4],[1,2,1,2,1,2]],
-                [[2,3,4,4],[1,1,1,2]],
-                (2,1),
+                [[2, 2, 3, 3, 4, 4], [1, 2, 1, 2, 1, 2]],
+                [[2, 3, 4, 4], [1, 1, 1, 2]],
+                (2, 1),
                 2,
             ),
             # drop not possible, no full rows, but one full column
@@ -908,9 +922,9 @@ class TestTetrisEnv:
                     ],
                     dtype=np.int8,
                 ),
-                [[1,1,2,2,3,3],[1,2,1,2,1,2]],
-                [[1,2,3,3],[1,1,1,2]],
-                (1,1),
+                [[1, 1, 2, 2, 3, 3], [1, 2, 1, 2, 1, 2]],
+                [[1, 2, 3, 3], [1, 1, 1, 2]],
+                (1, 1),
                 0,
             ),
         ],
@@ -922,8 +936,12 @@ class TestTetrisEnv:
         field_before_launch_of_current_tile: np.ndarray,
         field_after_launch_of_current_tile_and_call_of_remove_full_rows: np.ndarray,
         current_tile_positionInField_after_removal_of_full_rows: List[List[int]],
-        current_tile_occupied_cells_in_field_after_removal_of_full_rows: List[List[int]],
-        top_left_corner_current_tile_in_field_after_removal_of_full_rows: Tuple[int, int],
+        current_tile_occupied_cells_in_field_after_removal_of_full_rows: List[
+            List[int]
+        ],
+        top_left_corner_current_tile_in_field_after_removal_of_full_rows: Tuple[
+            int, int
+        ],
         rows_removed: int,
     ):
         env_setup_empty_field.tiles_queue = tiles_queue
@@ -1083,9 +1101,9 @@ class TestTetrisEnv:
                     ],
                     dtype=np.int8,
                 ),
-                [[0,0,1,1,2,2], [1,2,1,2,1,2]],
-                [[0,1,2,2], [1,1,1,2]],
-                (0,1),
+                [[0, 0, 1, 1, 2, 2], [1, 2, 1, 2, 1, 2]],
+                [[0, 1, 2, 2], [1, 1, 1, 2]],
+                (0, 1),
                 GamewiseLogicalError,
                 "The call of '_check_for_full_rows' must only happen when a drop of the current tile is not possible anymore, however, a drop was detected to still be possible in the current state of the game.",
             )
@@ -1098,8 +1116,12 @@ class TestTetrisEnv:
         field_before_launch_of_current_tile: np.ndarray,
         field_after_launch_of_current_tile_and_call_of_remove_full_rows: np.ndarray,
         current_tile_positionInField_after_removal_of_full_rows: List[List[int]],
-        current_tile_occupied_cells_in_field_after_removal_of_full_rows: List[List[int]],
-        top_left_corner_current_tile_in_field_after_removal_of_full_rows: Tuple[int, int],
+        current_tile_occupied_cells_in_field_after_removal_of_full_rows: List[
+            List[int]
+        ],
+        top_left_corner_current_tile_in_field_after_removal_of_full_rows: Tuple[
+            int, int
+        ],
         exception: Exception,
         match: str,
     ):
@@ -1116,7 +1138,7 @@ class TestTetrisEnv:
             env_setup_empty_field.remove_full_rows(
                 full_rows_indices=env_setup_empty_field._check_for_full_rows()
             )
-        
+
         assert (
             env_setup_empty_field.current_tile_positionInField
             == current_tile_positionInField_after_removal_of_full_rows

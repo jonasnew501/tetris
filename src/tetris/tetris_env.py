@@ -450,7 +450,7 @@ class TetrisEnv:
         """
         if not self._iterable_is_numpy_array(iterable=group_by):
             group_by = np.asarray(group_by)
-        if not self._iterable_is_numpy_array(Iterable=values):
+        if not self._iterable_is_numpy_array(iterable=values):
             values = np.asarray(values)
 
         return {
@@ -892,25 +892,24 @@ class TetrisEnv:
             if tile_at_edge:
                 return False
 
-            # Checking whether the sums of the individual cells
-            # of the leftmost column of the current tile in all rows
-            # and the column in the field left of this leftmost column
-            # are at most 1
-            rows_of_current_tile = list(set(self.current_tile_positionInField[0]))
+            # Checking for a move to the left
+            # For the occupied cells of the current tile, determining the
+            # leftmost occupied cell per row
+            leftmost_cells_per_row = self._boundary_per_group(
+                group_by=self.current_tile_occupied_cells_in_field[0],
+                values=self.current_tile_occupied_cells_in_field[1],
+                reduction_function=min,
+            ).items()
 
-            leftmost_column_current_tile = self.field[
-                rows_of_current_tile, min(self.current_tile_positionInField[1])
-            ]
-            column_left_of_leftmost_column_current_tile = self.field[
-                rows_of_current_tile, min(self.current_tile_positionInField[1]) - 1
-            ]
+            # converting the dict to coordinate-format (basically a transpose)
+            rows_idx, leftmost_cols_idx = list(map(list, zip(*leftmost_cells_per_row)))
 
-            sum_of_both_columns = (
-                leftmost_column_current_tile
-                + column_left_of_leftmost_column_current_tile
+            one_left_of_leftmost_cols_idx = [col - 1 for col in leftmost_cols_idx]
+
+            # checking whether all cells one left of the leftmost cols are 0
+            return np.all(
+                self.field[*zip(rows_idx, one_left_of_leftmost_cols_idx)] == np.int8(0)
             )
-
-            return np.all(np.isin(sum_of_both_columns, [0, 1]))
 
         if direction == self.PossibleActions.move_right:
             tile_at_edge = self._check_tile_at_edge(
@@ -919,21 +918,27 @@ class TetrisEnv:
             if tile_at_edge:
                 return False
 
-            rows_of_current_tile = list(set(self.current_tile_positionInField[0]))
+            # Checking for a move to the right
+            # For the occupied cells of the current tile, determining the
+            # rightmost occupied cell per row
+            rightmost_cells_per_row = self._boundary_per_group(
+                group_by=self.current_tile_occupied_cells_in_field[0],
+                values=self.current_tile_occupied_cells_in_field[1],
+                reduction_function=max,
+            ).items()
 
-            rightmost_column_current_tile = self.field[
-                rows_of_current_tile, max(self.current_tile_positionInField[1])
-            ]
-            column_right_of_rightmost_column_current_tile = self.field[
-                rows_of_current_tile, max(self.current_tile_positionInField[1]) + 1
-            ]
-
-            sum_of_both_columns = (
-                rightmost_column_current_tile
-                + column_right_of_rightmost_column_current_tile
+            # converting the dict to coordinate-format (basically a transpose)
+            rows_idx, rightmost_cols_idx = list(
+                map(list, zip(*rightmost_cells_per_row))
             )
 
-            return np.all(np.isin(sum_of_both_columns, [0, 1]))
+            one_right_of_rightmost_cols_idx = [col - 1 for col in rightmost_cols_idx]
+
+            # checking whether all cells one right of the rightmost cols are 0
+            return np.all(
+                self.field[*zip(rows_idx, one_right_of_rightmost_cols_idx)]
+                == np.int8(0)
+            )
 
     def _get_current_tile_positionInField_after_rotation(
         self,
@@ -1583,7 +1588,7 @@ class TetrisEnv:
 
         return overlap
 
-    def _iterable_is_numpy_array(iterable: Iterable[Any]) -> bool:
+    def _iterable_is_numpy_array(self, iterable: Iterable[Any]) -> bool:
         """
         Returns True, if 'iterable' is a NumPy-array, False otherwise
         """
