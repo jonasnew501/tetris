@@ -644,6 +644,86 @@ class TestTetrisEnv:
             env_setup_empty_field._current_tile_positionInField_after_rotation()
             == expected_current_tile_positionInField_after_rotation
         )
+    
+
+
+
+    @staticmethod
+    @pytest.mark.parametrize(
+        "tiles_queue, field, current_tile_positionInField, top_left_corner_current_tile_in_field, current_tile_occupied_cells_in_field, rotation_possible",
+        [
+            #rotation possible; rotation into completely empty space
+            (
+                deque([["L", np.array([[1, 0], [1, 0], [1, 1]]), 0]]),
+                np.array(
+                    [
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 1, 1, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    ],
+                    dtype=np.int8,
+                ),
+                [[1, 1, 2, 2, 3, 3], [6, 7, 6, 7, 6, 7]],
+                (1, 6),
+                [[1, 2, 3, 3], [6, 6, 6, 7]],
+                True,
+            ),
+            #rotation_possible; rotation into completely empty space
+            (
+                deque([["L", np.array([[1, 1, 1], [1, 0, 0]]), 1]]),
+                np.array(
+                    [
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 1, 1, 1, 0],
+                        [0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    ],
+                    dtype=np.int8,
+                ),
+                [[1, 1, 1, 2, 2, 2], [6, 7, 8, 6, 7, 8]],
+                (1, 6),
+                [[1, 1, 1, 2], [6, 7, 8, 6]],
+                True,
+            ),
+        ],
+    )
+    def test__rotation_possible(env_setup_empty_field: TetrisEnv,
+        tiles_queue: deque,
+        field: np.ndarray,
+        current_tile_positionInField: List[int],
+        top_left_corner_current_tile_in_field: Tuple[int, int],
+        current_tile_occupied_cells_in_field: List[int],
+        rotation_possible: bool
+    ):
+
+        env_setup_empty_field.tiles_queue = tiles_queue
+        assert len(env_setup_empty_field.tiles_queue) == 1
+
+        env_setup_empty_field.launch_tile()
+
+        env_setup_empty_field.current_tile_positionInField = (
+            current_tile_positionInField
+        )
+        env_setup_empty_field.top_left_corner_current_tile_in_field = (
+            top_left_corner_current_tile_in_field
+        )
+        env_setup_empty_field.current_tile_occupied_cells_in_field = (
+            current_tile_occupied_cells_in_field
+        )
+
+        assert (
+            env_setup_empty_field._rotation_possible()
+            == rotation_possible
+        )
+
+
 
     # -----unittests for the happy-path-------------------------------------------------
 
