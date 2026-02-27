@@ -922,7 +922,7 @@ class TetrisEnv:
             )
     
 
-    def current_tile_positionInField_after_rotation(self) -> List[List[int]]:
+    def _current_tile_positionInField_after_rotation(self) -> List[List[int]]:
         """
         Creates a variable of the same principle as 'self.current_tile_positionInField'
         holding the row and column indices it would have after a rotation of
@@ -947,6 +947,20 @@ class TetrisEnv:
         cols = np.tile(np.arange(anchor[1], anchor[1] + rotated_tile_width), rotated_tile_height)
 
         return [[np.int8(i) for i in rows], [np.int8(i) for i in cols]]
+    
+    def current_tile_occupied_cells_in_field_after_rotation(self) -> List[List[int]]:
+        current_tile_rotated = self._rotate_tile(tile_to_rotate=self.current_tile[1])
+
+        #getting the local occupied coordinates
+        local_rows_after_rotation, local_cols_after_rotation = np.nonzero(current_tile_rotated)
+        
+        anchor = self.top_left_corner_current_tile_in_field
+
+        #translating into field, i.e. global, coordinates
+        global_rows_after_rotation = local_rows_after_rotation + anchor[0]
+        global_cols_after_rotation = local_cols_after_rotation + anchor[1]
+
+        return [[np.int8(i) for i in global_rows_after_rotation], [np.int8(i) for i in global_cols_after_rotation]]
 
     def _update_rotation_value(self) -> int:
         """
