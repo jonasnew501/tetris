@@ -570,8 +570,6 @@ class TestTetrisEnv:
     #     )
 
     #     assert env_setup_empty_field._rotation_possible() == is_rotation_possible
-    
-
 
     @staticmethod
     @pytest.mark.parametrize(
@@ -594,7 +592,7 @@ class TestTetrisEnv:
                 [[1, 1, 2, 2, 3, 3], [6, 7, 6, 7, 6, 7]],
                 (1, 6),
                 [[1, 2, 3, 3], [6, 6, 6, 7]],
-                [[1,1,1,2,2,2], [6,7,8,6,7,8]]
+                [[1, 1, 1, 2, 2, 2], [6, 7, 8, 6, 7, 8]],
             ),
             (
                 deque([["L", np.array([[1, 1, 1], [1, 0, 0]]), 1]]),
@@ -613,9 +611,9 @@ class TestTetrisEnv:
                 [[1, 1, 1, 2, 2, 2], [6, 7, 8, 6, 7, 8]],
                 (1, 6),
                 [[1, 1, 1, 2], [6, 7, 8, 6]],
-                [[1,1,2,2,3,3], [6,7,6,7,6,7]]
-            )
-        ]
+                [[1, 1, 2, 2, 3, 3], [6, 7, 6, 7, 6, 7]],
+            ),
+        ],
     )
     def test__get_current_tile_positionInField_after_rotation(
         env_setup_empty_field: TetrisEnv,
@@ -624,19 +622,28 @@ class TestTetrisEnv:
         current_tile_positionInField: List[int],
         top_left_corner_current_tile_in_field: Tuple[int, int],
         current_tile_occupied_cells_in_field: List[int],
-        expected_current_tile_positionInField_after_rotation: List[int]):
+        expected_current_tile_positionInField_after_rotation: List[int],
+    ):
 
         env_setup_empty_field.tiles_queue = tiles_queue
         assert len(env_setup_empty_field.tiles_queue) == 1
 
         env_setup_empty_field.launch_tile()
 
-        env_setup_empty_field.current_tile_positionInField = current_tile_positionInField
-        env_setup_empty_field.top_left_corner_current_tile_in_field = top_left_corner_current_tile_in_field
-        env_setup_empty_field.current_tile_occupied_cells_in_field = current_tile_occupied_cells_in_field
+        env_setup_empty_field.current_tile_positionInField = (
+            current_tile_positionInField
+        )
+        env_setup_empty_field.top_left_corner_current_tile_in_field = (
+            top_left_corner_current_tile_in_field
+        )
+        env_setup_empty_field.current_tile_occupied_cells_in_field = (
+            current_tile_occupied_cells_in_field
+        )
 
-        assert env_setup_empty_field._get_current_tile_positionInField_after_rotation() == expected_current_tile_positionInField_after_rotation
-
+        assert (
+            env_setup_empty_field._get_current_tile_positionInField_after_rotation()
+            == expected_current_tile_positionInField_after_rotation
+        )
 
     # -----unittests for the happy-path-------------------------------------------------
 

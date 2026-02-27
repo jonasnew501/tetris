@@ -920,7 +920,6 @@ class TetrisEnv:
                 self.field[*zip(rows_idx, one_right_of_rightmost_cols_idx)]
                 == np.int8(0)
             )
-    
 
     def _current_tile_positionInField_after_rotation(self) -> List[List[int]]:
         """
@@ -938,29 +937,38 @@ class TetrisEnv:
         """
         current_tile_rotated = self._rotate_tile(tile_to_rotate=self.current_tile[1])
 
-        #getting the shape of the rotated tile
+        # getting the shape of the rotated tile
         rotated_tile_height, rotated_tile_width = current_tile_rotated.shape
 
         anchor = self.top_left_corner_current_tile_in_field
 
-        rows = np.repeat(np.arange(anchor[0], anchor[0] + rotated_tile_height), rotated_tile_width)
-        cols = np.tile(np.arange(anchor[1], anchor[1] + rotated_tile_width), rotated_tile_height)
+        rows = np.repeat(
+            np.arange(anchor[0], anchor[0] + rotated_tile_height), rotated_tile_width
+        )
+        cols = np.tile(
+            np.arange(anchor[1], anchor[1] + rotated_tile_width), rotated_tile_height
+        )
 
         return [[np.int8(i) for i in rows], [np.int8(i) for i in cols]]
-    
-    def current_tile_occupied_cells_in_field_after_rotation(self) -> List[List[int]]:
+
+    def _current_tile_occupied_cells_in_field_after_rotation(self) -> List[List[int]]:
         current_tile_rotated = self._rotate_tile(tile_to_rotate=self.current_tile[1])
 
-        #getting the local occupied coordinates
-        local_rows_after_rotation, local_cols_after_rotation = np.nonzero(current_tile_rotated)
-        
+        # getting the local occupied coordinates
+        local_rows_after_rotation, local_cols_after_rotation = np.nonzero(
+            current_tile_rotated
+        )
+
         anchor = self.top_left_corner_current_tile_in_field
 
-        #translating into field, i.e. global, coordinates
+        # translating into field, i.e. global, coordinates
         global_rows_after_rotation = local_rows_after_rotation + anchor[0]
         global_cols_after_rotation = local_cols_after_rotation + anchor[1]
 
-        return [[np.int8(i) for i in global_rows_after_rotation], [np.int8(i) for i in global_cols_after_rotation]]
+        return [
+            [np.int8(i) for i in global_rows_after_rotation],
+            [np.int8(i) for i in global_cols_after_rotation],
+        ]
 
     def _update_rotation_value(self) -> int:
         """
@@ -1103,9 +1111,6 @@ class TetrisEnv:
         by the current tile, will collide with the respective
         part of the then rotated tile or not.
 
-        A 'collision' means that the sum of individual cells is
-        at most 1.
-
         If a collision would happen, a rotation is not possible.
 
         An actual rotation, i.e. an update of 'self.field' or
@@ -1118,56 +1123,17 @@ class TetrisEnv:
                   and the field as described above would happen;
                   False otherwise.
         """
-        shape_of_current_tile = self._get_shape_of_current_tile()
+        field_copy = self.field.copy()
 
-        if shape_of_current_tile[0] == shape_of_current_tile[1]:
-            return False
+        # removing the current_tile (non-rotated) from field_copy
+        field_copy[*self.current_tile_occupied_cells_in_field] = np.int8(0)
 
-        # Determining the cells of the field which 'self.current_tile' doesn't occupy
-        # now, but will occupy when it was rotated by 90 degrees clockwise.
-        current_tile_positionInField = self.current_tile_positionInField.copy()
-        current_tile_positionInField_after_rotation = (
-            self._get_current_tile_positionInField_after_rotation()
+        current_tile_occupied_cells_in_field_after_rotation = (
+            self._current_tile_occupied_cells_in_field_after_rotation()
         )
 
-        current_tile_cells_occupied = list(
-            zip(current_tile_positionInField[0], current_tile_positionInField[1])
-        )
-        current_tile_cells_occupied_after_rotation = list(
-            zip(
-                current_tile_positionInField_after_rotation[0],
-                current_tile_positionInField_after_rotation[1],
-            )
-        )
-
-        new_cells_occupied_after_rotation = [
-            tup
-            for tup in current_tile_cells_occupied_after_rotation
-            if tup in current_tile_cells_occupied_after_rotation
-            and tup not in current_tile_cells_occupied
-        ]
-
-        field_at_new_cells_occupied_after_rotation = (
-            self._get_slice_of_field_from_coords(
-                coords=new_cells_occupied_after_rotation
-            )
-        )
-
-        current_tile_at_new_cells_occupied_after_rotation = (
-            self._get_slice_of_current_tile_at_new_cells_occupied_after_rotation()
-        )
-
-        assert (
-            field_at_new_cells_occupied_after_rotation.shape
-            == current_tile_at_new_cells_occupied_after_rotation.shape
-        ), "The two slices do not have the same shape, however, this is required."
-
-        sum_of_both_slices = (
-            field_at_new_cells_occupied_after_rotation
-            + current_tile_at_new_cells_occupied_after_rotation
-        )
-
-        return not all(sum_of_both_slices in [0, 1])
+        # Collision, if any cell of the field, where the rotated tile would be put, already contains a 1
+        return np.any(field_copy[*current_tile_occupied_cells_in_field_after_rotation])
 
     def _get_shape_of_current_tile(self) -> tuple:
         """
