@@ -751,7 +751,7 @@ class TestTetrisEnv:
                 [[1, 2, 3, 4], [5, 5, 5, 5]],
                 False,
             ),
-            # rotation not possible; rotation of "I"-tetromino would result in out-of-bounds-error
+            # rotation not possible; rotation of "I"-tetromino would result in out-of-bounds-error to the right
             (
                 deque([["I", np.ones((4, 1)), 0]]),
                 np.array(
@@ -769,6 +769,26 @@ class TestTetrisEnv:
                 [[1, 2, 3, 4], [7, 7, 7, 7]],
                 (1, 7),
                 [[1, 2, 3, 4], [7, 7, 7, 7]],
+                False,
+            ),
+            # rotation not possible; rotation of "I"-tetromino would result in out-of-bounds-error to the bottom
+            (
+                deque([["I", np.array([[1, 1, 1, 1]]), 3]]),
+                np.array(
+                    [
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 1, 1, 1, 1, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    ],
+                    dtype=np.int8,
+                ),
+                [[4, 4, 4, 4], [3, 4, 5, 6]],
+                (4, 3),
+                [[4, 4, 4, 4], [3, 4, 5, 6]],
                 False,
             ),
         ],
