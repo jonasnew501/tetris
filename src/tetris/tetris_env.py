@@ -920,10 +920,9 @@ class TetrisEnv:
                 self.field[*zip(rows_idx, one_right_of_rightmost_cols_idx)]
                 == np.int8(0)
             )
+    
 
-    def _get_current_tile_positionInField_after_rotation(
-        self,
-    ) -> list[list[int], list[int]]:
+    def current_tile_positionInField_after_rotation(self) -> List[List[int]]:
         """
         Creates a variable of the same principle as 'self.current_tile_positionInField'
         holding the row and column indices it would have after a rotation of
@@ -937,54 +936,17 @@ class TetrisEnv:
             list[list[int], list[int]]: The variable of the form/principle of 'self.current_tile_positionInField'
                                         after a simulated rotation by 90 degrees clockwise.
         """
-        current_tile_positionInField_copy = self.current_tile_positionInField.copy()
+        current_tile_rotated = self._rotate_tile(tile_to_rotate=self.current_tile[1])
 
-        current_tile_shape_after_rotation = (
-            self._get_shape_of_current_tile_after_rotation()
-        )
+        #getting the shape of the rotated tile
+        rotated_tile_height, rotated_tile_width = current_tile_rotated.shape
 
-        diff_in_rows, diff_in_columns = (
-            self._get_diff_in_rows_and_columns_of_current_tile_after_rotation()
-        )
+        anchor = self.top_left_corner_current_tile_in_field
 
-        # calculation of new row and column indices
-        # rows
-        if diff_in_rows < 0:
-            new_row_indices_unique = list(set(current_tile_positionInField_copy[0]))[
-                :diff_in_rows
-            ]
-        elif diff_in_rows > 0:
-            new_row_indices_unique = range(
-                min(current_tile_positionInField_copy[0]),
-                max(current_tile_positionInField_copy[0]) + diff_in_rows + 1,
-                1,
-            )
+        rows = np.repeat(np.arange(anchor[0], anchor[0] + rotated_tile_height), rotated_tile_width)
+        cols = np.tile(np.arange(anchor[1], anchor[1] + rotated_tile_width), rotated_tile_height)
 
-        # columns
-        if diff_in_columns < 0:
-            new_column_indices_unique = list(set(current_tile_positionInField_copy[1]))[
-                :diff_in_columns
-            ]
-        elif diff_in_rows > 0:
-            new_column_indices_unique = range(
-                min(current_tile_positionInField_copy[1]),
-                max(current_tile_positionInField_copy[1]) + diff_in_columns + 1,
-                1,
-            )
-
-        # creating the lists of row and column indices as held in 'self.current_tile_positionInField' in principle
-        new_row_indices = list(
-            np.repeat(
-                new_row_indices_unique, repeats=current_tile_shape_after_rotation[1]
-            )
-        )
-        new_column_indices = list(
-            np.tile(
-                new_column_indices_unique, reps=current_tile_shape_after_rotation[0]
-            )
-        )
-
-        return list(list(new_row_indices), list(new_column_indices))
+        return [[np.int8(i) for i in rows], [np.int8(i) for i in cols]]
 
     def _update_rotation_value(self) -> int:
         """
