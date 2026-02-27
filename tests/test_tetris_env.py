@@ -615,7 +615,7 @@ class TestTetrisEnv:
             ),
         ],
     )
-    def test__get_current_tile_positionInField_after_rotation(
+    def test__current_tile_positionInField_after_rotation(
         env_setup_empty_field: TetrisEnv,
         tiles_queue: deque,
         field: np.ndarray,
@@ -641,7 +641,7 @@ class TestTetrisEnv:
         )
 
         assert (
-            env_setup_empty_field._get_current_tile_positionInField_after_rotation()
+            env_setup_empty_field._current_tile_positionInField_after_rotation()
             == expected_current_tile_positionInField_after_rotation
         )
 
