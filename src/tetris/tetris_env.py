@@ -1051,7 +1051,9 @@ class TetrisEnv:
                   False otherwise.
         """
         out_of_bounds_with_rotation = self._out_of_bounds_with_rotation()
-        collision_with_rotation = self._collision_with_rotation()
+
+        if not out_of_bounds_with_rotation:
+            collision_with_rotation = self._collision_with_rotation()
 
         if (not out_of_bounds_with_rotation) and (not collision_with_rotation):
             return True
@@ -1075,31 +1077,18 @@ class TetrisEnv:
                     clockwise;
                     False otherwise.
         """
-        shape_of_current_tile = self._get_shape_of_current_tile()
-
-        if shape_of_current_tile[0] == shape_of_current_tile[1]:
+        # checking for the "O"-tetromino
+        if self.current_tile[0] == "O":
             return False
 
-        current_tile_at_right_edge = self._check_tile_at_edge(
-            edge="right", tile_positionInField=self.current_tile_positionInField
-        )
-        current_tile_at_bottom_edge = self._check_tile_at_edge(
-            edge="bottom", tile_positionInField=self.current_tile_positionInField
+        # simulating a rotation
+        current_tile_occupied_cells_after_rotation = (
+            self._current_tile_occupied_cells_in_field_after_rotation()
         )
 
-        # if the tile has more rows than columns and the tile is located
-        # at the right edge, after a rotation the tile would reach out
-        # of the right edge of the field.
-        # Equivalently, if the tile has more columns than rows and the
-        # tile is located at the bottom edge, after a rotation the tile
-        # would reach out of the bottom edge of the field.
         if (
-            (shape_of_current_tile[0] > shape_of_current_tile[1])
-            and current_tile_at_right_edge
-        ) or (
-            (shape_of_current_tile[1] > shape_of_current_tile[0])
-            and current_tile_at_bottom_edge
-        ):
+            max(current_tile_occupied_cells_after_rotation[0]) >= self.field_height
+        ) or (max(current_tile_occupied_cells_after_rotation[1]) >= self.field_width):
             return True
 
         return False
