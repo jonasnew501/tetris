@@ -886,7 +886,7 @@ class TetrisEnv:
 
             # checking whether all cells one left of the leftmost cols are 0
             return np.all(
-                self.field[*zip(rows_idx, one_left_of_leftmost_cols_idx)] == np.int8(0)
+                self.field[rows_idx, one_left_of_leftmost_cols_idx] == np.int8(0)
             )
 
         if direction == self.PossibleActions.move_right:
@@ -910,12 +910,11 @@ class TetrisEnv:
                 map(list, zip(*rightmost_cells_per_row))
             )
 
-            one_right_of_rightmost_cols_idx = [col - 1 for col in rightmost_cols_idx]
+            one_right_of_rightmost_cols_idx = [col + 1 for col in rightmost_cols_idx]
 
             # checking whether all cells one right of the rightmost cols are 0
             return np.all(
-                self.field[*zip(rows_idx, one_right_of_rightmost_cols_idx)]
-                == np.int8(0)
+                self.field[rows_idx, one_right_of_rightmost_cols_idx] == np.int8(0)
             )
 
     def _current_tile_positionInField_after_rotation(

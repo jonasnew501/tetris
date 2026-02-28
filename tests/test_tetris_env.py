@@ -22,7 +22,7 @@ from tetris.tetris_env_domain_specific_exceptions import (
     - remove_full_rows --> finished
     - handle_action
     - move --> finished
-    - rotate
+    - rotate --> finished
     - reset
 
     Helper functions:

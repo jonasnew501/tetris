@@ -15,6 +15,7 @@ def main():
     pygame.mixer.quit()
 
     env = TetrisEnv(field_height=18, field_width=10, len_tiles_queue=3)
+    env.launch_tile()
 
     # ---
     drop_conducted = False
@@ -46,6 +47,8 @@ def main():
 
             # print("------------------------------")
             if not env._drop_possible():
+                env.remove_full_rows(env._check_for_full_rows())
+
                 env.launch_tile()
 
             if env.game_over:
