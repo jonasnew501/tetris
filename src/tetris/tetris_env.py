@@ -360,36 +360,22 @@ class TetrisEnv:
     def rotate(self):
         """
         Rotates the current tile by 90 degrees clockwise.
-
-        This method expects that a rotation of 'self.current_tile' is currently possible.
         """
-        current_tile_positionInField_before_rotation = (
-            self.current_tile_positionInField.copy()
-        )
+        if not self._rotation_possible():
+            return
 
-        self.current_tile_positionInField = (
-            self._get_current_tile_positionInField_after_rotation()
-        )
+        #cleaning the cells occupied by the current tile
+        self.field[*self.current_tile_occupied_cells_in_field] = np.int8(0)
 
+        #updating the related variables
+        self.current_tile[1] = self._rotate_tile(tile_to_rotate=self.current_tile[1])
         self.current_tile[2] = self._update_rotation_value()
+        self.current_tile_positionInField = self._current_tile_positionInField_after_rotation()
+        self.current_tile_occupied_cells_in_field = self._current_tile_occupied_cells_in_field_after_rotation()
 
-        current_tile_rotated = self._rotate_tile(tile_to_rotate=self.current_tile[1])
+        #setting the rotated tile into the field
+        self.field[*self.current_tile_occupied_cells_in_field] = np.int8(1)
 
-        self.current_tile[1] = current_tile_rotated
-
-        self.top_left_corner_current_tile_in_field = (
-            self._get_top_left_corner_of_current_tile_in_field()
-        )
-
-        self._put_tile_into_field(
-            tile_to_put_into_field=current_tile_rotated,
-            position=self.top_left_corner_current_tile_in_field,
-        )
-
-        self._clear_unoccupied_cells_in_field_after_rotation(
-            current_tile_positionInField_before_rotation=current_tile_positionInField_before_rotation,
-            current_tile_positionInField_after_rotation=self.current_tile_positionInField.copy(),
-        )
 
     def _boundary_per_group(
         self,
