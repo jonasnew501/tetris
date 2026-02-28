@@ -370,11 +370,19 @@ class TetrisEnv:
         current_tile_not_rotated_yet = self.current_tile[1]
 
         # updating the related variables
-        self.current_tile[1] = self._rotate_tile(tile_to_rotate=current_tile_not_rotated_yet)
+        self.current_tile[1] = self._rotate_tile(
+            tile_to_rotate=current_tile_not_rotated_yet
+        )
         self.current_tile[2] = self._update_rotation_value()
-        self.current_tile_positionInField = self._current_tile_positionInField_after_rotation(tile_to_rotate=current_tile_not_rotated_yet)
+        self.current_tile_positionInField = (
+            self._current_tile_positionInField_after_rotation(
+                tile_to_rotate=current_tile_not_rotated_yet
+            )
+        )
         self.current_tile_occupied_cells_in_field = (
-            self._current_tile_occupied_cells_in_field_after_rotation(tile_to_rotate=current_tile_not_rotated_yet)
+            self._current_tile_occupied_cells_in_field_after_rotation(
+                tile_to_rotate=current_tile_not_rotated_yet
+            )
         )
 
         # putting the rotated tile into the field
@@ -910,7 +918,9 @@ class TetrisEnv:
                 == np.int8(0)
             )
 
-    def _current_tile_positionInField_after_rotation(self, tile_to_rotate: np.ndarray) -> List[List[int]]:
+    def _current_tile_positionInField_after_rotation(
+        self, tile_to_rotate: np.ndarray
+    ) -> List[List[int]]:
         """
         Creates a variable of the same principle as 'self.current_tile_positionInField'
         holding the row and column indices it would have after a rotation of
@@ -940,7 +950,9 @@ class TetrisEnv:
 
         return [[np.int8(i) for i in rows], [np.int8(i) for i in cols]]
 
-    def _current_tile_occupied_cells_in_field_after_rotation(self, tile_to_rotate: np.ndarray) -> List[List[int]]:
+    def _current_tile_occupied_cells_in_field_after_rotation(
+        self, tile_to_rotate: np.ndarray
+    ) -> List[List[int]]:
         current_tile_rotated = self._rotate_tile(tile_to_rotate=tile_to_rotate)
 
         # getting the local occupied coordinates
@@ -1072,7 +1084,9 @@ class TetrisEnv:
 
         # simulating a rotation
         current_tile_occupied_cells_after_rotation = (
-            self._current_tile_occupied_cells_in_field_after_rotation(tile_to_rotate=self.current_tile[1])
+            self._current_tile_occupied_cells_in_field_after_rotation(
+                tile_to_rotate=self.current_tile[1]
+            )
         )
 
         if (
@@ -1107,7 +1121,9 @@ class TetrisEnv:
         field_copy[*self.current_tile_occupied_cells_in_field] = np.int8(0)
 
         current_tile_occupied_cells_in_field_after_rotation = (
-            self._current_tile_occupied_cells_in_field_after_rotation(tile_to_rotate=self.current_tile[1])
+            self._current_tile_occupied_cells_in_field_after_rotation(
+                tile_to_rotate=self.current_tile[1]
+            )
         )
 
         # Collision, if any cell of the field, where the rotated tile would be put, already contains a 1
