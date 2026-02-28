@@ -642,10 +642,14 @@ class TestTetrisEnv:
             current_tile_occupied_cells_in_field
         )
 
-        assert (
-            env_setup_empty_field._current_tile_positionInField_after_rotation()
-            == expected_current_tile_positionInField_after_rotation
-        )
+        # assert (
+        #     env_setup_empty_field._current_tile_positionInField_after_rotation()
+        #     == expected_current_tile_positionInField_after_rotation
+        # )
+
+        env_setup_empty_field.current_tile_positionInField = env_setup_empty_field._current_tile_positionInField_after_rotation(tile_to_rotate=env_setup_empty_field.current_tile[1])
+        assert env_setup_empty_field.current_tile_positionInField == expected_current_tile_positionInField_after_rotation
+        
 
     @staticmethod
     @pytest.mark.parametrize(
@@ -1541,6 +1545,92 @@ class TestTetrisEnv:
             env_setup_empty_field.top_left_corner_current_tile_in_field
             == top_left_corner_current_tile_in_field_after_move
         )
+    
+
+    @staticmethod
+    @pytest.mark.parametrize(
+        "tiles_queue, field_before_rotation, current_tile_positionInField_before_rotation, top_left_corner_current_tile_in_field, current_tile_occupied_cells_in_field_before_rotation, current_tile_after_rotation, rotation_value_after_rotation, field_after_rotation, current_tile_positionInField_after_rotation, current_tile_occupied_cells_in_field_after_rotation",
+        [
+            (
+                deque([["L_inv", np.array([[0, 1], [0, 1], [1, 1]]), 0]]),
+                np.array(
+                    [
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 1, 1, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    ],
+                    dtype=np.int8,
+                ),
+                [[2, 2, 3, 3, 4, 4], [2, 3, 2, 3, 2, 3]],
+                (2, 2),
+                [[2, 3, 4, 4], [3, 3, 2, 3]],
+                np.array([[1,0,0], [1,1,1]]),
+                1,
+                np.array(
+                    [
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 1, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 1, 1, 1, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    ],
+                    dtype=np.int8,
+                ),
+                [[2, 2, 2, 3, 3, 3], [2, 3, 4, 2, 3, 4]],
+                [[2, 3, 3, 3], [2, 2, 3, 4]],
+            )
+        ]
+    )
+    def test_rotate_happy_path(
+        env_setup_empty_field: TetrisEnv,
+        tiles_queue: deque,
+        field_before_rotation: np.ndarray,
+        current_tile_positionInField_before_rotation: List[int],
+        top_left_corner_current_tile_in_field: Tuple[int, int],
+        current_tile_occupied_cells_in_field_before_rotation: List[int],
+        current_tile_after_rotation: np.ndarray,
+        rotation_value_after_rotation: int, 
+        field_after_rotation: np.ndarray,
+        current_tile_positionInField_after_rotation: List[int],
+        current_tile_occupied_cells_in_field_after_rotation: List[int]
+        ):
+        env_setup_empty_field.tiles_queue = tiles_queue
+        assert len(env_setup_empty_field.tiles_queue) == 1
+
+        env_setup_empty_field.launch_tile()
+
+        env_setup_empty_field.field = field_before_rotation
+
+        env_setup_empty_field.current_tile_positionInField = (
+            current_tile_positionInField_before_rotation
+        )
+        env_setup_empty_field.top_left_corner_current_tile_in_field = (
+            top_left_corner_current_tile_in_field
+        )
+        env_setup_empty_field.current_tile_occupied_cells_in_field = (
+            current_tile_occupied_cells_in_field_before_rotation
+        )
+
+        env_setup_empty_field.rotate()
+
+        np.testing.assert_array_equal(env_setup_empty_field.current_tile[1], current_tile_after_rotation)
+        assert env_setup_empty_field.current_tile[2] == rotation_value_after_rotation
+        assert env_setup_empty_field.current_tile_positionInField == current_tile_positionInField_after_rotation
+        assert env_setup_empty_field.current_tile_occupied_cells_in_field == current_tile_occupied_cells_in_field_after_rotation
+        np.testing.assert_array_equal(env_setup_empty_field.field, field_after_rotation)
+        
+        
+
+
+
+
+
 
     # ----------------------------------------------------------------------------------
 
