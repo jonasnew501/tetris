@@ -9,7 +9,7 @@ def main():
     # Initialize pygame and its display
     pygame.init()
     pygame.display.set_mode((1, 1), pygame.NOFRAME)  # Tiny invisible window
-    pygame.display.iconify()  # Minimize immediately
+    # pygame.display.iconify()  # Minimize immediately
 
     # Optional: Disable audio init warnings if not needed
     pygame.mixer.quit()
@@ -61,7 +61,7 @@ def main():
             print(env.field)
             print()
 
-            time.sleep(0.5)
+            time.sleep(0.3)
 
     except KeyboardInterrupt:
         pygame.quit()

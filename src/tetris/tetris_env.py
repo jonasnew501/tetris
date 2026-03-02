@@ -134,6 +134,8 @@ class TetrisEnv:
               from that queue was done.
             - tries to put 'self.current_tile' into the field at 'self.launch_position'.
             - updates 'self.current_tile_positionInField'
+            - updates 'self.top_left_corner_current_tile_in_field'
+            - updates 'current_tile_occupied_cells_in_field'
             - updates 'self.game_over'
 
         Raises:
@@ -666,54 +668,12 @@ class TetrisEnv:
         ):
             return False
         else:
-            # from all occupied cells of the current tile, getting those cells,
-            # which are in the lowest row per column
+            bottommost_cells_per_col = self._boundary_per_group(group_by=self.current_tile_occupied_cells_in_field[1], values=self.current_tile_occupied_cells_in_field[0], reduction_function=max).items()
 
-            # TODO: Refactor this section into multiple functions
-            individual_columns = list(set(self.current_tile_occupied_cells_in_field[1]))
+            cols_idx, bottommost_rows_idx = list(map(list, zip(*bottommost_cells_per_col)))
 
-            zipped = list(zip(*self.current_tile_occupied_cells_in_field))
+            return np.all(self.field[[bottommost_row_idx + 1 for bottommost_row_idx in bottommost_rows_idx], cols_idx] == np.int8(0))
 
-            lowest_occupied_cells = []
-            for individual_col in individual_columns:
-                cells_of_individual_col = [
-                    tup for tup in zipped if tup[1] == individual_col
-                ]
-
-                lowest_cell_of_individual_col = max(
-                    cells_of_individual_col, key=lambda tup: tup[0]
-                )
-                lowest_occupied_cells.append(lowest_cell_of_individual_col)
-
-            cells_one_row_below_lowest_occupied_cells = [
-                (tup[0] + 1, tup[1]) for tup in lowest_occupied_cells
-            ]
-
-            values_lowest_occupied_cells = [
-                self.field[tup] for tup in lowest_occupied_cells
-            ]
-            assert np.all(
-                np.isin(values_lowest_occupied_cells, [1])
-            )  # Asserting that all values of the lowest
-            # occupied cells of the current tile
-            # are actually 1
-
-            values_cells_one_row_below_lowest_occupied_cells = [
-                self.field[tup] for tup in cells_one_row_below_lowest_occupied_cells
-            ]
-
-            assert len(values_lowest_occupied_cells) == len(
-                values_cells_one_row_below_lowest_occupied_cells
-            )
-            sums_of_both_rows = np.sum(
-                a=(
-                    values_lowest_occupied_cells,
-                    values_cells_one_row_below_lowest_occupied_cells,
-                ),
-                axis=0,
-            )
-
-            return np.all(np.isin(sums_of_both_rows, [1]))
 
     def _check_tile_at_edge(
         self,
