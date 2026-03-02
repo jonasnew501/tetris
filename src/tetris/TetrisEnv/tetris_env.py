@@ -8,6 +8,7 @@ from itertools import product
 from enum import Enum
 from typing import Union, Literal, Tuple, List, Any
 
+from tetris.CurrentStats.current_stats import CurrentStats
 from tetris.TetrisEnv.tetris_env_domain_specific_exceptions import (
     EmptyContainerError,
     NoneTypeError,
@@ -111,6 +112,8 @@ class TetrisEnv:
 
         self.game_over = False
 
+        self.current_stats = CurrentStats()
+
     # -----ENUMs------------------------------------------------------------------------
     class PossibleActions(Enum):
         """
@@ -174,6 +177,7 @@ class TetrisEnv:
 
         elif not out_of_bounds_at_put and overlap_at_put:
             self.game_over = True
+            self.current_stats.increment_n_games_played()
 
     def drop_current_tile(self):
         """
@@ -223,6 +227,8 @@ class TetrisEnv:
             self._get_top_left_corner_of_current_tile_in_field()
         )
 
+        self.current_stats.increment_n_timesteps_conducted()
+
     def remove_full_rows(self, full_rows_indices: Union[list, np.ndarray]) -> int:
         """
         Removes all rows given by 'full_rows_indices' from the field.
@@ -268,6 +274,8 @@ class TetrisEnv:
         self.current_tile_occupied_cells_in_field[0] = [
             row + full_rows_n for row in self.current_tile_occupied_cells_in_field[0]
         ]
+
+        self.current_stats.update_n_rows_cleared(rows_cleared=full_rows_n)
 
         return full_rows_n
 
