@@ -8,7 +8,7 @@ from itertools import product
 from enum import Enum
 from typing import Union, Literal, Tuple, List, Any
 
-from tetris.tetris_env_domain_specific_exceptions import (
+from tetris.TetrisEnv.tetris_env_domain_specific_exceptions import (
     EmptyContainerError,
     NoneTypeError,
     WrongDatatypeError,
@@ -668,12 +668,26 @@ class TetrisEnv:
         ):
             return False
         else:
-            bottommost_cells_per_col = self._boundary_per_group(group_by=self.current_tile_occupied_cells_in_field[1], values=self.current_tile_occupied_cells_in_field[0], reduction_function=max).items()
+            bottommost_cells_per_col = self._boundary_per_group(
+                group_by=self.current_tile_occupied_cells_in_field[1],
+                values=self.current_tile_occupied_cells_in_field[0],
+                reduction_function=max,
+            ).items()
 
-            cols_idx, bottommost_rows_idx = list(map(list, zip(*bottommost_cells_per_col)))
+            cols_idx, bottommost_rows_idx = list(
+                map(list, zip(*bottommost_cells_per_col))
+            )
 
-            return np.all(self.field[[bottommost_row_idx + 1 for bottommost_row_idx in bottommost_rows_idx], cols_idx] == np.int8(0))
-
+            return np.all(
+                self.field[
+                    [
+                        bottommost_row_idx + 1
+                        for bottommost_row_idx in bottommost_rows_idx
+                    ],
+                    cols_idx,
+                ]
+                == np.int8(0)
+            )
 
     def _check_tile_at_edge(
         self,

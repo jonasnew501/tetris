@@ -4,8 +4,8 @@ import numpy as np
 from typing import List, Tuple
 
 
-from tetris.tetris_env import TetrisEnv
-from tetris.tetris_env_domain_specific_exceptions import (
+from tetris.TetrisEnv.tetris_env import TetrisEnv
+from tetris.TetrisEnv.tetris_env_domain_specific_exceptions import (
     EmptyContainerError,
     NoneTypeError,
     WrongDatatypeError,
