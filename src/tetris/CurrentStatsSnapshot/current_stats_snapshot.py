@@ -1,4 +1,3 @@
-
 from dataclasses import dataclass
 from abc import ABC, abstractmethod
 
@@ -14,6 +13,7 @@ class CurrentStatsSnapshot:
     that after an instance of this dataclass is created,
     its data held cannot be changed anymore, only read.
     """
+
     n_games_played: int
     n_timesteps_conducted: int
     n_rows_cleared: int
