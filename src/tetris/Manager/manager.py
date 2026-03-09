@@ -9,8 +9,8 @@ class Manager:
     and manages the overall execution-flow between these modules
     """
     def __init__(self, env_module: EnvModule, statistics_module: StatisticsModule):
-        env = env_module
-        statistics = statistics_module
+        self.env = env_module
+        self.statistics = statistics_module
     
     #get snapshot
 

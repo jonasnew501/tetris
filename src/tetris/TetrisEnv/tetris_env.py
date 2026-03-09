@@ -148,18 +148,44 @@ class TetrisEnv(EnvModule):
         Takes one step in the environment.
         """
         #take_action
+        self.handle_action(action=action)
 
-        #if _drop_possible:
-        #   drop_current_tile()
+        if self._drop_possible():
+            self.drop_current_tile()
+        
+        else:
+            indices_of_full_rows = self._check_for_full_rows()
 
-        #else:
-        #   clear full rows
-        #   launch_tile
-        #   compute_reward
-        #   create observation
+            self.remove_full_rows(indices_of_full_rows)
 
-        #returns: observation, reward, done-flag
+            self.launch_tile()
 
+            observation = self.get_observation()
+
+            reward = self.get_reward(cleared_rows_n=indices_of_full_rows.size)
+
+            done = self.game_over
+
+        return observation, reward, done
+
+
+    def get_reward(self, cleared_rows_n: int):
+        return cleared_rows_n
+        #TODO: Implement further (more sophisticated)
+    
+    def get_observation(self) -> dict:
+        """
+        Creates a dict containing various information about the current
+        state of the environment
+        """
+        obs = {}
+
+        obs["field"] = self.field
+        obs["tiles_queue"] = self.tiles_queue
+        obs["top_left_corner_current_tile_in_field"] = self.top_left_corner_current_tile_in_field
+        obs["current_tile_occupied_cells_in_field"] = self.current_tile_occupied_cells_in_field
+        
+        return obs
 
 
 
