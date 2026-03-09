@@ -44,6 +44,9 @@ class EnvModule(ABC):
     def get_observation(self):
         raise NotImplementedError
 
+    @abstractmethod
+    def render(self):
+        raise NotImplementedError
 
 class TetrisEnv(EnvModule):
     """
@@ -477,6 +480,11 @@ class TetrisEnv(EnvModule):
 
         # putting the rotated tile into the field
         self.field[*self.current_tile_occupied_cells_in_field] = np.int8(1)
+    
+    
+    def render(self):
+        print(self.field)
+
 
     def _boundary_per_group(
         self,
@@ -1575,6 +1583,5 @@ class TetrisEnv(EnvModule):
         Returns True, if 'iterable' is a NumPy-array, False otherwise
         """
         return isinstance(iterable, np.ndarray)
-
-
+    
 # ----------------------------------------------------------------------------------
