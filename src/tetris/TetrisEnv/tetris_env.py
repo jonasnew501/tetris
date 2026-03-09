@@ -27,19 +27,19 @@ class EnvModule(ABC):
     @abstractmethod
     def take_snapshot(self) -> CurrentStatsSnapshot:
         raise NotImplementedError
-    
+
     @abstractmethod
     def step(self):
         raise NotImplementedError
-    
+
     @abstractmethod
     def reset(self):
         raise NotImplementedError
-    
+
     @abstractmethod
     def get_reward(self):
         raise NotImplementedError
-    
+
     @abstractmethod
     def get_observation(self):
         raise NotImplementedError
@@ -47,6 +47,7 @@ class EnvModule(ABC):
     @abstractmethod
     def render(self):
         raise NotImplementedError
+
 
 class TetrisEnv(EnvModule):
     """
@@ -185,7 +186,11 @@ class TetrisEnv(EnvModule):
 
         observation = self.get_observation()
 
-        reward = self.get_reward(cleared_rows_n=indices_of_full_rows.size if indices_of_full_rows is not None else 0)
+        reward = self.get_reward(
+            cleared_rows_n=(
+                indices_of_full_rows.size if indices_of_full_rows is not None else 0
+            )
+        )
 
         done = self.game_over
 
@@ -482,12 +487,10 @@ class TetrisEnv(EnvModule):
 
         # putting the rotated tile into the field
         self.field[*self.current_tile_occupied_cells_in_field] = np.int8(1)
-    
-    
+
     def render(self):
         print(self.field)
         print()
-
 
     def _boundary_per_group(
         self,
@@ -1586,5 +1589,6 @@ class TetrisEnv(EnvModule):
         Returns True, if 'iterable' is a NumPy-array, False otherwise
         """
         return isinstance(iterable, np.ndarray)
-    
+
+
 # ----------------------------------------------------------------------------------

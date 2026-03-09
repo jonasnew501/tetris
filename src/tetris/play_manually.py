@@ -11,6 +11,12 @@ def run(env_class, statistics_class, manager_class, **kwargs):
     manager.play()
 
 
-if __name__ == '__main__':
-    run(env_class=TetrisEnv, statistics_class=Statistics, manager_class=Manager, field_height=18, field_width=10, len_tiles_queue=3)
-
+if __name__ == "__main__":
+    run(
+        env_class=TetrisEnv,
+        statistics_class=Statistics,
+        manager_class=Manager,
+        field_height=18,
+        field_width=10,
+        len_tiles_queue=3,
+    )

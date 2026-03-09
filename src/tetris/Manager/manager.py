@@ -24,7 +24,6 @@ class Manager:
         # Optional: Disable audio init warnings if not needed
         pygame.mixer.quit()
 
-
     def play(self):
         self.env.launch_tile()
         while True:
@@ -35,14 +34,10 @@ class Manager:
             obs, reward, done = self.env.step(action)
 
             current_stats_snapshot = self.env.take_snapshot()
-            
+
             self.statistics.update(data_snapshot=current_stats_snapshot)
 
             # save visualizations of statistics
-
-            
-
-            
 
     def _get_human_action(self, seconds_to_select_action: float):
         start_time = time.perf_counter()
@@ -62,9 +57,8 @@ class Manager:
                     elif event.key == pygame.K_ESCAPE:
                         pygame.quit()
                         sys.exit()
-            
+
             now = time.perf_counter()
 
             if (now - start_time) > seconds_to_select_action:
                 return self.env.PossibleActions.do_nothing
-    
