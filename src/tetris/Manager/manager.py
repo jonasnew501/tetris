@@ -12,9 +12,9 @@ class Manager:
     and manages the overall execution-flow between these modules
     """
 
-    def __init__(self, env_module: EnvModule, statistics_module: StatisticsModule):
-        self.env = env_module
-        self.statistics = statistics_module
+    def __init__(self, env_instance: EnvModule, statistics_instance: StatisticsModule):
+        self.env = env_instance
+        self.statistics = statistics_instance
 
         # Initialize pygame and its display
         pygame.init()
@@ -26,19 +26,25 @@ class Manager:
 
 
     def play(self):
+        self.env.launch_tile()
         while True:
-            action = self.get_human_action(seconds_to_select_action=1)
+            self.env.render()
+
+            action = self._get_human_action(seconds_to_select_action=1)
 
             obs, reward, done = self.env.step(action)
 
             current_stats_snapshot = self.env.take_snapshot()
             
-            self.statistics.update()
+            self.statistics.update(data_snapshot=current_stats_snapshot)
 
             # save visualizations of statistics
 
+            
 
-    def get_human_action(self, seconds_to_select_action: float) -> TetrisEnv.PossibleActions:
+            
+
+    def _get_human_action(self, seconds_to_select_action: float):
         start_time = time.perf_counter()
         while True:
             for event in pygame.event.get():
@@ -48,17 +54,17 @@ class Manager:
 
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_LEFT:
-                        return TetrisEnv.PossibleActions.move_left
+                        return self.env.PossibleActions.move_left
                     elif event.key == pygame.K_RIGHT:
-                        return TetrisEnv.PossibleActions.move_right
+                        return self.env.PossibleActions.move_right
                     elif event.key == pygame.K_UP:
-                        return TetrisEnv.PossibleActions.rotate
+                        return self.env.PossibleActions.rotate
                     elif event.key == pygame.K_ESCAPE:
                         pygame.quit()
                         sys.exit()
             
             now = time.perf_counter()
 
-            if now - start_time > seconds_to_select_action:
-                break
-
+            if (now - start_time) > seconds_to_select_action:
+                return self.env.PossibleActions.do_nothing
+    

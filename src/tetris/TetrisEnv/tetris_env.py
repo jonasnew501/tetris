@@ -168,6 +168,8 @@ class TetrisEnv(EnvModule):
         """
         Takes one step in the environment.
         """
+        indices_of_full_rows = None
+
         # take_action
         self.handle_action(action=action)
 
@@ -181,11 +183,11 @@ class TetrisEnv(EnvModule):
 
             self.launch_tile()
 
-            observation = self.get_observation()
+        observation = self.get_observation()
 
-            reward = self.get_reward(cleared_rows_n=indices_of_full_rows.size)
+        reward = self.get_reward(cleared_rows_n=indices_of_full_rows.size if indices_of_full_rows is not None else 0)
 
-            done = self.game_over
+        done = self.game_over
 
         return observation, reward, done
 
@@ -376,14 +378,14 @@ class TetrisEnv(EnvModule):
         """
         if action == self.PossibleActions.do_nothing:
             pass
-        if action == self.PossibleActions.move_left:
+        elif action == self.PossibleActions.move_left:
             self.move(direction=action)
         elif action == self.PossibleActions.move_right:
             self.move(direction=action)
         elif action == self.PossibleActions.rotate:
             self.rotate()
         else:
-            raise ValueError("Unknown action: {action}")
+            raise ValueError(f"Unknown action: {action}")
 
         self._set_current_action(action=action)
 
@@ -484,6 +486,7 @@ class TetrisEnv(EnvModule):
     
     def render(self):
         print(self.field)
+        print()
 
 
     def _boundary_per_group(

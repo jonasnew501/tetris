@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 from collections import deque, defaultdict
 from typing import Callable
 
-from src.tetris.CurrentStatsSnapshot.current_stats_snapshot import CurrentStatsSnapshot
+from tetris.CurrentStatsSnapshot.current_stats_snapshot import CurrentStatsSnapshot
 
 
 class StatisticsModule(ABC):
@@ -35,12 +35,12 @@ class Statistics(StatisticsModule):
         ###
 
         ### statistics ###
-        self.means = defaultdict(deque(maxlen=5000))
-        self.std_devs = defaultdict(deque(maxlen=5000))
+        self.means = defaultdict(lambda: deque(maxlen=5000))
+        self.std_devs = defaultdict(lambda: deque(maxlen=5000))
         ###
 
-    def update(self):
-        self._update_data()
+    def update(self, data_snapshot=CurrentStatsSnapshot):
+        self._update_data(data_snapshot=data_snapshot)
         self._update_statistics()
 
     def _update_data(self, data_snapshot: CurrentStatsSnapshot):
