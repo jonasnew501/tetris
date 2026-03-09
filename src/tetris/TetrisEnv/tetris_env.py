@@ -4,11 +4,13 @@ import matplotlib.pyplot as plt
 import random
 from collections import deque
 from collections.abc import Iterable, Callable
+from abc import ABC, abstractmethod
 from itertools import product
 from enum import Enum
 from typing import Union, Literal, Tuple, List, Any
 
 from tetris.CurrentStats.current_stats import CurrentStats
+from tetris.CurrentStatsSnapshot.current_stats_snapshot import CurrentStatsSnapshot
 from tetris.TetrisEnv.tetris_env_domain_specific_exceptions import (
     EmptyContainerError,
     NoneTypeError,
@@ -21,7 +23,12 @@ from tetris.TetrisEnv.tetris_env_domain_specific_exceptions import (
 plt.ion()
 
 
-class TetrisEnv:
+class EnvModule(ABC):
+    @abstractmethod
+    def take_snapshot(self) -> CurrentStatsSnapshot:
+        raise NotImplementedError
+
+class TetrisEnv(EnvModule):
     """
     This class implements the whole Tetris environment.
 

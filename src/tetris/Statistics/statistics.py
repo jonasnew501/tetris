@@ -7,10 +7,6 @@ from src.tetris.CurrentStatsSnapshot.current_stats_snapshot import CurrentStatsS
 
 
 class StatisticsModule(ABC):
-    def update(self):
-        self._update_data()
-        self._update_statistics()
-
     @abstractmethod
     def _update_statistics(self):
         raise NotImplementedError
@@ -38,6 +34,10 @@ class Statistics(StatisticsModule):
         self.means = defaultdict(deque(maxlen=5000))
         self.std_devs = defaultdict(deque(maxlen=5000))
         ###
+
+    def update(self):
+        self._update_data()
+        self._update_statistics()
 
     def _update_data(self, data_snapshot: CurrentStatsSnapshot):
         self.n_games_played.append(data_snapshot.n_games_played)
