@@ -62,42 +62,6 @@ class Statistics(StatisticsModule):
     def _update_statistics(self):
         self._update_means()
         self._update_std_devs()
-
-    #TODO: Just write one single, generic method for calculating the statistics and pass the method to use (np.mean or np.std) and the dict to work on in,
-    #      instead of writing two separate functions, which produce code-repetition.
-    def _update_means(self):
-        self.means["n_games_played_last_50_snapshots"].append(
-            np.mean(list(self.n_games_played)[-50:])
-        )
-        self.means["n_rows_cleared_last_50_snapshots"].append(
-            np.mean(list(self.n_rows_cleared)[-50:])
-        )
-        self.means["number_of_rows_cleared_at_once_last_50_snapshots"].append(
-            {
-                key: np.mean(
-                    [d[key] for d in list(self.number_of_rows_cleared_at_once)[-50:]],
-                    dtype=np.float32,
-                )
-                for key in self.number_of_rows_cleared_at_once[0]
-            }
-        )
-    
-    def _update_std_devs(self):
-        self.std_devs["n_games_played_last_50_snapshots"].append(
-            np.std(list(self.n_games_played)[-50:])
-        )
-        self.std_devs["n_rows_cleared_last_50_snapshots"].append(
-            np.std(list(self.n_rows_cleared)[-50:])
-        )
-        self.std_devs["number_of_rows_cleared_at_once_last_50_snapshots"].append(
-            {
-                key: np.std(
-                    [d[key] for d in list(self.number_of_rows_cleared_at_once)[-50:]],
-                    dtype=np.float32,
-                )
-                for key in self.number_of_rows_cleared_at_once[0]
-            }
-        )
     
 
     def _update_descriptive_statistic(self, target_dict: defaultdict, aggregation_function: Callable, period_to_aggregate: int):
