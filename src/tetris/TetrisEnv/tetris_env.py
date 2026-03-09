@@ -134,6 +134,14 @@ class TetrisEnv(EnvModule):
 
     # ----------------------------------------------------------------------------------
 
+    def take_snapshot(self) -> CurrentStatsSnapshot:
+        snapshot = CurrentStatsSnapshot(n_games_played=self.current_stats._n_games_played,
+                                        n_timesteps_conducted=self.current_stats._n_timesteps_conducted,
+                                        n_rows_cleared=self.current_stats._n_rows_cleared,
+                                        number_of_rows_cleared_at_once=self.current_stats._number_of_rows_cleared_at_once)
+        return snapshot
+        
+
     # -----central functions------------------------------------------------------------
     def launch_tile(self):
         """
