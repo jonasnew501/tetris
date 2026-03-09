@@ -26,18 +26,17 @@ class Manager:
 
 
     def play(self):
-        # action = 
-        pass
+        while True:
+            action = self.get_human_action(seconds_to_select_action=1)
 
-    # get snapshot
+            obs, reward, done = self.env.step(action)
 
-    # push snapshot to 'statistics' to update the statistics
+            current_stats_snapshot = self.env.take_snapshot()
+            
+            self.statistics.update()
 
-    # save visualizations of statistics
+            # save visualizations of statistics
 
-    # implement full game-loop
-
-    #
 
     def get_human_action(self, seconds_to_select_action: float) -> TetrisEnv.PossibleActions:
         start_time = time.perf_counter()

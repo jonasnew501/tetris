@@ -8,6 +8,10 @@ from src.tetris.CurrentStatsSnapshot.current_stats_snapshot import CurrentStatsS
 
 class StatisticsModule(ABC):
     @abstractmethod
+    def update(self):
+        raise NotImplementedError
+
+    @abstractmethod
     def _update_statistics(self):
         raise NotImplementedError
 

@@ -27,6 +27,22 @@ class EnvModule(ABC):
     @abstractmethod
     def take_snapshot(self) -> CurrentStatsSnapshot:
         raise NotImplementedError
+    
+    @abstractmethod
+    def step(self):
+        raise NotImplementedError
+    
+    @abstractmethod
+    def reset(self):
+        raise NotImplementedError
+    
+    @abstractmethod
+    def get_reward(self):
+        raise NotImplementedError
+    
+    @abstractmethod
+    def get_observation(self):
+        raise NotImplementedError
 
 
 class TetrisEnv(EnvModule):
