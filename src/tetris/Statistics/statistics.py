@@ -50,16 +50,25 @@ class Statistics(StatisticsModule):
     def _update_statistics(self):
         self._update_means()
         self._update_std_devs()
-    
 
     def _update_means(self):
-        self._update_descriptive_statistic(target_dict=self.means, aggregation_function=np.mean, period_to_aggregate=50)
-    
+        self._update_descriptive_statistic(
+            target_dict=self.means, aggregation_function=np.mean, period_to_aggregate=50
+        )
+
     def _update_std_devs(self):
-        self._update_descriptive_statistic(target_dict=self.std_devs, aggregation_function=np.std, period_to_aggregate=50)
+        self._update_descriptive_statistic(
+            target_dict=self.std_devs,
+            aggregation_function=np.std,
+            period_to_aggregate=50,
+        )
 
-
-    def _update_descriptive_statistic(self, target_dict: defaultdict, aggregation_function: Callable, period_to_aggregate: int):
+    def _update_descriptive_statistic(
+        self,
+        target_dict: defaultdict,
+        aggregation_function: Callable,
+        period_to_aggregate: int,
+    ):
         """
         This is a generic helper-function to calculate the 'aggregation_function'
         passed for every key of specific 'target_dict's.
@@ -86,10 +95,17 @@ class Statistics(StatisticsModule):
         target_dict[f"n_rows_cleared_last_{period_to_aggregate}_snapshots"].append(
             aggregation_function(list(self.n_rows_cleared)[-period_to_aggregate:])
         )
-        target_dict[f"number_of_rows_cleared_at_once_last_{period_to_aggregate}_snapshots"].append(
+        target_dict[
+            f"number_of_rows_cleared_at_once_last_{period_to_aggregate}_snapshots"
+        ].append(
             {
                 key: aggregation_function(
-                    [d[key] for d in list(self.number_of_rows_cleared_at_once)[-period_to_aggregate:]],
+                    [
+                        d[key]
+                        for d in list(self.number_of_rows_cleared_at_once)[
+                            -period_to_aggregate:
+                        ]
+                    ],
                     dtype=np.float32,
                 )
                 for key in self.number_of_rows_cleared_at_once[0]

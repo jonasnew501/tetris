@@ -28,6 +28,7 @@ class EnvModule(ABC):
     def take_snapshot(self) -> CurrentStatsSnapshot:
         raise NotImplementedError
 
+
 class TetrisEnv(EnvModule):
     """
     This class implements the whole Tetris environment.
@@ -135,24 +136,25 @@ class TetrisEnv(EnvModule):
     # ----------------------------------------------------------------------------------
 
     def take_snapshot(self) -> CurrentStatsSnapshot:
-        snapshot = CurrentStatsSnapshot(n_games_played=self.current_stats._n_games_played,
-                                        n_timesteps_conducted=self.current_stats._n_timesteps_conducted,
-                                        n_rows_cleared=self.current_stats._n_rows_cleared,
-                                        number_of_rows_cleared_at_once=self.current_stats._number_of_rows_cleared_at_once)
+        snapshot = CurrentStatsSnapshot(
+            n_games_played=self.current_stats._n_games_played,
+            n_timesteps_conducted=self.current_stats._n_timesteps_conducted,
+            n_rows_cleared=self.current_stats._n_rows_cleared,
+            number_of_rows_cleared_at_once=self.current_stats._number_of_rows_cleared_at_once,
+        )
         return snapshot
-        
 
     # -----central functions------------------------------------------------------------
     def step(self, action: PossibleActions):
         """
         Takes one step in the environment.
         """
-        #take_action
+        # take_action
         self.handle_action(action=action)
 
         if self._drop_possible():
             self.drop_current_tile()
-        
+
         else:
             indices_of_full_rows = self._check_for_full_rows()
 
@@ -168,11 +170,10 @@ class TetrisEnv(EnvModule):
 
         return observation, reward, done
 
-
     def get_reward(self, cleared_rows_n: int):
         return cleared_rows_n
-        #TODO: Implement further (more sophisticated)
-    
+        # TODO: Implement further (more sophisticated)
+
     def get_observation(self) -> dict:
         """
         Creates a dict containing various information about the current
@@ -182,12 +183,14 @@ class TetrisEnv(EnvModule):
 
         obs["field"] = self.field
         obs["tiles_queue"] = self.tiles_queue
-        obs["top_left_corner_current_tile_in_field"] = self.top_left_corner_current_tile_in_field
-        obs["current_tile_occupied_cells_in_field"] = self.current_tile_occupied_cells_in_field
-        
+        obs["top_left_corner_current_tile_in_field"] = (
+            self.top_left_corner_current_tile_in_field
+        )
+        obs["current_tile_occupied_cells_in_field"] = (
+            self.current_tile_occupied_cells_in_field
+        )
+
         return obs
-
-
 
     def launch_tile(self):
         """
