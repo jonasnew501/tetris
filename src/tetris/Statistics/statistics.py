@@ -35,18 +35,6 @@ class Statistics(StatisticsModule):
         ###
 
         ### statistics ###
-        #TODO: Can be removed
-        # self.means = {
-        #     "n_games_played_last_50_snapshots": deque(maxlen=5000),
-        #     "n_rows_cleared_last_50_snapshots": deque(maxlen=5000),
-        #     "number_of_rows_cleared_at_once_last_50_snapshots": deque(maxlen=5000),
-        # }
-
-        # self.std_devs = {
-        #     "n_games_played_last_50_snapshots": deque(maxlen=5000),
-        #     "n_rows_cleared_last_50_snapshots": deque(maxlen=5000),
-        #     "number_of_rows_cleared_at_once_last_50_snapshots": deque(maxlen=5000),
-        # }
         self.means = defaultdict(deque(maxlen=5000))
         self.std_devs = defaultdict(deque(maxlen=5000))
         ###
@@ -63,6 +51,13 @@ class Statistics(StatisticsModule):
         self._update_means()
         self._update_std_devs()
     
+
+    def _update_means(self):
+        self._update_descriptive_statistic(target_dict=self.means, aggregation_function=np.mean, period_to_aggregate=50)
+    
+    def _update_std_devs(self):
+        self._update_descriptive_statistic(target_dict=self.std_devs, aggregation_function=np.std, period_to_aggregate=50)
+
 
     def _update_descriptive_statistic(self, target_dict: defaultdict, aggregation_function: Callable, period_to_aggregate: int):
         """
