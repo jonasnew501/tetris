@@ -143,6 +143,26 @@ class TetrisEnv(EnvModule):
         
 
     # -----central functions------------------------------------------------------------
+    def step(self, action: PossibleActions):
+        """
+        Takes one step in the environment.
+        """
+        #take_action
+
+        #if _drop_possible:
+        #   drop_current_tile()
+
+        #else:
+        #   clear full rows
+        #   launch_tile
+        #   compute_reward
+        #   create observation
+
+        #returns: observation, reward, done-flag
+
+
+
+
     def launch_tile(self):
         """
         Launches the next tile to come from 'self.tiles_queue' into the field.
