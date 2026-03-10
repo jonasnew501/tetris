@@ -4,6 +4,7 @@ This file comprises all class-interfaces resp. abstract base classes of this pro
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+import torch
 
 from tetris.ClassInterfaces.class_interfaces import CurrentStatsSnapshot
 
@@ -46,6 +47,22 @@ class StatisticsModule(ABC):
     @abstractmethod
     def _update_data(self, data_snapshot: CurrentStatsSnapshot):
         raise NotImplementedError
+
+
+class PolicyModule(ABC):
+    @abstractmethod
+    def forward(state: torch.Tensor):
+        raise NotImplementedError
+
+
+class AlgorithmModule(ABC):
+    @abstractmethod
+    def train(policy: PolicyModule):
+        raise NotImplementedError
+
+
+class ExperienceBuffer(ABC):
+    pass
 
 
 @dataclass(frozen=True)

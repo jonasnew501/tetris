@@ -1,5 +1,5 @@
 
-
+from tetris.ClassInterfaces.class_interfaces import EnvModule, StatisticsModule, Algorithm
 
 
 class RLTrainer:
@@ -8,5 +8,9 @@ class RLTrainer:
     process of training an Reinforcement Learning agent to successfully act in
     an environment
     """
-    def __init__(self, env, ):
+    def __init__(self, env_instance: Env,
+                    statistics_instance: Statistics,
+                    algorithm: Algorithm,
+                    policy: Policy
+                    buffer: ExperienceBuffer):
         
