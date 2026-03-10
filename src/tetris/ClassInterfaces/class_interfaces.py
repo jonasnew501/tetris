@@ -8,7 +8,6 @@ from dataclasses import dataclass
 from tetris.ClassInterfaces.class_interfaces import CurrentStatsSnapshot
 
 
-
 class EnvModule(ABC):
     @abstractmethod
     def take_snapshot(self) -> CurrentStatsSnapshot:

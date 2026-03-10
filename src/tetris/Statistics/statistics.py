@@ -3,7 +3,10 @@ from abc import ABC, abstractmethod
 from collections import deque, defaultdict
 from typing import Callable
 
-from tetris.ClassInterfaces.class_interfaces import StatisticsModule, CurrentStatsSnapshot
+from tetris.ClassInterfaces.class_interfaces import (
+    StatisticsModule,
+    CurrentStatsSnapshot,
+)
 
 
 class Statistics(StatisticsModule):
