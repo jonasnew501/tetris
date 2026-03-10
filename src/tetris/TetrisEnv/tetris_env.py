@@ -8,6 +8,7 @@ from abc import ABC, abstractmethod
 from itertools import product
 from enum import Enum
 from typing import Union, Literal, Tuple, List, Any
+import time
 
 from tetris.CurrentStats.current_stats import CurrentStats
 from tetris.CurrentStatsSnapshot.current_stats_snapshot import CurrentStatsSnapshot
@@ -165,14 +166,22 @@ class TetrisEnv(EnvModule):
         return snapshot
 
     # -----central functions------------------------------------------------------------
-    def step(self, action: PossibleActions):
+    def step(self, action: PossibleActions, delay_time: float):
         """
         Takes one step in the environment.
+
+        Args:
+            action(TetrisEnv.PossibleActions): The action to take
+            delay_time(float): The delay (in seconds) taken after the action was performed
         """
         indices_of_full_rows = None
 
         # take_action
         self.handle_action(action=action)
+
+        self.render()
+
+        time.sleep(delay_time)
 
         if self._drop_possible():
             self.drop_current_tile()

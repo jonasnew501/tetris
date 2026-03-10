@@ -29,11 +29,13 @@ class Manager:
     def play(self):
         self.env.launch_tile()
         while True:
-            self.env.render()
+            # self.env.render()
 
-            action = self._get_human_action(seconds_to_select_action=1)
+            action, remaining_waiting_time = self._get_human_action(
+                seconds_to_select_action=0.4
+            )
 
-            obs, reward, done = self.env.step(action)
+            obs, reward, done = self.env.step(action, delay_time=remaining_waiting_time)
 
             current_stats_snapshot = self.env.take_snapshot()
 
@@ -41,7 +43,9 @@ class Manager:
 
             # save visualizations of statistics
 
-    def _get_human_action(self, seconds_to_select_action: float) -> tuple[TetrisEnv.PossibleActions, float]:
+    def _get_human_action(
+        self, seconds_to_select_action: float
+    ) -> tuple[TetrisEnv.PossibleActions, float]:
         start_time = time.perf_counter()
         action_selected = None
 
@@ -65,16 +69,26 @@ class Manager:
                         pygame.quit()
                         sys.exit()
 
-            
             now = time.perf_counter()
 
             if action_selected is not None:
-                return (action_selected, self._calculate_remaining_waiting_time(seconds_to_select_action=seconds_to_select_action, start_time=start_time, now=now))
+                return (
+                    action_selected,
+                    self._calculate_remaining_waiting_time(
+                        seconds_to_select_action=seconds_to_select_action,
+                        start_time=start_time,
+                        now=now,
+                    ),
+                )
 
+            # Note: In case the user didn't press any button and thus didn't select any action,
+            #      the waiting is already done here, instead of in 'TetrisEnv.step'.
             elif (now - start_time) > seconds_to_select_action:
                 return (self.env.PossibleActions.do_nothing, 0)
-    
-    def _calculate_remaining_waiting_time(self, seconds_to_select_action: float, start_time: float, now: float):
+
+    def _calculate_remaining_waiting_time(
+        self, seconds_to_select_action: float, start_time: float, now: float
+    ):
         """
         This helper-function simply calculates and returns the difference
         between the seconds the user had to select an action (see function '_get_human_action')
@@ -82,6 +96,8 @@ class Manager:
         """
         action_selection_duration = now - start_time
         if action_selection_duration > seconds_to_select_action:
-            raise GamewiseLogicalError("In this function at hand, the time it took a player to select an action must logically be smaller than the time allowed to take an action. However, this was not the case here!")
-        
+            raise GamewiseLogicalError(
+                "In this function at hand, the time it took a player to select an action must logically be smaller than the time allowed to take an action. However, this was not the case here!"
+            )
+
         return seconds_to_select_action - action_selection_duration
