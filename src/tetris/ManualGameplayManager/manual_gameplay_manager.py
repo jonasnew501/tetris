@@ -8,7 +8,7 @@ from tetris.Statistics.statistics import StatisticsModule
 from tetris.TetrisEnv.tetris_env_domain_specific_exceptions import GamewiseLogicalError
 
 
-class Manager:
+class ManualGameplayManager:
     """
     This class holds instances of various high-level modules of this project
     and manages the overall execution-flow between these modules

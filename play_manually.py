@@ -1,4 +1,4 @@
-from tetris.Manager.manager import Manager
+from tetris.ManualGameplayManager.manual_gameplay_manager import ManualGameplayManager
 from tetris.TetrisEnv.tetris_env import TetrisEnv
 from tetris.Statistics.statistics import Statistics
 
@@ -15,7 +15,7 @@ if __name__ == "__main__":
     run(
         env_class=TetrisEnv,
         statistics_class=Statistics,
-        manager_class=Manager,
+        manager_class=ManualGameplayManager,
         field_height=18,
         field_width=10,
         len_tiles_queue=3,

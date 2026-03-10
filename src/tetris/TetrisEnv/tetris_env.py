@@ -10,8 +10,8 @@ from enum import Enum
 from typing import Union, Literal, Tuple, List, Any
 import time
 
+from tetris.ClassInterfaces.class_interfaces import EnvModule, CurrentStatsSnapshot
 from tetris.CurrentStats.current_stats import CurrentStats
-from tetris.CurrentStatsSnapshot.current_stats_snapshot import CurrentStatsSnapshot
 from tetris.TetrisEnv.tetris_env_domain_specific_exceptions import (
     EmptyContainerError,
     NoneTypeError,
@@ -22,32 +22,6 @@ from tetris.TetrisEnv.tetris_env_domain_specific_exceptions import (
 )
 
 plt.ion()
-
-
-class EnvModule(ABC):
-    @abstractmethod
-    def take_snapshot(self) -> CurrentStatsSnapshot:
-        raise NotImplementedError
-
-    @abstractmethod
-    def step(self):
-        raise NotImplementedError
-
-    @abstractmethod
-    def reset(self):
-        raise NotImplementedError
-
-    @abstractmethod
-    def get_reward(self):
-        raise NotImplementedError
-
-    @abstractmethod
-    def get_observation(self):
-        raise NotImplementedError
-
-    @abstractmethod
-    def render(self):
-        raise NotImplementedError
 
 
 class TetrisEnv(EnvModule):

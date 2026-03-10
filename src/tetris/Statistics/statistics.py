@@ -3,21 +3,7 @@ from abc import ABC, abstractmethod
 from collections import deque, defaultdict
 from typing import Callable
 
-from tetris.CurrentStatsSnapshot.current_stats_snapshot import CurrentStatsSnapshot
-
-
-class StatisticsModule(ABC):
-    @abstractmethod
-    def update(self):
-        raise NotImplementedError
-
-    @abstractmethod
-    def _update_statistics(self):
-        raise NotImplementedError
-
-    @abstractmethod
-    def _update_data(self, data_snapshot: CurrentStatsSnapshot):
-        raise NotImplementedError
+from tetris.ClassInterfaces.class_interfaces import StatisticsModule, CurrentStatsSnapshot
 
 
 class Statistics(StatisticsModule):
