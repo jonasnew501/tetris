@@ -41,6 +41,8 @@ class Manager:
 
     def _get_human_action(self, seconds_to_select_action: float):
         start_time = time.perf_counter()
+        action_selected = None
+
         while True:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -49,16 +51,23 @@ class Manager:
 
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_LEFT:
-                        return self.env.PossibleActions.move_left
+                        action_selected = self.env.PossibleActions.move_left
+                        break
                     elif event.key == pygame.K_RIGHT:
-                        return self.env.PossibleActions.move_right
+                        action_selected = self.env.PossibleActions.move_right
+                        break
                     elif event.key == pygame.K_UP:
-                        return self.env.PossibleActions.rotate
+                        action_selected = self.env.PossibleActions.rotate
+                        break
                     elif event.key == pygame.K_ESCAPE:
                         pygame.quit()
                         sys.exit()
 
+            
             now = time.perf_counter()
 
-            if (now - start_time) > seconds_to_select_action:
+            if action_selected is not None:
+                return action_selected
+
+            elif (now - start_time) > seconds_to_select_action:
                 return self.env.PossibleActions.do_nothing
